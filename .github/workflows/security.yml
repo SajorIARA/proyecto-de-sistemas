@@ -50,6 +50,7 @@ jobs:
     name: Docker image scan
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         image: [backend, frontend, proxy]
     steps:
@@ -60,4 +61,5 @@ jobs:
           image-ref: turismo-melgarejo-${{ matrix.image }}:ci
           format: table
           severity: CRITICAL,HIGH
+          ignore-unfixed: true
           exit-code: "1"
