@@ -13,7 +13,7 @@ jobs:
   build-and-validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
       - name: Compose validation (dev)
         env:
           POSTGRES_DB: turismo_melgarejo
@@ -27,8 +27,6 @@ jobs:
           POSTGRES_PASSWORD: ci_password
           IMAGE_TAG: test
         run: docker compose -f docker-compose.prod.yml config --quiet
-      - name: Build dev images
-        run: docker compose build --pull --no-cache
       - name: Validate Nginx proxy configuration
         run: |
           docker build -t proxy-test ./proxy
