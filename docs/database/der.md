@@ -41,6 +41,11 @@ El modelo se diseña sobre PostgreSQL y contempla el uso de PostGIS para consult
 | Métrica vectorial propuesta | Distancia coseno |
 | Moneda principal | BOB |
 
+> **Nota de implementación**: el esquema físico lo gestiona Django mediante
+> migraciones (`backend/turismo/migrations/`), que crean extensiones
+> (PostGIS, pgvector), tablas, restricciones e índices al ejecutar
+> `manage.py migrate`. No se aplica SQL de arranque en el volúmen de BD.
+
 ---
 
 ## 3. Diagrama Entidad-Relación Conceptual
@@ -186,6 +191,11 @@ Cada atributo contiene valores atómicos. No se almacenan listas de categorías,
 ### Segunda Forma Normal (2FN)
 
 Las tablas asociativas `usuario_rol` y `atractivo_categoria` utilizan claves primarias compuestas y sus atributos dependen de la totalidad de dichas claves.
+
+> En el modelo físico de Django estas tablas usan un `id` sintético como
+> clave primaria más una restricción `UNIQUE (fk_origen, fk_destino)`, porque
+> el ORM de Django no soporta claves primarias compuestas. La unicidad
+> funcional es idéntica.
 
 ### Tercera Forma Normal (3FN)
 

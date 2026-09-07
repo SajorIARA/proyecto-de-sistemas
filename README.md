@@ -1,6 +1,6 @@
 # Turismo Melgarejo — Proyecto de Sistemas 3
 
-Sistema web de guía turística de La Paz (Bolivia). Contiene un backend Django + DRF con datos geoespaciales (PostGIS/pgvector), un frontend React + Three.js, y un proxy Nginx. Todo contenerizado con Docker Compose.
+Sistema web de guía turística de La Paz (Bolivia). Contiene un backend Django + DRF con datos geoespaciales (PostGIS/pgvector), un frontend React, y un proxy Nginx. Todo contenerizado con Docker Compose.
 
 ## Requisitos
 
@@ -13,9 +13,9 @@ No necesitas Python ni Node en tu máquina: todo corre dentro de contenedores.
 
 ```
 backend/            Django + DRF + GeoDjango (PostGIS)
-frontend/           React + Vite + Tailwind + Three.js
+frontend/           React + Vite + Tailwind
 proxy/              Nginx reverse proxy
-database/           init SQL (extensiones + schema) y scripts backup/restore
+database/           Imagen BD (PostGIS + pgvector) y scripts backup/restore
 docs/               Documentación técnica y diagramas
 docker-compose.yml          Entorno de desarrollo (recarga en vivo)
 docker-compose.prod.yml     Entorno de producción (imágenes + Gunicorn)
@@ -71,6 +71,9 @@ docker compose run --rm backend python manage.py test
 docker compose run --rm backend ruff check .
 docker compose run --rm backend black --check .
 
+# Backend (datos de referencia: roles, categorías, atractivos)
+docker compose run --rm backend python manage.py seed
+
 # Frontend (lint y tests Vitest)
 docker compose run --rm frontend pnpm lint
 docker compose run --rm frontend pnpm test
@@ -80,7 +83,9 @@ docker compose run --rm frontend pnpm test
 
 - PostgreSQL + PostGIS + pgvector (imagen custom `database/Dockerfile` sobre `postgres:17-bookworm`).
 - Datos persistentes en el volumen `postgres_data`.
-- El schema se aplica automáticamente en el primer arranque (carpeta `database/init`).
+- El schema (extensiones, tablas, índices) lo crean las **migraciones de Django**
+  en el primer arranque (`manage.py migrate`); datos de referencia en
+  `manage.py seed`.
 - Respaldos:
   ```bash
   ./database/backup.sh
