@@ -9,7 +9,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = os.getenv("DJANGO_DEBUG", "0") == "1"
 if not SECRET_KEY and not DEBUG:
-    raise ImproperlyConfigured("DJANGO_SECRET_KEY es obligatorio cuando DEBUG está desactivado")
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY es obligatorio cuando DEBUG está desactivado"
+    )
 SECRET_KEY = SECRET_KEY or "development-only-key"
 ALLOWED_HOSTS = [
     host.strip()
