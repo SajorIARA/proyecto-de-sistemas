@@ -1,5 +1,7 @@
 # Arquitectura General del Sistema
 
+Para una versión interactiva, abre [el diagrama HTML](./interactiva/vista-general.architecture.html) en el navegador.
+
 Diagrama de visión global de la aplicación "Sistema Web Informativo para la Guía Personalizada de Destinos Turísticos en La Paz".
 
 ```mermaid

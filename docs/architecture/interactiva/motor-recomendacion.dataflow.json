@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Motor de recomendación — de preferencias a rankings",
+    "output": "motor-recomendacion.dataflow.html",
+    "quality_profile": "showcase",
+    "visual_preset": "signal-flow",
+    "animation": "trace",
+    "views": [
+      {
+        "id": "radio",
+        "label": "Radio de búsqueda",
+        "focus": [
+          "perfil",
+          "gps",
+          "catalogo",
+          "hard",
+          "dist"
+        ],
+        "note": "El perfil y la ubicación alimentan el filtrado espacial en PostGIS."
+      },
+      {
+        "id": "ranking",
+        "label": "Ranking y corte",
+        "focus": [
+          "dist",
+          "sim",
+          "cost",
+          "norm",
+          "rank",
+          "lista"
+        ],
+        "note": "Similitud, costo y puntaje final hasta el Top N."
+      }
+    ],
+    "viewBox": [
+      1072,
+      620
+    ]
+  },
+  "stages": [
+    {
+      "label": "Insumos"
+    },
+    {
+      "label": "PostGIS"
+    },
+    {
+      "label": "Motor"
+    },
+    {
+      "label": "Ranking"
+    },
+    {
+      "label": "Salida"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "perfil",
+      "type": "database",
+      "label": "Perfil del usuario",
+      "sublabel": "prefs",
+      "stage": 0,
+      "row": 0,
+      "width": 138
+    },
+    {
+      "id": "gps",
+      "type": "frontend",
+      "label": "Ubicación",
+      "sublabel": "GPS",
+      "stage": 0,
+      "row": 1,
+      "width": 138
+    },
+    {
+      "id": "catalogo",
+      "type": "database",
+      "label": "Catálogo",
+      "sublabel": "catálogo",
+      "stage": 0,
+      "row": 2,
+      "width": 138
+    },
+    {
+      "id": "hard",
+      "type": "backend",
+      "label": "Filtro espacial",
+      "sublabel": "PostGIS",
+      "stage": 1,
+      "row": 0,
+      "width": 138
+    },
+    {
+      "id": "dist",
+      "type": "backend",
+      "label": "Distancia",
+      "sublabel": "ST_Distance",
+      "stage": 1,
+      "row": 1,
+      "width": 138
+    },
+    {
+      "id": "sim",
+      "type": "backend",
+      "label": "Similitud",
+      "sublabel": "vectores",
+      "stage": 2,
+      "row": 0,
+      "width": 138
+    },
+    {
+      "id": "cost",
+      "type": "backend",
+      "label": "Costo",
+      "sublabel": "costo",
+      "stage": 2,
+      "row": 1,
+      "width": 138
+    },
+    {
+      "id": "norm",
+      "type": "backend",
+      "label": "Normalización",
+      "sublabel": "min-max",
+      "stage": 3,
+      "row": 0,
+      "width": 138
+    },
+    {
+      "id": "rank",
+      "type": "backend",
+      "label": "Ranking ponderado",
+      "sublabel": "final",
+      "stage": 3,
+      "row": 1,
+      "width": 138
+    },
+    {
+      "id": "lista",
+      "type": "external",
+      "label": "Top N",
+      "sublabel": "respuesta",
+      "stage": 4,
+      "row": 0,
+      "width": 138
+    }
+  ],
+  "flows": [
+    {
+      "from": "perfil",
+      "to": "hard",
+      "label": "preferencias",
+      "route": "straight",
+      "variant": "emphasis"
+    },
+    {
+      "from": "hard",
+      "to": "dist",
+      "label": "candidatos",
+      "route": "vertical-channel",
+      "variant": "default"
+    },
+    {
+      "from": "gps",
+      "to": "dist",
+      "label": "coordenadas",
+      "route": "straight",
+      "variant": "default"
+    },
+    {
+      "from": "catalogo",
+      "to": "dist",
+      "label": "ámbito geográfico",
+      "route": "auto",
+      "variant": "default",
+      "fromSide": "right",
+      "toSide": "right",
+      "via": [
+        [
+          400,
+          385
+        ],
+        [
+          400,
+          271
+        ]
+      ],
+      "labelAt": [
+        400,
+        314
+      ]
+    },
+    {
+      "from": "dist",
+      "to": "sim",
+      "label": "distancias",
+      "route": "vertical-channel",
+      "variant": "default"
+    },
+    {
+      "from": "sim",
+      "to": "cost",
+      "label": "sim(c,p)",
+      "route": "straight",
+      "variant": "emphasis",
+      "labelAt": [
+        575,
+        220
+      ]
+    },
+    {
+      "from": "cost",
+      "to": "norm",
+      "label": "costo(c)",
+      "route": "vertical-channel",
+      "variant": "default",
+      "labelAt": [
+        660,
+        205
+      ]
+    },
+    {
+      "from": "norm",
+      "to": "rank",
+      "label": "norm · w",
+      "route": "straight",
+      "variant": "default",
+      "labelAt": [
+        780,
+        205
+      ]
+    },
+    {
+      "from": "rank",
+      "to": "lista",
+      "label": "Top N",
+      "route": "auto",
+      "variant": "emphasis",
+      "via": [
+        [
+          814,
+          271
+        ],
+        [
+          814,
+          214
+        ],
+        [
+          891,
+          214
+        ],
+        [
+          891,
+          157
+        ]
+      ]
+    }
+  ]
+}

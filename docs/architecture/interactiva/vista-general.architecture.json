@@ -1,0 +1,318 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Vista general — Sistema Turístico La Paz",
+    "output": "vista-general.architecture.html",
+    "quality_profile": "showcase",
+    "visual_preset": "signal-flow",
+    "animation": "trace",
+    "views": [
+      {
+        "id": "ruta-principal",
+        "label": "Ruta principal del turista",
+        "focus": [
+          "usuario",
+          "proxy",
+          "frontend",
+          "backend",
+          "db"
+        ],
+        "note": "Sigue la petición del turista desde el navegador hasta la base de datos."
+      },
+      {
+        "id": "ruta-recomendacion",
+        "label": "Motor de recomendación",
+        "focus": [
+          "backend",
+          "reco",
+          "db"
+        ],
+        "note": "Aísla el pipeline de ranking junto a su persistencia geoespacial y vectorial."
+      },
+      {
+        "id": "identidad-y-seguridad",
+        "label": "Identidad y seguridad",
+        "focus": [
+          "usuario",
+          "proxy",
+          "auth",
+          "backend"
+        ],
+        "note": "La autenticación JWT / RBAC acompaña a la API sin añadir ruido al flujo principal."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "usuario",
+      "type": "external",
+      "label": "Usuarios / Turistas",
+      "sublabel": "Desktop · Tablet · Móvil",
+      "pos": [
+        30,
+        300
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "cloud",
+      "label": "Nginx",
+      "sublabel": "Reverse proxy · :80",
+      "pos": [
+        250,
+        300
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "frontend",
+      "type": "frontend",
+      "label": "Frontend Web",
+      "sublabel": "React + Vite + Tailwind",
+      "pos": [
+        470,
+        300
+      ],
+      "size": [
+        130,
+        60
+      ],
+      "tag": "SPA estática"
+    },
+    {
+      "id": "mapa",
+      "type": "frontend",
+      "label": "Mapa 3D",
+      "sublabel": "Three.js / react-three",
+      "pos": [
+        250,
+        470
+      ],
+      "size": [
+        130,
+        64
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Auth",
+      "sublabel": "JWT / RBAC",
+      "pos": [
+        470,
+        140
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "tag": "tokens firmados"
+    },
+    {
+      "id": "backend",
+      "type": "backend",
+      "label": "Backend API",
+      "sublabel": "Django + DRF · Gunicorn",
+      "pos": [
+        680,
+        300
+      ],
+      "size": [
+        130,
+        60
+      ]
+    },
+    {
+      "id": "reco",
+      "type": "backend",
+      "label": "Motor de Recomendación",
+      "sublabel": "Filtros + ranking",
+      "pos": [
+        680,
+        470
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL 17",
+      "sublabel": "PostGIS + pgvector",
+      "pos": [
+        890,
+        300
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "vol",
+      "type": "cloud",
+      "label": "Volumen",
+      "sublabel": "postgres_data",
+      "pos": [
+        890,
+        470
+      ],
+      "size": [
+        150,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Stack Docker (docker-compose)",
+      "wraps": [
+        "proxy",
+        "frontend",
+        "mapa",
+        "backend",
+        "auth",
+        "reco",
+        "db",
+        "vol"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "Límite de confianza · red interna",
+      "wraps": [
+        "proxy",
+        "backend",
+        "db"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "usuario-proxy",
+      "from": "usuario",
+      "to": "proxy",
+      "label": "HTTPS (Internet)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "proxy-frontend",
+      "from": "proxy",
+      "to": "frontend",
+      "label": "/ → SPA",
+      "variant": "default",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "proxy-api",
+      "from": "proxy",
+      "to": "backend",
+      "label": "REST + JSON + JWT",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "bottom",
+      "via": [
+        [
+          315,
+          415
+        ],
+        [
+          745,
+          415
+        ]
+      ],
+      "labelAt": [
+        520,
+        415
+      ]
+    },
+    {
+      "id": "auth-validacion",
+      "from": "auth",
+      "to": "backend",
+      "label": "emitir / validar JWT",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "top",
+      "via": [
+        [
+          535,
+          96
+        ],
+        [
+          745,
+          96
+        ]
+      ],
+      "labelAt": [
+        650,
+        122
+      ]
+    },
+    {
+      "id": "backend-reco",
+      "from": "backend",
+      "to": "reco",
+      "label": "solicitar ranking",
+      "variant": "default",
+      "fromSide": "right",
+      "toSide": "top",
+      "labelAt": [
+        805,
+        430
+      ],
+      "via": [
+        [
+          855,
+          330
+        ],
+        [
+          855,
+          430
+        ],
+        [
+          755,
+          430
+        ]
+      ]
+    },
+    {
+      "id": "backend-db",
+      "from": "backend",
+      "to": "db",
+      "label": "Django ORM (GeoDjango)",
+      "variant": "default",
+      "fromSide": "right",
+      "toSide": "left",
+      "labelAt": [
+        855,
+        285
+      ]
+    },
+    {
+      "id": "db-vol",
+      "from": "db",
+      "to": "vol",
+      "label": "WAL / datos",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        965,
+        420
+      ]
+    }
+  ]
+}

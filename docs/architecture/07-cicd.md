@@ -1,5 +1,7 @@
 # Flujo de Integración Continua y Despliegue
 
+Para una versión interactiva, abre [el diagrama HTML](./interactiva/flujo-ci-cd.workflow.html) en el navegador.
+
 Diagrama del flujo completo de CI/CD: desde el commit hasta la publicación y despliegue.
 
 ```mermaid

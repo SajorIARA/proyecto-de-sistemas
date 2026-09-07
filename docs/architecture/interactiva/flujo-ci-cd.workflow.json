@@ -1,0 +1,259 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "CI/CD — del commit al despliegue",
+    "output": "flujo-ci-cd.workflow.html",
+    "quality_profile": "showcase",
+    "visual_preset": "signal-flow",
+    "animation": "trace",
+    "views": [
+      {
+        "id": "ruta-feliz",
+        "label": "De la rama a staging",
+        "focus": [
+          "feature",
+          "dev",
+          "checks",
+          "build",
+          "tag",
+          "images",
+          "staging"
+        ],
+        "note": "El camino típico de integración hasta el entorno de staging."
+      },
+      {
+        "id": "seguridad",
+        "label": "Puertas de seguridad",
+        "focus": [
+          "dev",
+          "checks",
+          "scan",
+          "tag"
+        ],
+        "note": "Checks, escaneo y reglas de release protegen cada promoción."
+      },
+      {
+        "id": "promocion-prod",
+        "label": "Promoción a producción",
+        "focus": [
+          "tag",
+          "images",
+          "production"
+        ],
+        "note": "El release con semver llega a Docker Hub y despliega a producción."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "git",
+      "label": "Repositorio"
+    },
+    {
+      "id": "ci",
+      "label": "GitHub Actions"
+    },
+    {
+      "id": "security",
+      "label": "Seguridad"
+    },
+    {
+      "id": "release",
+      "label": "Release"
+    },
+    {
+      "id": "registry",
+      "label": "Docker Hub"
+    },
+    {
+      "id": "deploy",
+      "label": "Railway"
+    }
+  ],
+  "phases": [
+    {
+      "id": "desarrollo",
+      "label": "Desarrollo",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "ci-phase",
+      "label": "CI / Pull Request",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "release-phase",
+      "label": "Release + Despliegue",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "groups": [
+    {
+      "id": "proteccion",
+      "label": "Protección de ramas + rulesets",
+      "lane": "ci",
+      "fromCol": 2,
+      "toCol": 4,
+      "variant": "security"
+    }
+  ],
+  "mainPath": [
+    "feature",
+    "dev",
+    "checks",
+    "build",
+    "tag",
+    "images",
+    "staging"
+  ],
+  "nodes": [
+    {
+      "id": "feature",
+      "lane": "git",
+      "col": 0,
+      "type": "external",
+      "label": "feature/*",
+      "sublabel": "rama de trabajo",
+      "width": 132
+    },
+    {
+      "id": "dev",
+      "lane": "git",
+      "col": 1,
+      "type": "cloud",
+      "label": "dev",
+      "sublabel": "integración",
+      "tag": "protegida",
+      "width": 132
+    },
+    {
+      "id": "checks",
+      "lane": "ci",
+      "col": 2,
+      "type": "frontend",
+      "label": "Checks obligatorios",
+      "sublabel": "backend + frontend + docker",
+      "tag": "requeridos para PR",
+      "width": 132
+    },
+    {
+      "id": "scan",
+      "lane": "security",
+      "col": 2,
+      "type": "security",
+      "label": "Security scan",
+      "sublabel": "CodeQL · Gitleaks · Trivy",
+      "tag": "automático",
+      "width": 132
+    },
+    {
+      "id": "build",
+      "lane": "ci",
+      "col": 3,
+      "type": "backend",
+      "label": "Build imágenes",
+      "sublabel": "backend · frontend · proxy · db",
+      "width": 132
+    },
+    {
+      "id": "tag",
+      "lane": "release",
+      "col": 4,
+      "type": "security",
+      "label": "Tag v*.*.*",
+      "sublabel": "publicación semver",
+      "tag": "dispara release",
+      "width": 132
+    },
+    {
+      "id": "images",
+      "lane": "registry",
+      "col": 4,
+      "type": "cloud",
+      "label": "Docker Hub",
+      "sublabel": "1.2.3 · 1.2 · 1 · latest · SHA",
+      "width": 132
+    },
+    {
+      "id": "staging",
+      "lane": "deploy",
+      "col": 5,
+      "type": "frontend",
+      "label": "staging (dev)",
+      "sublabel": "entorno controlado",
+      "width": 132
+    },
+    {
+      "id": "production",
+      "lane": "deploy",
+      "col": 4,
+      "type": "backend",
+      "label": "production (main)",
+      "sublabel": "despliegue final",
+      "width": 132
+    }
+  ],
+  "edges": [
+    {
+      "id": "pr",
+      "from": "feature",
+      "to": "dev",
+      "label": "PR + checks",
+      "variant": "emphasis"
+    },
+    {
+      "id": "push-dev",
+      "from": "dev",
+      "to": "checks",
+      "label": "push / merge",
+      "variant": "default"
+    },
+    {
+      "id": "scan-continuo",
+      "from": "dev",
+      "to": "scan",
+      "variant": "security"
+    },
+    {
+      "id": "checks-build",
+      "from": "checks",
+      "to": "build",
+      "label": "✓ validado",
+      "variant": "default"
+    },
+    {
+      "id": "build-tag",
+      "from": "build",
+      "to": "tag",
+      "label": "publicar release",
+      "variant": "default"
+    },
+    {
+      "id": "tag-images",
+      "from": "tag",
+      "to": "images",
+      "label": "push semver",
+      "variant": "emphasis"
+    },
+    {
+      "id": "images-staging",
+      "from": "images",
+      "to": "staging",
+      "label": "deploy (dev)",
+      "variant": "default"
+    },
+    {
+      "id": "images-production",
+      "from": "images",
+      "to": "production",
+      "label": "deploy (main)",
+      "variant": "emphasis"
+    }
+  ]
+}

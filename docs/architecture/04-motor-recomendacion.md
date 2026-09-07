@@ -1,5 +1,7 @@
 # Motor de Recomendación
 
+Para una versión interactiva, abre [el diagrama HTML](./interactiva/motor-recomendacion.dataflow.html) en el navegador.
+
 Pipeline del motor de recomendación: desde las preferencias del usuario hasta el ranking final de destinos.
 
 ```mermaid
