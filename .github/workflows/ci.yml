@@ -107,7 +107,7 @@ jobs:
         run: |
           curl --fail --silent --show-error --output /dev/null --retry 15 --retry-all-errors --retry-delay 3 http://localhost/
           status=$(curl --silent --output /dev/null --write-out '%{http_code}' --retry 15 --retry-all-errors --retry-delay 3 http://localhost/api/)
-          test "$status" -ge 200 -a "$status" -lt 500
+          test "$status" -eq 200
       - if: always()
         run: docker compose logs --no-color
       - if: always()
