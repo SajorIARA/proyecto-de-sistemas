@@ -18,20 +18,24 @@ jobs:
     name: Backend checks
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    services:
-      postgres:
-        image: postgis/postgis:17-3.5
-        env:
-          POSTGRES_DB: turismo_melgarejo
-          POSTGRES_USER: ci_user
-          POSTGRES_PASSWORD: ci_password
-          DJANGO_DEBUG: 0
-        ports: ["5432:5432"]
-        options: >-
-          --health-cmd "pg_isready -U ci_user -d turismo_melgarejo"
-          --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+      - name: Build and start test database (PostGIS + pgvector)
+        run: |
+          docker build -t turismo-test-db ./database
+          docker run -d --name turismo-test-db \
+            -e POSTGRES_DB=turismo_melgarejo \
+            -e POSTGRES_USER=ci_user \
+            -e POSTGRES_PASSWORD=ci_password \
+            -p 5432:5432 turismo-test-db
+          for _ in $(seq 1 30); do
+            if docker exec turismo-test-db pg_isready \
+              -U ci_user -d turismo_melgarejo >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
       - name: Install Geo/Django system libraries
         run: sudo apt-get update && sudo apt-get install -y binutils libproj-dev gdal-bin
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
@@ -57,12 +61,14 @@ jobs:
           POSTGRES_PORT: 5432
         run: |
           python manage.py check
-          python manage.py test config
+          python manage.py test
       - name: Migration consistency
         working-directory: backend
         env:
           DJANGO_SECRET_KEY: ci-dummy-secret
         run: python manage.py makemigrations --check --dry-run
+      - if: always()
+        run: docker rm -f turismo-test-db
 
   frontend:
     name: Frontend checks
