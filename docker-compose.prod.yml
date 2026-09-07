@@ -3,6 +3,11 @@ services:
     image: raisiar/proyecto-de-sistemas-db:${IMAGE_TAG}
     container_name: turismo-melgarejo_db
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -21,6 +26,11 @@ services:
     image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG}
     container_name: turismo-melgarejo_backend
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     command: sh -c "python manage.py migrate --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers ${GUNICORN_WORKERS:-2} --threads ${GUNICORN_THREADS:-2} --timeout ${GUNICORN_TIMEOUT:-60} --access-logfile - --error-logfile - --capture-output"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
@@ -51,6 +61,11 @@ services:
     image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG}
     container_name: turismo-melgarejo_frontend
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       FRONTEND_PORT: 80
     networks:
@@ -66,6 +81,11 @@ services:
     image: raisiar/proyecto-de-sistemas-proxy:${IMAGE_TAG}
     container_name: turismo-melgarejo_proxy
     restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "80:80"
     environment:
