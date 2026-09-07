@@ -20,6 +20,13 @@ http {
     proxy_send_timeout 60;
     proxy_read_timeout 60;
 
+    # Tamaño máximo del cuerpo de las peticiones (subidas de documentos/imágenes)
+    client_max_body_size 10m;
+
+    # Rate limiting por dirección IP (protección básica ante abuso)
+    limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
+    limit_req_zone $binary_remote_addr zone=web_limit:10m rate=30r/s;
+
     # Compresión
     gzip on;
     gzip_comp_level 5;
@@ -53,6 +60,7 @@ http {
 
         # API -> backend
         location /api/ {
+            limit_req zone=api_limit burst=20 nodelay;
             proxy_pass http://backend_svc;
             proxy_http_version 1.1;
             proxy_set_header Host $host;
