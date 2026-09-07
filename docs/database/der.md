@@ -248,19 +248,3 @@ vector_cosine_ops
 ```
 
 y un índice vectorial HNSW.
-
----
-
-## 8. Decisiones pendientes de aprobación
-
-- [ ] Aprobar entidades y relaciones.
-- [ ] Aprobar cardinalidades.
-- [ ] Aprobar llaves primarias y foráneas.
-- [ ] Aprobar índices convencionales.
-- [ ] Aprobar uso de `GEOMETRY(Point, 4326)`.
-- [ ] Confirmar necesidad de `GEOMETRY(Polygon, 4326)`.
-- [ ] Confirmar modelo de embeddings.
-- [ ] Confirmar dimensión del vector.
-- [ ] Aprobar índice HNSW para búsqueda vectorial.
-- [ ] Aprobar estructura de horarios y vigencias.
-- [ ] Aprobar tipos iniciales de tarifas.
