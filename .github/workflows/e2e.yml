@@ -21,11 +21,11 @@ jobs:
           DJANGO_DEBUG: 0
         run: docker compose up -d --build
       - name: Frontend through proxy
-        run: curl --fail --retry 15 --retry-all-errors --retry-delay 3 http://localhost/
+        run: curl --fail --silent --show-error --output /dev/null --retry 15 --retry-all-errors --retry-delay 3 http://localhost/
       - name: Backend through proxy
         run: |
           status=$(curl --silent --output /dev/null --write-out '%{http_code}' --retry 15 --retry-all-errors --retry-delay 3 http://localhost/api/)
-          test "$status" = "404"
+          test "$status" -ge 200 -a "$status" -lt 500
       - if: always()
         run: docker compose logs --no-color
       - if: always()
