@@ -24,7 +24,7 @@ jobs:
       - run: pip-audit -r backend/requirements.txt
       - uses: pnpm/action-setup@v4
         with:
-          version: 9.15.5
+          version: 10.34.5
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -55,10 +55,12 @@ jobs:
         image: [backend, frontend, proxy]
     steps:
       - uses: actions/checkout@v4
-      - run: docker compose build --pull --no-cache
+      - run: |
+          docker pull raisiar/proyecto-de-sistemas-${{ matrix.image }}:1.0.4
       - uses: aquasecurity/trivy-action@master
         with:
-          image-ref: turismo-melgarejo-${{ matrix.image }}:ci
+          image-ref: raisiar/proyecto-de-sistemas-${{ matrix.image }}:1.0.4
+          vuln-type: os
           format: table
           severity: CRITICAL,HIGH
           ignore-unfixed: true
