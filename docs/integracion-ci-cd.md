@@ -56,11 +56,12 @@ Gitleaks (incluido en `security.yml`) hace un escaneo adicional en CI.
 
 ## 4. Repositorios en Docker Hub
 
-Ya existen los tres repositorios públicos:
+Ya existen los cuatro repositorios públicos:
 
 - `raisiar/proyecto-de-sistemas-backend`
 - `raisiar/proyecto-de-sistemas-frontend`
 - `raisiar/proyecto-de-sistemas-proxy`
+- `raisiar/proyecto-de-sistemas-db`
 
 ### Crear un Docker Hub Access Token
 

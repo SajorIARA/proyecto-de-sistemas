@@ -32,7 +32,7 @@ flowchart TB
 
     subgraph CI["CI/CD GitHub Actions"]
         ci["Checks + Tests + Build"]
-        dockerhub["Docker Hub<br/>imágenes backend / frontend / proxy"]
+        dockerhub["Docker Hub<br/>imágenes backend / frontend / proxy / db"]
         push["Push automático de imágenes"]
     end
 

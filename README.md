@@ -78,7 +78,7 @@ docker compose run --rm frontend pnpm test
 
 ## Base de datos
 
-- PostgreSQL + PostGIS + pgvector (imagen `postgis/postgis:17-3.5`).
+- PostgreSQL + PostGIS + pgvector (imagen custom `database/Dockerfile` sobre `postgres:17-bookworm`).
 - Datos persistentes en el volumen `postgres_data`.
 - El schema se aplica automáticamente en el primer arranque (carpeta `database/init`).
 - Respaldos:
