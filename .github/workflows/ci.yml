@@ -42,6 +42,7 @@ jobs:
           POSTGRES_USER: ci_user
           POSTGRES_PASSWORD: ci_password
           DJANGO_DEBUG: 0
+          DJANGO_SECRET_KEY: ci-dummy-secret
           POSTGRES_HOST: 127.0.0.1
           POSTGRES_PORT: 5432
         run: |
@@ -49,6 +50,8 @@ jobs:
           python manage.py test config
       - name: Migration consistency
         working-directory: backend
+        env:
+          DJANGO_SECRET_KEY: ci-dummy-secret
         run: python manage.py makemigrations --check --dry-run
 
   frontend:
