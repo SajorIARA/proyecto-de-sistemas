@@ -11,6 +11,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - datos-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   backend:
     image: turismo-melgarejo-backend:ci
@@ -30,10 +35,16 @@ services:
       POSTGRES_PORT: 5432
       DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - app-network
       - datos-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8000), 2).close()"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   frontend:
     image: turismo-melgarejo-frontend:ci
@@ -49,6 +60,11 @@ services:
     networks:
       - app-network
       - turismo-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('net').connect(3000, '127.0.0.1').on('connect', () => process.exit(0)).on('error', () => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   proxy:
     image: turismo-melgarejo-proxy:ci
@@ -60,8 +76,10 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - frontend
-      - backend
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
     networks:
       - turismo-network
       - app-network

@@ -81,7 +81,7 @@ jobs:
           POSTGRES_PASSWORD: ci_password
         run: docker compose config --quiet
       - name: Build images
-        run: docker compose build --pull
+        run: docker compose build --pull --no-cache
 
   smoke:
     name: Container smoke tests
@@ -95,7 +95,9 @@ jobs:
           POSTGRES_USER: ci_user
           POSTGRES_PASSWORD: ci_password
           DJANGO_DEBUG: 0
-        run: docker compose up -d --build
+        run: |
+          docker compose build --pull --no-cache
+          docker compose up -d --wait
       - name: Verify proxy routes
         run: |
           curl --fail --silent --show-error --output /dev/null --retry 15 --retry-all-errors --retry-delay 3 http://localhost/

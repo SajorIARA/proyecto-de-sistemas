@@ -55,7 +55,7 @@ jobs:
         image: [backend, frontend, proxy]
     steps:
       - uses: actions/checkout@v4
-      - run: docker compose build
+      - run: docker compose build --pull --no-cache
       - uses: aquasecurity/trivy-action@master
         with:
           image-ref: turismo-melgarejo-${{ matrix.image }}:ci
