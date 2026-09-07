@@ -52,14 +52,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: [backend, frontend, proxy]
+        include:
+          - name: backend
+            dockerfile: backend/Dockerfile
+            context: ./backend
+          - name: frontend
+            dockerfile: frontend/Dockerfile
+            context: ./frontend
+          - name: proxy
+            dockerfile: proxy/Dockerfile
+            context: ./proxy
+          - name: db
+            dockerfile: database/Dockerfile
+            context: ./database
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          docker pull raisiar/proyecto-de-sistemas-${{ matrix.image }}:1.0.4
+      - name: Build image
+        run: docker build -f ${{ matrix.dockerfile }} -t scan-${{ matrix.name }} ${{ matrix.context }}
       - uses: aquasecurity/trivy-action@master
         with:
-          image-ref: raisiar/proyecto-de-sistemas-${{ matrix.image }}:1.0.4
+          image-ref: scan-${{ matrix.name }}
           vuln-type: os
           format: table
           severity: CRITICAL,HIGH
