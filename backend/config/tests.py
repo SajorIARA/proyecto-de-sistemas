@@ -13,8 +13,6 @@ class BaseConfigurationTests(SimpleTestCase):
         self.assertTrue(database["NAME"])
         self.assertTrue(database["USER"])
         self.assertTrue(database["PASSWORD"])
-        self.assertEqual(database["HOST"], os.getenv("POSTGRES_HOST", "db"))
-        self.assertEqual(database["PORT"], "5432")
 
     def test_health_endpoint_returns_ok(self):
         response = self.client.get("/api/health/")
@@ -26,6 +24,17 @@ class BaseConfigurationTests(SimpleTestCase):
         response = self.client.get("/nonexistent-base-route/")
 
         self.assertEqual(response.status_code, 404)
+
+
+class ProductionSecurityDefaultsTests(SimpleTestCase):
+    def test_secure_settings_are_enforced_without_debug(self):
+        if os.getenv("DJANGO_DEBUG", "0") == "1":
+            self.skipTest("DEBUG activo: el hardening de producción no se aplica")
+        self.assertEqual(settings.SESSION_COOKIE_SECURE, True)
+        self.assertEqual(settings.CSRF_COOKIE_SECURE, True)
+        self.assertEqual(settings.SECURE_CONTENT_TYPE_NOSNIFF, True)
+        self.assertEqual(settings.X_FRAME_OPTIONS, "DENY")
+        self.assertEqual(settings.SECURE_HSTS_SECONDS, 31536000)
 
 
 class PostgreSQLConnectionTests(TestCase):

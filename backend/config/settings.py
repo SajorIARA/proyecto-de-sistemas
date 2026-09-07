@@ -69,7 +69,7 @@ DATABASES = {
     }
 }
 
-LANGUAGE_CODE = "es-es"
+LANGUAGE_CODE = "es-bo"
 TIME_ZONE = os.getenv("DJANGO_TIME_ZONE", "America/La_Paz")
 USE_I18N = True
 USE_TZ = True
