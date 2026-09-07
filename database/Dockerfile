@@ -10,3 +10,5 @@ RUN apt-get update \
         postgresql-17-postgis-3 \
         postgresql-17-pgvector \
     && rm -rf /var/lib/apt/lists/*
+
+COPY init/ /docker-entrypoint-initdb.d/
