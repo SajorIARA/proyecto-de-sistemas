@@ -44,9 +44,35 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libproj25 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar solo las dependencias instaladas (no sources de build)
+# Copiar solo las dependencias instaladas (no sources de build).
+# El runtime no necesita pip/setuptools/wheel: se purgan para eliminar
+# CVEs heredados (setuptools<78.1.1, wheel<0.46.2, jaraco.context<6.1.0).
+RUN rm -rf \
+    /usr/local/lib/python3.11/site-packages/pip \
+    /usr/local/lib/python3.11/site-packages/pip-*.dist-info \
+    /usr/local/lib/python3.11/site-packages/setuptools \
+    /usr/local/lib/python3.11/site-packages/setuptools-*.dist-info \
+    /usr/local/lib/python3.11/site-packages/wheel \
+    /usr/local/lib/python3.11/site-packages/wheel-*.dist-info \
+    /usr/local/lib/python3.11/site-packages/pkg_resources \
+    /usr/local/bin/pip \
+    /usr/local/bin/pip3 \
+    /usr/local/bin/pip3.11 \
+    /usr/local/bin/setuptools-*
 COPY --from=deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=deps /usr/local/bin /usr/local/bin
+RUN rm -rf \
+    /usr/local/lib/python3.11/site-packages/pip \
+    /usr/local/lib/python3.11/site-packages/pip-*.dist-info \
+    /usr/local/lib/python3.11/site-packages/setuptools \
+    /usr/local/lib/python3.11/site-packages/setuptools-*.dist-info \
+    /usr/local/lib/python3.11/site-packages/wheel \
+    /usr/local/lib/python3.11/site-packages/wheel-*.dist-info \
+    /usr/local/lib/python3.11/site-packages/pkg_resources \
+    /usr/local/bin/pip \
+    /usr/local/bin/pip3 \
+    /usr/local/bin/pip3.11 \
+    /usr/local/bin/setuptools-*
 
 COPY . .
 
