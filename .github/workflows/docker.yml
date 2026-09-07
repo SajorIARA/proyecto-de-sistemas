@@ -23,4 +23,4 @@ jobs:
       - name: Build all images
         run: docker compose build --pull
       - name: Validate Nginx image configuration
-        run: docker run --rm --add-host frontend:127.0.0.1 --add-host backend:127.0.0.1 proyectodesistemas3-proxy nginx -t
+        run: docker run --rm --add-host frontend:127.0.0.1 --add-host backend:127.0.0.1 turismo-melgarejo-proxy:ci nginx -t

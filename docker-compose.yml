@@ -13,6 +13,7 @@ services:
       - datos-network
 
   backend:
+    image: turismo-melgarejo-backend:ci
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -35,6 +36,7 @@ services:
       - datos-network
 
   frontend:
+    image: turismo-melgarejo-frontend:ci
     build:
       context: ./frontend
       dockerfile: Dockerfile
@@ -49,6 +51,7 @@ services:
       - turismo-network
 
   proxy:
+    image: turismo-melgarejo-proxy:ci
     build:
       context: ./proxy
       dockerfile: Dockerfile
