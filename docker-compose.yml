@@ -11,8 +11,14 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - datos-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   backend:
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.4}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -27,27 +33,41 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - app-network
       - datos-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8000), 2).close()"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   frontend:
+    image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG:-1.0.4}
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: turismo-melgarejo_frontend
     restart: always
-    command: pnpm run dev --host 0.0.0.0 --port 3000
+    command: ./node_modules/.bin/vite --host 0.0.0.0 --port 3000
     volumes:
       - ./frontend:/app
       - frontend_node_modules:/app/node_modules
     networks:
       - app-network
       - turismo-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('net').connect(3000, '127.0.0.1').on('connect', () => process.exit(0)).on('error', () => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   proxy:
+    image: raisiar/proyecto-de-sistemas-proxy:${IMAGE_TAG:-1.0.4}
     build:
       context: ./proxy
       dockerfile: Dockerfile
@@ -56,8 +76,10 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - frontend
-      - backend
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
     networks:
       - turismo-network
       - app-network
