@@ -1,4 +1,9 @@
-FROM python:3.11-slim
+# syntax=docker/dockerfile:1
+
+# ============================================================
+# STAGE 1: dependencies
+# ============================================================
+FROM python:3.11-slim AS deps
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -6,16 +11,76 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    netcat-openbsd \
     gcc \
-    postgresql-client \
     libpq-dev \
+    gdal-bin \
+    libgdal-dev \
+    libgeos-dev \
+    libproj-dev \
+    proj-bin \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN rm -rf /usr/local/lib/python3.11/site-packages/setuptools-*.dist-info \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# ============================================================
+# STAGE 2: runtime (producción)
+# ============================================================
+FROM python:3.11-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PORT=8000
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    gdal-bin \
+    libgdal36 \
+    libgeos-c1t64 \
+    libproj25 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar solo las dependencias instaladas (no sources de build).
+# El runtime no necesita pip/setuptools/wheel: se purgan para eliminar
+# CVEs heredados (setuptools<78.1.1, wheel<0.46.2, jaraco.context<6.1.0).
+RUN rm -rf \
+    /usr/local/lib/python3.11/site-packages/pip \
+    /usr/local/lib/python3.11/site-packages/pip-*.dist-info \
+    /usr/local/lib/python3.11/site-packages/setuptools \
+    /usr/local/lib/python3.11/site-packages/setuptools-*.dist-info \
+    /usr/local/lib/python3.11/site-packages/wheel \
+    /usr/local/lib/python3.11/site-packages/wheel-*.dist-info \
+    /usr/local/lib/python3.11/site-packages/pkg_resources \
+    /usr/local/bin/pip \
+    /usr/local/bin/pip3 \
+    /usr/local/bin/pip3.11 \
+    /usr/local/bin/setuptools-*
+COPY --from=deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=deps /usr/local/bin /usr/local/bin
+RUN rm -rf \
+    /usr/local/lib/python3.11/site-packages/pip \
+    /usr/local/lib/python3.11/site-packages/pip-*.dist-info \
+    /usr/local/lib/python3.11/site-packages/setuptools \
+    /usr/local/lib/python3.11/site-packages/setuptools-*.dist-info \
+    /usr/local/lib/python3.11/site-packages/wheel \
+    /usr/local/lib/python3.11/site-packages/wheel-*.dist-info \
+    /usr/local/lib/python3.11/site-packages/pkg_resources \
+    /usr/local/bin/pip \
+    /usr/local/bin/pip3 \
+    /usr/local/bin/pip3.11 \
+    /usr/local/bin/setuptools-*
 
 COPY . .
 
-# Mantiene el contenedor vivo para poder ejecutar comandos interactivos
-CMD ["tail", "-f", "/dev/null"]
+RUN useradd --create-home --system appuser \
+    && mkdir -p /app/staticfiles /app/logs \
+    && chown -R appuser:appuser /app
+
+USER appuser
+
+# Gunicorn (WSGI) con timeouts y workers
+CMD ["sh", "-c", "python manage.py collectstatic --noinput 2>/dev/null; gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers ${GUNICORN_WORKERS:-2} --threads ${GUNICORN_THREADS:-2} --timeout ${GUNICORN_TIMEOUT:-60} --access-logfile - --error-logfile - --capture-output"]

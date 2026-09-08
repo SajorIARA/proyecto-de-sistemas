@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Petición de recomendaciones — secuencia",
+    "output": "peticion-recomendaciones.sequence.html",
+    "quality_profile": "showcase",
+    "visual_preset": "signal-flow",
+    "animation": "trace",
+    "views": [
+      {
+        "id": "solicitud",
+        "label": "Solicitud a través del proxy",
+        "focus": [
+          "usuario",
+          "spa",
+          "proxy",
+          "api"
+        ],
+        "note": "El proxy enruta /api/ hacia el backend sin exponer puertos internos."
+      },
+      {
+        "id": "calculo",
+        "label": "Cálculo del ranking",
+        "focus": [
+          "api",
+          "reco",
+          "db"
+        ],
+        "note": "El motor consulta PostGIS y pgvector y devuelve el orden final."
+      },
+      {
+        "id": "respuesta",
+        "label": "Respuesta al turista",
+        "focus": [
+          "api",
+          "proxy",
+          "spa",
+          "usuario"
+        ],
+        "note": "La lista top N se pinta en el mapa 3D del frontend."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "usuario",
+      "type": "external",
+      "label": "Turista",
+      "sublabel": "navegador"
+    },
+    {
+      "id": "spa",
+      "type": "frontend",
+      "label": "SPA React",
+      "sublabel": "Vite + Tailwind"
+    },
+    {
+      "id": "proxy",
+      "type": "cloud",
+      "label": "Nginx",
+      "sublabel": "reverse proxy"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "API Django",
+      "sublabel": "DRF + JWT"
+    },
+    {
+      "id": "reco",
+      "type": "backend",
+      "label": "Recomendador",
+      "sublabel": "ranking"
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "PostGIS + pgvector"
+    }
+  ],
+  "segments": [
+    {
+      "from": 130,
+      "to": 330,
+      "label": "Solicitud"
+    },
+    {
+      "from": 350,
+      "to": 480,
+      "label": "Cálculo y datos"
+    },
+    {
+      "from": 500,
+      "to": 640,
+      "label": "Respuesta"
+    }
+  ],
+  "messages": [
+    {
+      "from": "usuario",
+      "to": "spa",
+      "y": 160,
+      "label": "pide recomendaciones",
+      "variant": "default"
+    },
+    {
+      "from": "spa",
+      "to": "proxy",
+      "y": 210,
+      "label": "GET /api/recommendations",
+      "variant": "emphasis"
+    },
+    {
+      "from": "proxy",
+      "to": "api",
+      "y": 260,
+      "label": "reenvía /api/",
+      "variant": "emphasis"
+    },
+    {
+      "from": "api",
+      "to": "reco",
+      "y": 310,
+      "label": "calcula ranking",
+      "variant": "emphasis"
+    },
+    {
+      "from": "reco",
+      "to": "db",
+      "y": 380,
+      "label": "consulta PostGIS + pgvector",
+      "variant": "default"
+    },
+    {
+      "from": "db",
+      "to": "reco",
+      "y": 430,
+      "label": "candidatos + distancias",
+      "variant": "return"
+    },
+    {
+      "from": "reco",
+      "to": "api",
+      "y": 475,
+      "label": "resultado ordenado",
+      "variant": "return"
+    },
+    {
+      "from": "api",
+      "to": "proxy",
+      "y": 530,
+      "label": "200 OK JSON",
+      "variant": "return"
+    },
+    {
+      "from": "proxy",
+      "to": "spa",
+      "y": 580,
+      "label": "200 OK JSON",
+      "variant": "return"
+    },
+    {
+      "from": "spa",
+      "to": "usuario",
+      "y": 630,
+      "label": "muestra el top N",
+      "variant": "return"
+    }
+  ]
+}
