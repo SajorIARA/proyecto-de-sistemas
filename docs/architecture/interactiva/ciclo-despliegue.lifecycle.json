@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Ciclo de despliegue — de commit a producción",
+    "output": "ciclo-despliegue.lifecycle.html",
+    "quality_profile": "showcase",
+    "visual_preset": "signal-flow",
+    "animation": "trace",
+    "viewBox": [
+      980,
+      680
+    ],
+    "views": [
+      {
+        "id": "promocion",
+        "label": "Ferrocarril de promoción",
+        "focus": [
+          "commit",
+          "ci",
+          "staging",
+          "salud",
+          "prod"
+        ],
+        "note": "Un cambio avanza por las etapas hasta producción."
+      },
+      {
+        "id": "puertas",
+        "label": "Puertas de seguridad",
+        "focus": [
+          "staging",
+          "apro",
+          "cancelled"
+        ],
+        "note": "La revisión del PR puede detener la promoción limpiamente."
+      },
+      {
+        "id": "recuperacion",
+        "label": "Rollback",
+        "focus": [
+          "prod",
+          "rollback",
+          "paused",
+          "rolled_back",
+          "failed"
+        ],
+        "note": "Una regresión vuelve a la última imagen buena."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "Release phases"
+    },
+    {
+      "id": "waiting",
+      "label": "Auditoría + salud"
+    },
+    {
+      "id": "recovery",
+      "label": "Control de rollback"
+    },
+    {
+      "id": "terminal",
+      "label": "Salidas terminales"
+    }
+  ],
+  "states": [
+    {
+      "id": "commit",
+      "type": "start",
+      "label": "Commit / Push",
+      "sublabel": "cambios validados",
+      "lane": "main",
+      "col": 0,
+      "step": "01",
+      "tag": "inicio"
+    },
+    {
+      "id": "ci",
+      "type": "active",
+      "label": "CI / PR",
+      "sublabel": "tests · Trivy · build",
+      "lane": "main",
+      "col": 1,
+      "step": "02",
+      "tag": "automático"
+    },
+    {
+      "id": "staging",
+      "type": "decision",
+      "label": "staging (dev)",
+      "sublabel": "despliegue + healthchecks",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "gate"
+    },
+    {
+      "id": "salud",
+      "type": "waiting",
+      "label": "Salud del servicio",
+      "sublabel": "endpoints verdes",
+      "lane": "main",
+      "col": 3,
+      "step": "04",
+      "tag": "approved"
+    },
+    {
+      "id": "prod",
+      "type": "success",
+      "label": "production (main)",
+      "sublabel": "sistema en vivo",
+      "lane": "main",
+      "col": 4,
+      "step": "05",
+      "tag": "success"
+    },
+    {
+      "id": "apro",
+      "type": "waiting",
+      "label": "Revisión PR",
+      "sublabel": "rulesets + aprobación",
+      "lane": "waiting",
+      "col": 0,
+      "tag": "pause"
+    },
+    {
+      "id": "paused",
+      "type": "waiting",
+      "label": "Salud degradada",
+      "sublabel": "SLO por debajo",
+      "lane": "waiting",
+      "col": 2,
+      "tag": "observe"
+    },
+    {
+      "id": "rollback",
+      "type": "active",
+      "label": "Rollback",
+      "sublabel": "última imagen buena",
+      "lane": "recovery",
+      "col": 1,
+      "tag": "automático"
+    },
+    {
+      "id": "cancelled",
+      "type": "failure",
+      "label": "Cancelado",
+      "sublabel": "PR denegado",
+      "lane": "terminal",
+      "col": 0,
+      "tag": "terminal"
+    },
+    {
+      "id": "failed",
+      "type": "failure",
+      "label": "Fallido",
+      "sublabel": "rollback sin éxito",
+      "lane": "terminal",
+      "col": 1,
+      "tag": "terminal"
+    },
+    {
+      "id": "rolled_back",
+      "type": "success",
+      "label": "Rolled Back",
+      "sublabel": "servicio restaurado",
+      "lane": "terminal",
+      "col": 2,
+      "tag": "terminal"
+    }
+  ],
+  "transitions": [
+    {
+      "from": "staging",
+      "to": "apro",
+      "variant": "security",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "from": "apro",
+      "to": "cancelled",
+      "variant": "security",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "from": "prod",
+      "to": "rollback",
+      "variant": "security",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "via": [
+        [
+          710,
+          260
+        ],
+        [
+          556,
+          260
+        ]
+      ]
+    },
+    {
+      "from": "prod",
+      "to": "paused",
+      "variant": "dashed",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "from": "paused",
+      "to": "rolled_back",
+      "variant": "emphasis",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "from": "rollback",
+      "to": "failed",
+      "variant": "security",
+      "route": "straight",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ]
+}

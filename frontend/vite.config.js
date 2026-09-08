@@ -6,4 +6,10 @@ export default defineConfig({
 	server: {
 		allowedHosts: ["frontend", "localhost"],
 	},
+	test: {
+		environment: "jsdom",
+		globals: true,
+		setupFiles: "./src/test/setup.js",
+		css: true,
+	},
 });

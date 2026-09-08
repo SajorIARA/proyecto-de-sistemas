@@ -1,0 +1,19 @@
+name: Recommender
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ["backend/**", ".github/workflows/recommender.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm recommender scope is not implemented yet
+        run: |
+          echo "No recommender, geospatial or ranking modules exist in the base environment."
+          echo "Dedicated Haversine, similarity, Top-K and metric tests will be added with that implementation."

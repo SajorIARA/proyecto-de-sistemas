@@ -1,0 +1,26 @@
+name: Docker
+
+on:
+  push:
+    paths: ["Dockerfile", "**/Dockerfile", "docker-compose.yml", "proxy/**", "backend/**", "frontend/**"]
+  pull_request:
+    paths: ["Dockerfile", "**/Dockerfile", "docker-compose.yml", "proxy/**", "backend/**", "frontend/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compose validation
+        env:
+          POSTGRES_DB: turismo_melgarejo
+          POSTGRES_USER: ci_user
+          POSTGRES_PASSWORD: ci_password
+        run: docker compose config --quiet
+      - name: Build all images
+        run: docker compose build --pull --no-cache
+      - name: Validate Nginx image configuration
+        run: docker run --rm --env FRONTEND_PORT=80 --env BACKEND_PORT=8000 --add-host frontend:127.0.0.1 --add-host backend:127.0.0.1 raisiar/proyecto-de-sistemas-proxy:${IMAGE_TAG:-1.0.4} nginx -t
