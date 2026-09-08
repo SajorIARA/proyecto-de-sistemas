@@ -2,9 +2,6 @@ name: Docker
 
 on:
   push:
-    paths: ["Dockerfile", "**/Dockerfile", "docker-compose*.yml", "proxy/**", "backend/**", "frontend/**"]
-  pull_request:
-    paths: ["Dockerfile", "**/Dockerfile", "docker-compose*.yml", "proxy/**", "backend/**", "frontend/**"]
     paths: ["Dockerfile", "**/Dockerfile", "docker-compose.yml", "proxy/**", "backend/**", "frontend/**"]
   pull_request:
     paths: ["Dockerfile", "**/Dockerfile", "docker-compose.yml", "proxy/**", "backend/**", "frontend/**"]
@@ -12,17 +9,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-jobs:
-  build-and-validate:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
-      - name: Compose validation (dev)
 jobs:
   build-and-validate:
     runs-on: ubuntu-latest
@@ -34,18 +20,6 @@ jobs:
           POSTGRES_USER: ci_user
           POSTGRES_PASSWORD: ci_password
         run: docker compose config --quiet
-      - name: Compose validation (prod)
-        env:
-          POSTGRES_DB: turismo_melgarejo
-          POSTGRES_USER: ci_user
-          POSTGRES_PASSWORD: ci_password
-          IMAGE_TAG: test
-        run: docker compose -f docker-compose.prod.yml config --quiet
-      - name: Validate Nginx proxy configuration
-        run: |
-          docker build -t proxy-test ./proxy
-          docker run --rm --add-host frontend:127.0.0.1 --add-host backend:127.0.0.1 \
-            --env FRONTEND_PORT=3000 --env BACKEND_PORT=8000 proxy-test nginx -t
       - name: Build all images
         run: docker compose build --pull --no-cache
       - name: Validate Nginx image configuration

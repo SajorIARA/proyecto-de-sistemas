@@ -34,10 +34,4 @@ export default [
     files: ["**/*.test.{js,jsx}"],
     plugins: { "testing-library": testingLibrary },
   },
-      parserOptions: { ecmaFeatures: { jsx: true } },
-    },
-    rules: {
-      "no-unused-vars": ["error", { varsIgnorePattern: "^React$" }],
-    },
-  },
 ];

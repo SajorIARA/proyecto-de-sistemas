@@ -33,7 +33,3 @@ urlpatterns = [
     path("api/health/", health),
     path("api/", include(router.urls)),
 ]
-from django.urls import URLPattern
-
-
-urlpatterns: list[URLPattern] = []

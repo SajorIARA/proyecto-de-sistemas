@@ -1,16 +1,13 @@
 services:
   db:
+    # Imagen propia con PostGIS + pgvector: el schema (extensiones, tablas)
+    # lo crean las migraciones de Django en el primer arranque del backend.
     build:
       context: ./database
       dockerfile: Dockerfile
-    image: raisiar/proyecto-de-sistemas-db:${IMAGE_TAG:-dev}
+    image: raisiar/proyecto-de-sistemas-db:${IMAGE_TAG:-latest}
     container_name: turismo-melgarejo_db
     restart: always
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -29,14 +26,9 @@ services:
     image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.4}
     build:
       context: ./backend
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: turismo-melgarejo_backend
     restart: always
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
     command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./backend:/app
@@ -47,9 +39,6 @@ services:
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-key}
-      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost}
     depends_on:
       db:
         condition: service_healthy
@@ -57,7 +46,6 @@ services:
       - app-network
       - datos-network
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/', timeout=2)"]
       test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8000), 2).close()"]
       interval: 5s
       timeout: 5s
@@ -67,15 +55,9 @@ services:
     image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG:-1.0.4}
     build:
       context: ./frontend
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: turismo-melgarejo_frontend
     restart: always
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-    command: pnpm dev --host 0.0.0.0 --port 3000
     command: ./node_modules/.bin/vite --host 0.0.0.0 --port 3000
     volumes:
       - ./frontend:/app
@@ -96,16 +78,8 @@ services:
       dockerfile: Dockerfile
     container_name: turismo-melgarejo_proxy
     restart: always
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
     ports:
       - "80:80"
-    environment:
-      FRONTEND_PORT: 3000
-      BACKEND_PORT: 8000
     depends_on:
       frontend:
         condition: service_healthy
@@ -114,11 +88,6 @@ services:
     networks:
       - turismo-network
       - app-network
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
 
 networks:
   turismo-network:

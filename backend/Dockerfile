@@ -73,7 +73,6 @@ RUN rm -rf \
     /usr/local/bin/pip3 \
     /usr/local/bin/pip3.11 \
     /usr/local/bin/setuptools-*
-    && pip install --no-cache-dir --upgrade pip setuptools wheel jaraco.context
 
 COPY . .
 

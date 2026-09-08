@@ -14,7 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:17-alpine
+        # Imagen propia con PostGIS + pgvector: las migraciones de la app
+        # turismo crean las extensiones vector/postgis al construir la BD
+        # de prueba.
+        image: raisiar/proyecto-de-sistemas-db:latest
         env:
           POSTGRES_DB: turismo_melgarejo
           POSTGRES_USER: ci_user
@@ -25,6 +28,8 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
+      - name: Install Geo/Django system libraries
+        run: sudo apt-get update && sudo apt-get install -y binutils libproj-dev gdal-bin
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -44,4 +49,4 @@ jobs:
         run: |
           python manage.py check
           python manage.py makemigrations --check --dry-run
-          python manage.py test config
+          python manage.py test

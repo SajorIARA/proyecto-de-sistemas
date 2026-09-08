@@ -10,9 +10,6 @@ COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
 
 ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
 
-RUN apk upgrade --no-cache
-
-COPY nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
 
 # wget (busybox) disponible para el healthcheck
