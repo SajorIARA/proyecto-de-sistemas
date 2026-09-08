@@ -53,6 +53,9 @@ jobs:
           python manage.py test
       - name: Migration consistency
         working-directory: backend
+        env:
+          DJANGO_DEBUG: 0
+          DJANGO_SECRET_KEY: ci-dummy-secret
         run: python manage.py makemigrations --check --dry-run
 
   frontend:
