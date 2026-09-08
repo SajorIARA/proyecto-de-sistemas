@@ -3,7 +3,7 @@
 # ============================================================
 # STAGE 1: dependencies
 # ============================================================
-FROM python:3.11-slim AS deps
+FROM python:3.14-slim AS deps
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -28,7 +28,7 @@ RUN rm -rf /usr/local/lib/python3.11/site-packages/setuptools-*.dist-info \
 # ============================================================
 # STAGE 2: runtime (producción)
 # ============================================================
-FROM python:3.11-slim AS runtime
+FROM python:3.14-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
