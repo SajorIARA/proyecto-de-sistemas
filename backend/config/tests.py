@@ -13,6 +13,8 @@ class BaseConfigurationTests(SimpleTestCase):
         self.assertTrue(database["NAME"])
         self.assertTrue(database["USER"])
         self.assertTrue(database["PASSWORD"])
+        self.assertEqual(database["HOST"], os.getenv("POSTGRES_HOST", "db"))
+        self.assertEqual(database["PORT"], "5432")
 
     def test_health_endpoint_returns_ok(self):
         response = self.client.get("/api/health/")

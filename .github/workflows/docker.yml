@@ -5,6 +5,9 @@ on:
     paths: ["Dockerfile", "**/Dockerfile", "docker-compose*.yml", "proxy/**", "backend/**", "frontend/**"]
   pull_request:
     paths: ["Dockerfile", "**/Dockerfile", "docker-compose*.yml", "proxy/**", "backend/**", "frontend/**"]
+    paths: ["Dockerfile", "**/Dockerfile", "docker-compose.yml", "proxy/**", "backend/**", "frontend/**"]
+  pull_request:
+    paths: ["Dockerfile", "**/Dockerfile", "docker-compose.yml", "proxy/**", "backend/**", "frontend/**"]
 
 permissions:
   contents: read
@@ -20,6 +23,12 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
       - name: Compose validation (dev)
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compose validation
         env:
           POSTGRES_DB: turismo_melgarejo
           POSTGRES_USER: ci_user
@@ -37,3 +46,7 @@ jobs:
           docker build -t proxy-test ./proxy
           docker run --rm --add-host frontend:127.0.0.1 --add-host backend:127.0.0.1 \
             --env FRONTEND_PORT=3000 --env BACKEND_PORT=8000 proxy-test nginx -t
+      - name: Build all images
+        run: docker compose build --pull --no-cache
+      - name: Validate Nginx image configuration
+        run: docker run --rm --add-host frontend:127.0.0.1 --add-host backend:127.0.0.1 raisiar/proyecto-de-sistemas-proxy:1.0.4 nginx -t

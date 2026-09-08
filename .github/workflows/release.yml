@@ -101,3 +101,12 @@ jobs:
             ${{ env.IMAGE_PREFIX }}-db:${{ steps.meta.outputs.major }}
             ${{ env.IMAGE_PREFIX }}-db:latest
             ${{ env.IMAGE_PREFIX }}-db:${{ steps.meta.outputs.sha }}
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build release images
+        run: docker compose build --pull
+      - name: Release policy
+        run: echo "Image publishing and deployment are intentionally not configured yet."

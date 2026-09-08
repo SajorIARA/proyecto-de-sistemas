@@ -26,6 +26,7 @@ services:
       retries: 12
 
   backend:
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.4}
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
@@ -57,11 +58,13 @@ services:
       - datos-network
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/', timeout=2)"]
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8000), 2).close()"]
       interval: 5s
       timeout: 5s
       retries: 12
 
   frontend:
+    image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG:-1.0.4}
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
@@ -73,6 +76,7 @@ services:
         max-size: "10m"
         max-file: "3"
     command: pnpm dev --host 0.0.0.0 --port 3000
+    command: ./node_modules/.bin/vite --host 0.0.0.0 --port 3000
     volumes:
       - ./frontend:/app
       - frontend_node_modules:/app/node_modules
@@ -86,6 +90,7 @@ services:
       retries: 12
 
   proxy:
+    image: raisiar/proyecto-de-sistemas-proxy:${IMAGE_TAG:-1.0.4}
     build:
       context: ./proxy
       dockerfile: Dockerfile

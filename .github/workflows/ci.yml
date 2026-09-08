@@ -39,6 +39,21 @@ jobs:
       - name: Install Geo/Django system libraries
         run: sudo apt-get update && sudo apt-get install -y binutils libproj-dev gdal-bin
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: turismo_melgarejo
+          POSTGRES_USER: ci_user
+          POSTGRES_PASSWORD: ci_password
+          DJANGO_DEBUG: 0
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci_user -d turismo_melgarejo"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
@@ -69,6 +84,10 @@ jobs:
         run: python manage.py makemigrations --check --dry-run
       - if: always()
         run: docker rm -f turismo-test-db
+          python manage.py test config
+      - name: Migration consistency
+        working-directory: backend
+        run: python manage.py makemigrations --check --dry-run
 
   frontend:
     name: Frontend checks
@@ -80,6 +99,12 @@ jobs:
         with:
           version: 10.34.5
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.5
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
@@ -97,6 +122,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+    steps:
+      - uses: actions/checkout@v4
       - name: Validate Compose
         env:
           POSTGRES_DB: turismo_melgarejo
@@ -113,6 +140,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+    steps:
+      - uses: actions/checkout@v4
       - name: Start stack
         env:
           POSTGRES_DB: turismo_melgarejo
@@ -127,6 +156,7 @@ jobs:
           curl --fail --silent --show-error --output /dev/null --retry 15 --retry-all-errors --retry-delay 3 http://localhost/
           status=$(curl --silent --output /dev/null --write-out '%{http_code}' --retry 15 --retry-all-errors --retry-delay 3 http://localhost/api/)
           test "$status" -eq 200
+          test "$status" -ge 200 -a "$status" -lt 500
       - if: always()
         run: docker compose logs --no-color
       - if: always()
