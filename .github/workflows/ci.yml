@@ -47,6 +47,7 @@ jobs:
           DJANGO_DEBUG: 0
           POSTGRES_HOST: 127.0.0.1
           POSTGRES_PORT: 5432
+          DJANGO_SECRET_KEY: ci-dummy-secret
         run: |
           python manage.py check
           python manage.py test
@@ -100,6 +101,7 @@ jobs:
           POSTGRES_USER: ci_user
           POSTGRES_PASSWORD: ci_password
           DJANGO_DEBUG: 0
+          DJANGO_SECRET_KEY: ci-dummy-secret
         run: |
           docker compose build --pull --no-cache
           docker compose up -d --wait

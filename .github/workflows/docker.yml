@@ -23,4 +23,4 @@ jobs:
       - name: Build all images
         run: docker compose build --pull --no-cache
       - name: Validate Nginx image configuration
-        run: docker run --rm --add-host frontend:127.0.0.1 --add-host backend:127.0.0.1 raisiar/proyecto-de-sistemas-proxy:1.0.4 nginx -t
+        run: docker run --rm --env FRONTEND_PORT=80 --env BACKEND_PORT=8000 --add-host frontend:127.0.0.1 --add-host backend:127.0.0.1 raisiar/proyecto-de-sistemas-proxy:${IMAGE_TAG:-1.0.4} nginx -t
