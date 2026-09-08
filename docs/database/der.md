@@ -41,6 +41,11 @@ El modelo se diseña sobre PostgreSQL y contempla el uso de PostGIS para consult
 | Métrica vectorial propuesta | Distancia coseno |
 | Moneda principal | BOB |
 
+> **Nota de implementación**: el esquema físico lo gestiona Django mediante
+> migraciones (`backend/turismo/migrations/`), que crean extensiones
+> (PostGIS, pgvector), tablas, restricciones e índices al ejecutar
+> `manage.py migrate`. No se aplica SQL de arranque en el volúmen de BD.
+
 ---
 
 ## 3. Diagrama Entidad-Relación Conceptual
@@ -187,6 +192,11 @@ Cada atributo contiene valores atómicos. No se almacenan listas de categorías,
 
 Las tablas asociativas `usuario_rol` y `atractivo_categoria` utilizan claves primarias compuestas y sus atributos dependen de la totalidad de dichas claves.
 
+> En el modelo físico de Django estas tablas usan un `id` sintético como
+> clave primaria más una restricción `UNIQUE (fk_origen, fk_destino)`, porque
+> el ORM de Django no soporta claves primarias compuestas. La unicidad
+> funcional es idéntica.
+
 ### Tercera Forma Normal (3FN)
 
 La información relacionada con roles, categorías y tipos de tarifa se encuentra separada en entidades independientes, evitando redundancia y dependencias transitivas.
@@ -248,19 +258,3 @@ vector_cosine_ops
 ```
 
 y un índice vectorial HNSW.
-
----
-
-## 8. Decisiones pendientes de aprobación
-
-- [ ] Aprobar entidades y relaciones.
-- [ ] Aprobar cardinalidades.
-- [ ] Aprobar llaves primarias y foráneas.
-- [ ] Aprobar índices convencionales.
-- [ ] Aprobar uso de `GEOMETRY(Point, 4326)`.
-- [ ] Confirmar necesidad de `GEOMETRY(Polygon, 4326)`.
-- [ ] Confirmar modelo de embeddings.
-- [ ] Confirmar dimensión del vector.
-- [ ] Aprobar índice HNSW para búsqueda vectorial.
-- [ ] Aprobar estructura de horarios y vigencias.
-- [ ] Aprobar tipos iniciales de tarifas.

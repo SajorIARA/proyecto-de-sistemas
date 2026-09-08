@@ -15,7 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:17-alpine
+        # Imagen propia con PostGIS + pgvector: las migraciones de la app
+        # turismo crean las extensiones vector/postgis al construir la BD
+        # de prueba.
+        image: raisiar/proyecto-de-sistemas-db:latest
         env:
           POSTGRES_DB: turismo_melgarejo
           POSTGRES_USER: ci_user
@@ -27,6 +30,8 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
+      - name: Install Geo/Django system libraries
+        run: sudo apt-get update && sudo apt-get install -y binutils libproj-dev gdal-bin
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -42,11 +47,15 @@ jobs:
           DJANGO_DEBUG: 0
           POSTGRES_HOST: 127.0.0.1
           POSTGRES_PORT: 5432
+          DJANGO_SECRET_KEY: ci-dummy-secret
         run: |
           python manage.py check
-          python manage.py test config
+          python manage.py test
       - name: Migration consistency
         working-directory: backend
+        env:
+          DJANGO_DEBUG: 0
+          DJANGO_SECRET_KEY: ci-dummy-secret
         run: python manage.py makemigrations --check --dry-run
 
   frontend:
@@ -95,6 +104,7 @@ jobs:
           POSTGRES_USER: ci_user
           POSTGRES_PASSWORD: ci_password
           DJANGO_DEBUG: 0
+          DJANGO_SECRET_KEY: ci-dummy-secret
         run: |
           docker compose build --pull --no-cache
           docker compose up -d --wait
