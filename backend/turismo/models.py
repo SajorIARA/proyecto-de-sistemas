@@ -25,7 +25,7 @@ class Usuario(models.Model):
         models.DateTimeField(auto_now=True)
     )
 
-    roles: models.ManyToManyField["Rol", "UsuarioRol"] = models.ManyToManyField(
+    roles: models.ManyToManyField[Rol, UsuarioRol] = models.ManyToManyField(
         "Rol",
         through="UsuarioRol",
         related_name="usuarios",
@@ -131,7 +131,7 @@ class Atractivo(models.Model):
         models.DateTimeField(auto_now=True)
     )
 
-    categorias: models.ManyToManyField["Categoria", "AtractivoCategoria"] = (
+    categorias: models.ManyToManyField[Categoria, AtractivoCategoria] = (
         models.ManyToManyField(
             "Categoria",
             through="AtractivoCategoria",
