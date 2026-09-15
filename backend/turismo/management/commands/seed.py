@@ -48,8 +48,10 @@ ATRACTIVOS = [
     (
         "Valle de la Luna",
         "Av. Valle de la Luna, Mallasa",
-        "Formaciones rocosas naturales modeladas por la erosión, "
-        "ubicadas al sur de la ciudad.",
+        (
+            "Formaciones rocosas naturales modeladas por la erosión, "
+            "ubicadas al sur de la ciudad."
+        ),
         120,
         (-68.0673, -16.5685),
         ["Naturaleza"],
@@ -115,8 +117,10 @@ ATRACTIVOS = [
     (
         "Museo de la Calle Jaén",
         "Calle Jaén",
-        "Conjunto de museos coloniales en una de las calles "
-        "mejor conservadas de la ciudad.",
+        (
+            "Conjunto de museos coloniales en una de las calles "
+            "mejor conservadas de la ciudad."
+        ),
         90,
         (-68.1386, -16.4940),
         ["Museos", "Cultural"],
@@ -151,13 +155,8 @@ class Command(BaseCommand):
         self._seed_atractivos()
         self.stdout.write(
             self.style.SUCCESS(
-                "Seed completado: {} roles, {} tipos de tarifa, {} categorías, "
-                "{} atractivos.".format(
-                    Rol.objects.count(),
-                    TipoTarifa.objects.count(),
-                    Categoria.objects.count(),
-                    Atractivo.objects.count(),
-                )
+                f"Seed completado: {Rol.objects.count()} roles, {TipoTarifa.objects.count()} tipos de tarifa, {Categoria.objects.count()} categorías, "
+                f"{Atractivo.objects.count()} atractivos."
             )
         )
 
