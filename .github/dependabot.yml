@@ -11,6 +11,10 @@ updates:
         applies-to: version-updates
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "Django"
+        versions:
+          - ">=6.0a1"
   - package-ecosystem: npm
     directory: /frontend
     schedule:
