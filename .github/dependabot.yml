@@ -3,16 +3,30 @@ updates:
   - package-ecosystem: pip
     directory: /backend
     schedule:
-      interval: weekly
+      interval: monthly
     open-pull-requests-limit: 5
     target-branch: dev
+    groups:
+      backend-pip:
+        applies-to: version-updates
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "Django"
+        versions:
+          - ">=6.0a1"
   - package-ecosystem: npm
     directory: /frontend
     schedule:
-      interval: weekly
+      interval: monthly
     versioning-strategy: increase
     open-pull-requests-limit: 5
     target-branch: dev
+    groups:
+      frontend-npm:
+        applies-to: version-updates
+        patterns:
+          - "*"
   - package-ecosystem: docker
     directory: /backend
     schedule:
