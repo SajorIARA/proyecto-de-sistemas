@@ -6,6 +6,8 @@ categorías y atractivos reales de La Paz con geometrías (PostGIS),
 horarios y tarifas.
 """
 
+from decimal import Decimal
+
 from django.contrib.gis.geos import Point
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -13,11 +15,14 @@ from django.db import transaction
 from turismo.models import (
     Atractivo,
     Categoria,
+    ConsultaRecomendacion,
     FuenteDocumental,
     Horario,
     Rol,
     Tarifa,
     TipoTarifa,
+    Usuario,
+    UsuarioPreferencia,
 )
 
 ROLES = [
@@ -143,6 +148,35 @@ ATRACTIVOS = [
 
 HORARIOS_SEMANA = [1, 2, 3, 4, 5, 6, 7]
 
+# Trazabilidad de ingesta (V2): la mayoría proviene de la institución;
+# algunos atractivos fueron incorporados vía scraping/otras fuentes.
+FUENTES_ORIGEN = {
+    "Mercado de las Brujas": "SCRAPING",
+    "Valle de las Ánimas": "FUENTE_OFICIAL",
+}
+
+DEFAULT_FUENTE_ORIGEN = "INSTITUCIONAL"
+
+# Usuario demo para persistir preferencias (gustos del turista) y consultas.
+DEMO_USUARIO = {
+    "email": "demo.turista@example.com",
+    "password_hash": "!demo_no_autenticable!",
+    "nombre": "Turista Demo",
+}
+
+DEMO_PREFERENCIAS = [
+    ("Cultural", Decimal("0.90")),
+    ("Naturaleza", Decimal("0.70")),
+    ("Gastronomía", Decimal("0.50")),
+]
+
+# (presupuesto_bob, tiempo_horas, punto_partida (lng, lat), macrodistrito)
+DEMO_CONSULTAS = [
+    (50, Decimal("4.00"), (-68.1375, -16.4961), "Centro"),
+    (120, Decimal("6.50"), (-68.0673, -16.5685), "Mallasa"),
+    (30, Decimal("2.50"), (-68.1408, -16.4977), "Centro"),
+]
+
 
 class Command(BaseCommand):
     help = "Inserta datos de referencia (roles, tarifas, categorías, atractivos)."
@@ -153,10 +187,11 @@ class Command(BaseCommand):
         self._seed_tipos_tarifa()
         self._seed_categorias()
         self._seed_atractivos()
+        preferencias, consultas = self._seed_demo_usuario()
         self.stdout.write(
             self.style.SUCCESS(
                 f"Seed completado: {Rol.objects.count()} roles, {TipoTarifa.objects.count()} tipos de tarifa, {Categoria.objects.count()} categorías, "
-                f"{Atractivo.objects.count()} atractivos."
+                f"{Atractivo.objects.count()} atractivos, {preferencias} preferencias, {consultas} consultas."
             )
         )
 
@@ -201,6 +236,7 @@ class Command(BaseCommand):
                     "descripcion": descripcion,
                     "duracion_minutos": duracion_minutos,
                     "ubicacion": Point(longitud, latitud, srid=4326),
+                    "fuente_origen": FUENTES_ORIGEN.get(nombre, DEFAULT_FUENTE_ORIGEN),
                 },
             )
             atractivo.categorias.set(Categoria.objects.filter(nombre__in=categorias))
@@ -236,3 +272,34 @@ class Command(BaseCommand):
                 vigente_hasta=None,
                 defaults={"monto": monto, "moneda": "BOB"},
             )
+
+    def _seed_demo_usuario(self):
+        usuario, _ = Usuario.objects.get_or_create(
+            email=DEMO_USUARIO["email"],
+            defaults={
+                "password_hash": DEMO_USUARIO["password_hash"],
+                "nombre": DEMO_USUARIO["nombre"],
+            },
+        )
+        for nombre_categoria, nivel_interes in DEMO_PREFERENCIAS:
+            UsuarioPreferencia.objects.update_or_create(
+                usuario=usuario,
+                categoria=Categoria.objects.get(nombre=nombre_categoria),
+                defaults={"nivel_interes": nivel_interes},
+            )
+        preferencias = usuario.preferencias.count()
+        if not usuario.consultas_recomendacion.exists():
+            for (
+                presupuesto,
+                tiempo,
+                (longitud, latitud),
+                macrodistrito,
+            ) in DEMO_CONSULTAS:
+                ConsultaRecomendacion.objects.create(
+                    usuario=usuario,
+                    presupuesto_bob=presupuesto,
+                    tiempo_horas=tiempo,
+                    punto_partida=Point(longitud, latitud, srid=4326),
+                    macrodistrito=macrodistrito,
+                )
+        return preferencias, usuario.consultas_recomendacion.count()
