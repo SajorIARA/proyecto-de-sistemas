@@ -1,0 +1,10 @@
+target-version = "py311"
+line-length = 88
+
+[lint]
+# Ruleset explícito para que el bump de ruff no cambie el lint silenciosamente.
+# "I" (imports) habilitado: los I001 del repo ya fueron normalizados.
+select = ["E4", "E7", "E9", "F", "I"]
+# RUF012 es un falso positivo para atributos mutables de modelos Django
+# (class Meta: constraints/indexes, choices, etc.).
+ignore = ["RUF012"]
