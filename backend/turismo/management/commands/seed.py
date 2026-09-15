@@ -12,18 +12,10 @@ from django.contrib.gis.geos import Point
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from turismo.models import (
-    Atractivo,
-    Categoria,
-    ConsultaRecomendacion,
-    FuenteDocumental,
-    Horario,
-    Rol,
-    Tarifa,
-    TipoTarifa,
-    Usuario,
-    UsuarioPreferencia,
-)
+from conocimiento.models import FuenteDocumental
+from recomendaciones.models import ConsultaRecomendacion, UsuarioPreferencia
+from turismo.models import Atractivo, Categoria, Horario, Tarifa, TipoTarifa
+from usuarios.models import Rol, Usuario
 
 ROLES = [
     ("ADMIN", "Administrador", "Usuario con permisos administrativos"),
