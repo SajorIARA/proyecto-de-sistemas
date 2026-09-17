@@ -5,6 +5,7 @@ from datetime import datetime
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.contrib.gis.db import models
+from django.utils import timezone
 
 
 class UsuarioManager(BaseUserManager["Usuario"]):
@@ -31,7 +32,9 @@ class UsuarioManager(BaseUserManager["Usuario"]):
     ) -> "Usuario":
         return self._create_user(email, password, **extra)
 
-    def create_superuser(self, email: str, password: str | None = None, **extra) -> "Usuario":
+    def create_superuser(
+        self, email: str, password: str | None = None, **extra
+    ) -> "Usuario":
         extra.setdefault("activo", True)
         return self._create_user(email, password, **extra)
 
