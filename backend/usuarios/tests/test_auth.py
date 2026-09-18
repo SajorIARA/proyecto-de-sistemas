@@ -6,7 +6,7 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from usuarios.models import Rol, Usuario
+from usuarios.models import Usuario
 from usuarios.serializers import RegisterSerializer
 
 
