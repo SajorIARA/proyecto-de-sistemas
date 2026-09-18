@@ -35,7 +35,10 @@ class Migration(migrations.Migration):
                         ),
                         ("titulo", models.CharField(max_length=250)),
                         ("url", models.TextField(blank=True, null=True)),
-                        ("tipo", models.CharField(blank=True, max_length=50, null=True)),
+                        (
+                            "tipo",
+                            models.CharField(blank=True, max_length=50, null=True),
+                        ),
                         (
                             "fecha_actualizacion",
                             models.DateTimeField(blank=True, null=True),
@@ -67,7 +70,10 @@ class Migration(migrations.Migration):
                         ),
                         ("numero_fragmento", models.IntegerField()),
                         ("contenido", models.TextField()),
-                        ("embedding", pgvector.django.vector.VectorField(dimensions=1536)),
+                        (
+                            "embedding",
+                            pgvector.django.vector.VectorField(dimensions=1536),
+                        ),
                         ("fecha_creacion", models.DateTimeField(auto_now_add=True)),
                         (
                             "fuente",
