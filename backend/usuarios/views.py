@@ -70,7 +70,7 @@ class RegisterView(APIView):
                     "id": usuario.id_usuario,
                     "email": usuario.email,
                     "nombre": usuario.nombre,
-                    "roles": [],
+                    "roles": list(usuario.roles.values_list("codigo", flat=True)),
                 },
             },
             status=status.HTTP_201_CREATED,
