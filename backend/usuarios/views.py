@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from django.contrib.auth import logout as django_logout
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
