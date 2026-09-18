@@ -112,5 +112,11 @@ class TokenRefreshView(APIView):
 
     def post(self, request):
         serializer = TokenRefreshSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError:
+            return Response(
+                {"detail": "refresh token inválido."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         return Response({"access": serializer.validated_data["access"]})
