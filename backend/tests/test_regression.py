@@ -466,26 +466,26 @@ class RegressionTurismoAPITests(TestCase):
         self.atractivo.categorias.add(self.cat)
 
     def test_listado_publico_returns_200(self) -> None:
-        resp = self.client.get("/api/atractivos/")
+        resp = self.client.get("/api/turismo/atractivos/")
         self.assertEqual(resp.status_code, 200)
 
     def test_listado_incluye_categorias(self) -> None:
-        resp = self.client.get("/api/atractivos/")
+        resp = self.client.get("/api/turismo/atractivos/")
         result = resp.json()["results"][0]
         self.assertIn("Cultura", result["categorias"])
 
     def test_busqueda_por_nombre(self) -> None:
-        resp = self.client.get("/api/atractivos/?q=museo")
+        resp = self.client.get("/api/turismo/atractivos/?q=museo")
         self.assertEqual(resp.json()["count"], 1)
 
     def test_busqueda_vacia(self) -> None:
-        resp = self.client.get("/api/atractivos/?q=xyznoexistente")
+        resp = self.client.get("/api/turismo/atractivos/?q=xyznoexistente")
         self.assertEqual(resp.json()["count"], 0)
 
     def test_atractivo_inactivo_no_aparece(self) -> None:
         self.atractivo.activo = False
         self.atractivo.save(update_fields=["activo"])
-        resp = self.client.get("/api/atractivos/")
+        resp = self.client.get("/api/turismo/atractivos/")
         self.assertEqual(resp.json()["count"], 0)
 
     def test_listado_paginado(self) -> None:
@@ -495,7 +495,7 @@ class RegressionTurismoAPITests(TestCase):
                 descripcion=f"Desc {i}",
                 ubicacion=Point(-68.1 + i * 0.01, -16.5, srid=4326),
             )
-        resp = self.client.get("/api/atractivos/")
+        resp = self.client.get("/api/turismo/atractivos/")
         data = resp.json()
         self.assertIn("results", data)
         self.assertIn("count", data)
