@@ -152,15 +152,17 @@ class RBACAdminEndpointTests(TestCase):
         self.cliente.credentials(HTTP_AUTHORIZATION=f"Bearer {tokens['access']}")
         respuesta = self.cliente.get("/api/auth/usuarios/")
         self.assertEqual(respuesta.status_code, status.HTTP_200_OK)
-        self.assertIsInstance(respuesta.data, list)
-        self.assertGreaterEqual(len(respuesta.data), 3)
+        self.assertIn("results", respuesta.data)
+        self.assertGreaterEqual(respuesta.data["count"], 3)
 
     def test_admin_ve_roles_en_response(self) -> None:
         tokens = self._login("admin_endpoint@test.com", "clave1234!")
         self.cliente.credentials(HTTP_AUTHORIZATION=f"Bearer {tokens['access']}")
         respuesta = self.cliente.get("/api/auth/usuarios/")
         admin_data = next(
-            u for u in respuesta.data if u["email"] == "admin_endpoint@test.com"
+            u
+            for u in respuesta.data["results"]
+            if u["email"] == "admin_endpoint@test.com"
         )
         self.assertIn("ADMIN", admin_data["roles"])
 
