@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
 class HasRole(BasePermission):
@@ -38,3 +38,16 @@ class IsTurista(HasRole):
 
     def __init__(self) -> None:
         super().__init__("TOURIST")
+
+
+class IsAdminOrReadOnly(BasePermission):
+    """Lectura permitida para cualquiera (AllowAny).
+    Escritura (POST/PUT/PATCH/DELETE) solo para usuarios con rol ADMIN."""
+
+    def has_permission(self, request, view) -> bool:
+        if request.method in SAFE_METHODS:
+            return True
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+        return user.roles.filter(codigo="ADMIN").exists()

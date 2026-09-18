@@ -2,16 +2,29 @@ from __future__ import annotations
 
 from django.db import transaction
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from usuarios.models import Rol, Usuario
 
 
-class LoginSerializer(TokenObtainPairSerializer):
-    """Valida {email, password} contra el modelo Usuario (USERNAME_FIELD=email)
-    y devuelve access+refresh. El shape flat {access, refresh} lo normaliza
-    normalizeTokens() del frontend."""
+class UsuarioListSerializer(serializers.ModelSerializer):
+    roles = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field="codigo",
+    )
+
+    class Meta:
+        model = Usuario
+        fields = [
+            "id_usuario",
+            "email",
+            "nombre",
+            "activo",
+            "fecha_creacion",
+            "roles",
+        ]
+        read_only_fields = fields
 
 
 class RegisterSerializer(serializers.Serializer):
