@@ -32,4 +32,5 @@ urlpatterns = [
     path("api/", root),
     path("api/health/", health),
     path("api/", include(router.urls)),
+    path("api/auth/", include("usuarios.urls")),
 ]

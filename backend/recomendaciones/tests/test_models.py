@@ -24,7 +24,7 @@ class ModeloSchemaRecomendacionesTests(TestCase):
     def test_preferencia_valida_el_nivel_de_interes(self):
         usuario = Usuario.objects.create(
             email="turista@example.com",
-            password_hash="hash",
+            password="hash",
             nombre="Turista",
         )
         categoria = Categoria.objects.create(nombre="Naturaleza")
@@ -46,7 +46,7 @@ class ModeloSchemaRecomendacionesTests(TestCase):
     def test_consulta_requiere_presupuesto_no_negativo_y_tiempo_positivo(self):
         usuario = Usuario.objects.create(
             email="turista2@example.com",
-            password_hash="hash",
+            password="hash",
             nombre="Turista 2",
         )
         consulta = ConsultaRecomendacion.objects.create(
