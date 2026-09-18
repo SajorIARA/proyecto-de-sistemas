@@ -1,7 +1,14 @@
 from django.contrib.gis.geos import Point
 from django.test import TestCase
 
-from turismo.models import Atractivo, AtractivoCategoria, Categoria, Horario, Tarifa, TipoTarifa
+from turismo.models import (
+    Atractivo,
+    AtractivoCategoria,
+    Categoria,
+    Horario,
+    Tarifa,
+    TipoTarifa,
+)
 
 
 class ModeloSchemaTurismoTests(TestCase):

@@ -8,8 +8,8 @@ from django.contrib.gis.db import models
 from django.contrib.postgres.indexes import GistIndex
 from django.utils import timezone
 
-from usuarios.models import Usuario
 from turismo.models import Categoria
+from usuarios.models import Usuario
 
 
 class UsuarioPreferencia(models.Model):

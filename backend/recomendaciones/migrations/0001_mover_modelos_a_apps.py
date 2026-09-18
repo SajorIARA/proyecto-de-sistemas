@@ -1,12 +1,13 @@
 # Mover modelos al dominio "recomendaciones". Las tablas ya existen
 # (creadas por turismo/0001 y 0002): solo se declara el estado Django,
 # sin operaciones de base de datos.
+import uuid
+from decimal import Decimal
+
 import django.contrib.gis.db.models.fields
 import django.contrib.postgres.indexes
 import django.db.models.deletion
 import django.utils.timezone
-import uuid
-from decimal import Decimal
 from django.db import migrations, models
 
 

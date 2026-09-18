@@ -1,9 +1,10 @@
 # Mover modelo al dominio "usuarios". La tabla (db_table) ya existe en la
 # BD creada por turismo/0001; aquí solo se declara su estado Django sin
 # operaciones de base de datos (no destructivo, conserva datos y columnas).
+import uuid
+
 import django.db.models.deletion
 import django.utils.timezone
-import uuid
 from django.db import migrations, models
 
 

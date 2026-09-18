@@ -1,10 +1,11 @@
 # Mover modelos al dominio "conocimiento" (RAG). Las tablas ya existen
 # (creadas por turismo/0001): solo se declara el estado Django, sin
 # operaciones de base de datos.
+import uuid
+
 import django.db.models.deletion
 import pgvector.django.indexes
 import pgvector.django.vector
-import uuid
 from django.db import migrations, models
 
 
