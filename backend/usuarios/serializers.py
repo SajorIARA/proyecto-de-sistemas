@@ -44,7 +44,10 @@ class RegisterSerializer(serializers.Serializer):
             )
             rol_turista, _ = Rol.objects.get_or_create(
                 codigo="TOURIST",
-                defaults={"nombre": "Turista", "descripcion": "Usuario visitante de la plataforma"},
+                defaults={
+                    "nombre": "Turista",
+                    "descripcion": "Usuario visitante de la plataforma",
+                },
             )
             usuario.roles.add(rol_turista)
         refresh = RefreshToken.for_user(usuario)
