@@ -19,9 +19,9 @@ class ModeloSchemaUsuarioTests(TestCase):
 
     def test_rol_y_usuario_son_creables(self):
         rol = Rol.objects.create(codigo="ADMIN", nombre="Administrador")
-        usuario = Usuario.objects.create_user(
+        usuario = Usuario.objects.create(
             email="admin@example.com",
-            password="demo123456",
+            password_hash="hash",
             nombre="Admin",
         )
         usuario.roles.add(rol)

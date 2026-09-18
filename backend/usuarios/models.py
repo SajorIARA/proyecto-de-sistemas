@@ -3,84 +3,16 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.contrib.gis.db import models
 from django.utils import timezone
 
 
-class UsuarioManager(BaseUserManager["Usuario"]):
-    """Manager del modelo de autenticación (usa los hashers por defecto de
-    Django, PBKDF2-SHA256, para encriptar la contraseña en la BD)."""
-
-    use_in_migrations = True
-
-    def _create_user(
-        self, email: str, password: str | None, *, activo: bool = True, **extra
-    ) -> "Usuario":
-        if not email:
-            raise ValueError("Debe proveer un email")
-        usuario = self.model(email=self.normalize_email(email), activo=activo, **extra)
-        if password:
-            usuario.set_password(password)
-        else:
-            usuario.set_unusable_password()
-        usuario.save(using=self._db)
-        return usuario
-
-    def create_user(
-        self, email: str, password: str | None = None, **extra
-    ) -> "Usuario":
-        return self._create_user(email, password, **extra)
-
-    def create_superuser(
-        self, email: str, password: str | None = None, **extra
-    ) -> "Usuario":
-        extra.setdefault("activo", True)
-        return self._create_user(email, password, **extra)
-
-    def get_by_natural_key(self, email: str) -> "Usuario":
-        return self.get(email__iexact=email)
-
-
-class Usuario(AbstractBaseUser):
-    USERNAME_FIELD: str = "email"
-    EMAIL_FIELD: str = "email"
-    REQUIRED_FIELDS: list[str] = []
-    last_login = None
-
-    @property
-    def is_active(self) -> bool:
-        return self.activo
-
-    @is_active.setter
-    def is_active(self, value: bool) -> None:
-        self.activo = value
-
-    @property
-    def is_anonymous(self) -> bool:
-        return False
-
-    @property
-    def is_authenticated(self) -> bool:
-        return True
-
-    def get_username(self) -> str:
-        return self.email
-
-    # Interfaz mínima de permisos requerida por ModelBackend
-    def has_perm(self, perm: str, obj: object | None = None) -> bool:
-        return True
-
-    def has_module_perms(self, app_label: str) -> bool:
-        return True
-
+class Usuario(models.Model):
     id_usuario: models.UUIDField[uuid.UUID, uuid.UUID] = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
     email: models.EmailField[str, str] = models.EmailField(max_length=254, unique=True)
-    password: models.CharField[str, str] = models.CharField(
-        max_length=255, db_column="password_hash"
-    )
+    password_hash: models.CharField[str, str] = models.CharField(max_length=255)
     nombre: models.CharField[str, str] = models.CharField(max_length=150)
     activo: models.BooleanField[bool, bool] = models.BooleanField(default=True)
     fecha_creacion: models.DateTimeField[datetime, datetime] = models.DateTimeField(
@@ -95,8 +27,6 @@ class Usuario(AbstractBaseUser):
         through="UsuarioRol",
         related_name="usuarios",
     )
-
-    objects = UsuarioManager()
 
     class Meta:
         db_table = "usuario"
