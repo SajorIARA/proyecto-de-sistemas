@@ -14,9 +14,7 @@ class UsuarioPreferenciaViewSet(ModelViewSet):
 
     permission_classes = [IsAdminOrReadOnly]
     serializer_class = UsuarioPreferenciaSerializer
-    queryset = UsuarioPreferencia.objects.select_related(
-        "usuario", "categoria"
-    ).all()
+    queryset = UsuarioPreferencia.objects.select_related("usuario", "categoria").all()
 
 
 class ConsultaRecomendacionViewSet(ModelViewSet):
