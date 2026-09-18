@@ -41,16 +41,24 @@ class HasRolePermissionTests(TestCase):
 
     def test_has_role_admin_true(self) -> None:
         perm = HasRole("ADMIN")
-        self.assertTrue(perm.has_permission(self._request_falso(self.usuario_admin), None))
+        self.assertTrue(
+            perm.has_permission(self._request_falso(self.usuario_admin), None)
+        )
 
     def test_has_role_admin_false_para_turista(self) -> None:
         perm = HasRole("ADMIN")
-        self.assertFalse(perm.has_permission(self._request_falso(self.usuario_turista), None))
+        self.assertFalse(
+            perm.has_permission(self._request_falso(self.usuario_turista), None)
+        )
 
     def test_has_role_multi_rol(self) -> None:
         perm = HasRole("ADMIN", "TOURIST")
-        self.assertTrue(perm.has_permission(self._request_falso(self.usuario_admin), None))
-        self.assertTrue(perm.has_permission(self._request_falso(self.usuario_turista), None))
+        self.assertTrue(
+            perm.has_permission(self._request_falso(self.usuario_admin), None)
+        )
+        self.assertTrue(
+            perm.has_permission(self._request_falso(self.usuario_turista), None)
+        )
 
     def test_has_role_usuario_sin_rol(self) -> None:
         sin_rol = Usuario.objects.create_user(
@@ -71,7 +79,9 @@ class HasRolePermissionTests(TestCase):
 class IsAdminPermissionTests(TestCase):
     def setUp(self) -> None:
         self.admin = _crear_usuario_con_rol("admin@test.com", "clave1234!", "ADMIN")
-        self.turista = _crear_usuario_con_rol("turista@test.com", "clave1234!", "TOURIST")
+        self.turista = _crear_usuario_con_rol(
+            "turista@test.com", "clave1234!", "TOURIST"
+        )
 
     def _request_falso(self, user) -> object:
 
@@ -93,7 +103,9 @@ class IsAdminPermissionTests(TestCase):
 class IsTuristaPermissionTests(TestCase):
     def setUp(self) -> None:
         self.admin = _crear_usuario_con_rol("admin2@test.com", "clave1234!", "ADMIN")
-        self.turista = _crear_usuario_con_rol("turista2@test.com", "clave1234!", "TOURIST")
+        self.turista = _crear_usuario_con_rol(
+            "turista2@test.com", "clave1234!", "TOURIST"
+        )
 
     def _request_falso(self, user) -> object:
 

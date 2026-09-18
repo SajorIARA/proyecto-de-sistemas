@@ -38,8 +38,8 @@ class UsuariosAdminView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self, request):
-        usuarios = Usuario.objects.prefetch_related("roles").all().order_by(
-            "-fecha_creacion"
+        usuarios = (
+            Usuario.objects.prefetch_related("roles").all().order_by("-fecha_creacion")
         )
         serializer = UsuarioListSerializer(usuarios, many=True)
         return Response(serializer.data)

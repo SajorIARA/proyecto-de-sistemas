@@ -292,9 +292,7 @@ class RegressionAuthTests(TestCase):
         self.assertEqual(resp.status_code, 401)
 
     def test_refresh_empty_body_returns_400(self) -> None:
-        resp = self.cliente.post(
-            "/api/auth/token/refresh/", {}, format="json"
-        )
+        resp = self.cliente.post("/api/auth/token/refresh/", {}, format="json")
         self.assertEqual(resp.status_code, 400)
 
     def test_logout_blacklists_refresh_token(self) -> None:
@@ -366,7 +364,9 @@ class RegressionRBACTests(TestCase):
 
     def setUp(self) -> None:
         self.cliente = APIClient()
-        self.admin = _crear_usuario_con_rol("rbac_admin@test.com", "clave1234!", "ADMIN")
+        self.admin = _crear_usuario_con_rol(
+            "rbac_admin@test.com", "clave1234!", "ADMIN"
+        )
         self.turista = _crear_usuario_con_rol(
             "rbac_turista@test.com", "clave1234!", "TOURIST"
         )
@@ -410,6 +410,7 @@ class RegressionPermissionUnitTests(TestCase):
         class R:
             def __init__(self, u):
                 self.user = u
+
         return R(user)
 
     def test_has_role_single_match(self) -> None:
@@ -431,6 +432,7 @@ class RegressionPermissionUnitTests(TestCase):
     def test_has_role_unauthenticated(self) -> None:
         class Anon:
             is_authenticated = False
+
         self.assertFalse(HasRole("ADMIN").has_permission(self._req(Anon()), None))
 
     def test_is_admin_exact(self) -> None:
@@ -544,9 +546,7 @@ class RegressionSeedTests(TestCase):
 class RegressionConocimientoTests(TestCase):
 
     def test_crear_fuente_y_fragmento(self) -> None:
-        fuente = FuenteDocumental.objects.create(
-            titulo="Test Guía", tipo="guia"
-        )
+        fuente = FuenteDocumental.objects.create(titulo="Test Guía", tipo="guia")
         fragmento = FragmentoDocumental.objects.create(
             fuente=fuente,
             numero_fragmento=1,
@@ -613,6 +613,7 @@ class RegressionConfigTests(TestCase):
 
     def test_rest_framework_auth_classes(self) -> None:
         from django.conf import settings
+
         drf = settings.REST_FRAMEWORK
         self.assertIn(
             "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -621,6 +622,7 @@ class RegressionConfigTests(TestCase):
 
     def test_rest_framework_default_permission_is_authenticated(self) -> None:
         from django.conf import settings
+
         drf = settings.REST_FRAMEWORK
         self.assertIn(
             "rest_framework.permissions.IsAuthenticated",
@@ -649,6 +651,7 @@ class RegressionConfigTests(TestCase):
 
     def test_blacklist_app_installed(self) -> None:
         from django.conf import settings
+
         self.assertIn(
             "rest_framework_simplejwt.token_blacklist",
             settings.INSTALLED_APPS,
@@ -656,5 +659,6 @@ class RegressionConfigTests(TestCase):
 
     def test_cors_origins_configured(self) -> None:
         from django.conf import settings
+
         self.assertTrue(hasattr(settings, "CORS_ALLOWED_ORIGINS"))
         self.assertIsInstance(settings.CORS_ALLOWED_ORIGINS, list)
