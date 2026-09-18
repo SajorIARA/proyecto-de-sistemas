@@ -1,9 +1,49 @@
 from django.db.models import Q
 from rest_framework.permissions import AllowAny
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from .models import Atractivo
-from .serializers import AtractivoSerializer
+from usuarios.permissions import IsAdminOrReadOnly
+
+from .models import Atractivo, Categoria, Horario, Tarifa, TipoTarifa
+from .serializers import (
+    AtractivoSerializer,
+    CategoriaSerializer,
+    HorarioSerializer,
+    TarifaSerializer,
+    TipoTarifaSerializer,
+)
+
+
+class CategoriaViewSet(ModelViewSet):
+    """CRUD categorías. Lectura pública, escritura solo ADMIN."""
+
+    permission_classes = [IsAdminOrReadOnly]
+    serializer_class = CategoriaSerializer
+    queryset = Categoria.objects.all().order_by("nombre")
+
+
+class TipoTarifaViewSet(ModelViewSet):
+    """CRUD tipos de tarifa. Lectura pública, escritura solo ADMIN."""
+
+    permission_classes = [IsAdminOrReadOnly]
+    serializer_class = TipoTarifaSerializer
+    queryset = TipoTarifa.objects.all().order_by("nombre")
+
+
+class HorarioViewSet(ModelViewSet):
+    """CRUD horarios. Lectura pública, escritura solo ADMIN."""
+
+    permission_classes = [IsAdminOrReadOnly]
+    serializer_class = HorarioSerializer
+    queryset = Horario.objects.select_related("atractivo").all()
+
+
+class TarifaViewSet(ModelViewSet):
+    """CRUD tarifas. Lectura pública, escritura solo ADMIN."""
+
+    permission_classes = [IsAdminOrReadOnly]
+    serializer_class = TarifaSerializer
+    queryset = Tarifa.objects.select_related("atractivo", "tipo_tarifa").all()
 
 
 class AtractivoViewSet(ReadOnlyModelViewSet):
