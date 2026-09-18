@@ -1,10 +1,6 @@
 from django.http import JsonResponse
 from django.urls import include, path
 
-from rest_framework.routers import DefaultRouter
-
-router = DefaultRouter()
-
 
 def health(request):
     return JsonResponse(
