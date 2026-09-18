@@ -4,10 +4,8 @@ from decimal import Decimal
 
 from django.contrib.gis.geos import Point
 from django.core.management import call_command
-from django.test import TestCase, override_settings
-from rest_framework import status
+from django.test import TestCase
 from rest_framework.test import APIClient
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from conocimiento.models import FragmentoDocumental, FuenteDocumental
 from recomendaciones.models import ConsultaRecomendacion, UsuarioPreferencia
@@ -630,16 +628,20 @@ class RegressionConfigTests(TestCase):
         )
 
     def test_jwt_access_token_lifetime(self) -> None:
-        from django.conf import settings
         from datetime import timedelta
+
+        from django.conf import settings
+
         self.assertEqual(
             settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"],
             timedelta(minutes=30),
         )
 
     def test_jwt_refresh_token_lifetime(self) -> None:
-        from django.conf import settings
         from datetime import timedelta
+
+        from django.conf import settings
+
         self.assertEqual(
             settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"],
             timedelta(days=7),
