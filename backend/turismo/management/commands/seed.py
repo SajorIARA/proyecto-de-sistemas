@@ -150,9 +150,13 @@ FUENTES_ORIGEN = {
 DEFAULT_FUENTE_ORIGEN = "INSTITUCIONAL"
 
 # Usuario demo para persistir preferencias (gustos del turista) y consultas.
+# Credenciales DEMO REALES (única definición): la contraseña se encripta
+# en BD vía set_password (hashers PBKDF2 por defecto de Django) — el DoD
+# "generación exitosa de tokens al verificar credenciales correctas" la usa
+# para el login E2E/CI.
 DEMO_USUARIO = {
     "email": "demo.turista@example.com",
-    "password_hash": "!demo_no_autenticable!",
+    "password_llano": "demo1234!",
     "nombre": "Turista Demo",
 }
 
@@ -269,10 +273,13 @@ class Command(BaseCommand):
         usuario, _ = Usuario.objects.get_or_create(
             email=DEMO_USUARIO["email"],
             defaults={
-                "password_hash": DEMO_USUARIO["password_hash"],
                 "nombre": DEMO_USUARIO["nombre"],
             },
         )
+        if not usuario.has_usable_password():
+            usuario.set_password(DEMO_USUARIO["password_llano"])
+            usuario.nombre = DEMO_USUARIO["nombre"]
+            usuario.save(update_fields=["password", "nombre"])
         for nombre_categoria, nivel_interes in DEMO_PREFERENCIAS:
             UsuarioPreferencia.objects.update_or_create(
                 usuario=usuario,
