@@ -22,14 +22,7 @@ def root(request):
         {
             "service": "turismo-melgarejo-backend",
             "status": "ok",
-            "endpoints": [
-                "/api/health/",
-                "/api/atractivos/",
-                "/api/turismo/",
-                "/api/conocimiento/",
-                "/api/recomendaciones/",
-                "/api/auth/",
-            ],
+            "endpoints": ["/api/health/", "/api/atractivos/"],
         }
     )
 
@@ -39,8 +32,4 @@ urlpatterns = [
     path("api/", root),
     path("api/health/", health),
     path("api/", include(router.urls)),
-    path("api/auth/", include("usuarios.urls")),
-    path("api/turismo/", include("turismo.urls")),
-    path("api/conocimiento/", include("conocimiento.urls")),
-    path("api/recomendaciones/", include("recomendaciones.urls")),
 ]
