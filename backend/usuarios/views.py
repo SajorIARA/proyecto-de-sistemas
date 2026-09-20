@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from rest_framework import status
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.exceptions import TokenBackendError, TokenError
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
     TokenRefreshSerializer,
@@ -28,8 +29,6 @@ class LoginView(APIView):
     permission_classes = []
 
     def post(self, request):
-        from rest_framework.exceptions import AuthenticationFailed
-
         serializer = TokenObtainPairSerializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
@@ -91,7 +90,7 @@ class LogoutView(APIView):
         try:
             refresh = request.data.get("refresh")
             RefreshToken(refresh).blacklist()
-        except (TokenError, KeyError, TypeError):
+        except (TokenError, TokenBackendError, KeyError, TypeError):
             return Response(
                 {"detail": "refresh token inválido."},
                 status=status.HTTP_401_UNAUTHORIZED,
@@ -114,7 +113,7 @@ class TokenRefreshView(APIView):
         serializer = TokenRefreshSerializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
-        except TokenError:
+        except (TokenError, TokenBackendError):
             return Response(
                 {"detail": "refresh token inválido."},
                 status=status.HTTP_401_UNAUTHORIZED,
