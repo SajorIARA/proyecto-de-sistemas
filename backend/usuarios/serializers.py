@@ -1,16 +1,30 @@
 from __future__ import annotations
 
+from django.db import transaction
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from usuarios.models import Usuario
+from usuarios.models import Rol, Usuario
 
 
-class LoginSerializer(TokenObtainPairSerializer):
-    """Valida {email, password} contra el modelo Usuario (USERNAME_FIELD=email)
-    y devuelve access+refresh. El shape flat {access, refresh} lo normaliza
-    normalizeTokens() del frontend."""
+class UsuarioListSerializer(serializers.ModelSerializer):
+    roles = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field="codigo",
+    )
+
+    class Meta:
+        model = Usuario
+        fields = [
+            "id_usuario",
+            "email",
+            "nombre",
+            "activo",
+            "fecha_creacion",
+            "roles",
+        ]
+        read_only_fields = fields
 
 
 class RegisterSerializer(serializers.Serializer):
@@ -35,10 +49,19 @@ class RegisterSerializer(serializers.Serializer):
     ) -> tuple[Usuario, RefreshToken, RefreshToken]:
         password = validated_data.pop("password")
         validated_data.pop("password_confirm")
-        usuario = Usuario.objects.create_user(
-            email=validated_data["email"],
-            password=password,
-            nombre=validated_data["nombre"],
-        )
+        with transaction.atomic():
+            usuario = Usuario.objects.create_user(
+                email=validated_data["email"],
+                password=password,
+                nombre=validated_data["nombre"],
+            )
+            rol_turista, _ = Rol.objects.get_or_create(
+                codigo="TOURIST",
+                defaults={
+                    "nombre": "Turista",
+                    "descripcion": "Usuario visitante de la plataforma",
+                },
+            )
+            usuario.roles.add(rol_turista)
         refresh = RefreshToken.for_user(usuario)
         return usuario, refresh, refresh.access_token

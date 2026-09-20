@@ -247,3 +247,69 @@ class ContratoJsonWebTokenTests(TestCase):
             format="json",
         )
         self.assertEqual(respuesta.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    # ── Asignación de rol por defecto (Issue #9) ────────────────────────
+
+    def test_register_asigna_rol_tourist_por_defecto(self) -> None:
+        serializer = RegisterSerializer(
+            data={
+                "nombre": "Nuevo Turista",
+                "email": "nuevoturista@example.com",
+                "password": "clave1234!",
+                "password_confirm": "clave1234!",
+            }
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        usuario, _, _ = serializer.save()
+        self.assertTrue(
+            usuario.roles.filter(codigo="TOURIST").exists(),
+            "El usuario nuevo debería tener el rol TOURIST",
+        )
+
+    def test_register_endpoint_retorna_roles_asignados(self) -> None:
+        respuesta = self.cliente.post(
+            "/api/auth/register/",
+            {
+                "nombre": "Turista Roles",
+                "email": "roles@example.com",
+                "password": "claveapi123!",
+                "password_confirm": "claveapi123!",
+            },
+            format="json",
+        )
+        self.assertEqual(respuesta.status_code, status.HTTP_201_CREATED)
+        roles = respuesta.data["user"]["roles"]
+        self.assertIn("TOURIST", roles)
+
+    def test_register_usuario_tiene_solo_un_rol(self) -> None:
+        serializer = RegisterSerializer(
+            data={
+                "nombre": "Solo Un Rol",
+                "email": "unrol@example.com",
+                "password": "clave1234!",
+                "password_confirm": "clave1234!",
+            }
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        usuario, _, _ = serializer.save()
+        self.assertEqual(usuario.roles.count(), 1)
+        self.assertEqual(usuario.roles.first().codigo, "TOURIST")
+
+    def test_register_login_muestra_rol_tourist(self) -> None:
+        self.cliente.post(
+            "/api/auth/register/",
+            {
+                "nombre": "Login Tourist",
+                "email": "logintourist@example.com",
+                "password": "clave1234!",
+                "password_confirm": "clave1234!",
+            },
+            format="json",
+        )
+        respuesta = self.cliente.post(
+            "/api/auth/login/",
+            {"email": "logintourist@example.com", "password": "clave1234!"},
+            format="json",
+        )
+        self.assertEqual(respuesta.status_code, status.HTTP_200_OK)
+        self.assertIn("TOURIST", respuesta.data["user"]["roles"])

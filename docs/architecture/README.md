@@ -1,37 +1,35 @@
-# Diagramas de Arquitectura
+# Documentación de Arquitectura — Sistema Turístico La Paz
 
-La documentación se ofrece en dos formatos:
+## Diagramas Mermaid (Markdown)
 
-1. **Mermaid** (`.md`) — se renderiza en GitHub, VS Code y otros visores.
-2. **HTML interactivos** (`.html`) — autocontenidos, generados con el skill Archify:
-   navegables, con vista oscura/clara, traza animada y exportación de imagen.
+| # | Diagrama | Archivo | Descripción |
+|---|----------|---------|-------------|
+| 1 | **Casos de Uso** | [01-casos-de-uso.md](01-casos-de-uso.md) | Funciones del sistema y actores que las utilizan |
+| 2 | **Clases** | [02-clases.md](02-clases.md) | Estructura: clases, atributos, métodos y relaciones |
+| 3 | **Secuencia** | [03-secuencia.md](03-secuencia.md) | Comunicación entre componentes para Login, Registro y Recomendación |
+| 4 | **Actividades** | [04-actividades.md](04-actividades.md) | Flujo de procesos: Registro/Login y Motor de Recomendación |
+| 5 | **Componentes** | [05-componentes.md](05-componentes.md) | Módulos del software y sus dependencias |
+| 6 | **Despliegue** | [06-despliegue.md](06-despliegue.md) | Infraestructura: Docker, Nginx, CI/CD, Railway |
 
-| #  | Archivo | Contenido |
-|---:|---------|-----------|
-| 01 | [01-vista-general.md](./01-vista-general.md) | Visión global usuario → frontend → backend → BD |
-| 02 | [02-frontend.md](./02-frontend.md) | Capas internas del frontend React |
-| 03 | [03-backend.md](./03-backend.md) | Módulos y capas del backend Django |
-| 04 | [04-motor-recomendacion.md](./04-motor-recomendacion.md) | Pipeline del motor de recomendación |
-| 05 | [05-base-de-datos.md](./05-base-de-datos.md) | Entidades y componentes geoespaciales |
-| 06 | [06-infraestructura.md](./06-infraestructura.md) | Docker, Nginx, CI/CD y Railway |
-| 07 | [07-cicd.md](./07-cicd.md) | Flujo completo de integración y despliegue |
+## Diagrama de Base de Datos
 
-## Diagramas interactivos (HTML)
+| Archivo | Descripción |
+|---------|-------------|
+| [../database/der.md](../database/der.md) | Modelo de Entidad Relación completo con constraints e índices espaciales |
 
-Los HTML son autocontenidos: ábrelos directamente en el navegador.
+## Diagramas Interactivos (HTML)
 
-| Diagrama | Archivo |
-|----------|---------|
-| Visión general del sistema | [vista-general.architecture.html](./interactiva/vista-general.architecture.html) |
-| CI/CD — del commit al despliegue | [flujo-ci-cd.workflow.html](./interactiva/flujo-ci-cd.workflow.html) |
-| Petición de recomendaciones | [peticion-recomendaciones.sequence.html](./interactiva/peticion-recomendaciones.sequence.html) |
-| Motor de recomendación (dataflow) | [motor-recomendacion.dataflow.html](./interactiva/motor-recomendacion.dataflow.html) |
-| Ciclo de despliegue (lifecycle) | [ciclo-despliegue.lifecycle.html](./interactiva/ciclo-despliegue.lifecycle.html) |
+| Archivo | Tipo | Descripción |
+|---------|------|-------------|
+| [interactiva/peticion-recomendaciones.sequence.html](interactiva/peticion-recomendaciones.sequence.html) | Sequence | Secuencia de solicitud de recomendación |
+| [interactiva/flujo-ci-cd.workflow.html](interactiva/flujo-ci-cd.workflow.html) | Workflow | Flujo de CI/CD del commit al despliegue |
 
-Las fuentes JSON (spec del diagrama) viven en [interactiva/](./interactiva/) y son
-la entrada editable del CLI de Archify (`archify.mjs validate|deliver`)
-para regenerar los HTML. El skill queda local en `.opencode/skills/archify/`,
-no versionado.
+> **Nota:** Para regenerar los diagramas interactivos con Archify se requiere Node.js.
+> Ejecutar: `node .opencode/skills/archify/bin/archify.mjs deliver <type> <input.json> <output.html> --quality showcase`
 
-> Los diagramas Mermaid se renderizan en GitHub, VS Code (con la extensión
-> *Markdown Preview Mermaid Support*) y otros visores con soporte Mermaid.
+## Cómo ver los diagramas Mermaid
+
+Los diagramas Mermaid se renderizan automáticamente en:
+- GitHub (vista previa de archivos `.md`)
+- VS Code con extensión [Mermaid Preview](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid)
+- [Mermaid Live Editor](https://mermaid.live/)
