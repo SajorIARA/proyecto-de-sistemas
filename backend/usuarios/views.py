@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.permissions import IsAuthenticated
@@ -160,9 +162,11 @@ class PasswordChangeView(APIView):
                 {"detail": "Las contraseñas nuevas no coinciden."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if len(nueva) < 8:
+        try:
+            validate_password(nueva, usuario)
+        except DjangoValidationError as exc:
             return Response(
-                {"detail": "La nueva contraseña debe tener al menos 8 caracteres."},
+                {"new_password": exc.messages},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         usuario.set_password(nueva)

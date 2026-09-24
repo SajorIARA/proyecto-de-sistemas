@@ -143,6 +143,35 @@ class PasswordChangeTests(TestCase):
         )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_nueva_comun_retorna_400(self) -> None:
+        resp = self.cliente.post(
+            self.URL,
+            {
+                "current_password": "clave1234!",
+                "new_password": "password123",
+                "new_password_confirm": "password123",
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordValidatorsTests(TestCase):
+    """AUTH_PASSWORD_VALIDATORS se aplican en registro."""
+
+    def test_registro_password_comun_retorna_400(self) -> None:
+        resp = APIClient().post(
+            "/api/auth/register/",
+            {
+                "nombre": "Comun",
+                "email": "comun@test.com",
+                "password": "password123",
+                "password_confirm": "password123",
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 @override_settings(DISABLE_AUTH_THROTTLE=False)
 class AuthThrottleTests(TestCase):

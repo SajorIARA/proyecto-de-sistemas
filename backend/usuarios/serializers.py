@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -38,6 +40,10 @@ class RegisterSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"password_confirm": ["Las contraseñas no coinciden."]}
             )
+        try:
+            validate_password(attrs["password"])
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"password": exc.messages}) from exc
         if Usuario.objects.filter(email__iexact=attrs["email"]).exists():
             raise serializers.ValidationError(
                 {"email": ["Ya existe un usuario con este email."]}
