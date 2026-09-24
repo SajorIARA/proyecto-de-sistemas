@@ -18,6 +18,9 @@ class UsuarioPreferenciaSerializer(serializers.ModelSerializer):
             "fecha_registro",
         ]
         read_only_fields = ["id", "fecha_registro"]
+        # Replica el CHECK ck_usuario_preferencia_nivel (0–1) para
+        # responder 400 en vez de escalar a 500 por IntegrityError.
+        extra_kwargs = {"nivel_interes": {"min_value": 0, "max_value": 1}}
 
 
 class ConsultaRecomendacionSerializer(serializers.ModelSerializer):
@@ -33,6 +36,14 @@ class ConsultaRecomendacionSerializer(serializers.ModelSerializer):
             "fecha_consulta",
         ]
         read_only_fields = ["id_consulta", "fecha_consulta"]
+        # Replica los CHECK ck_consulta_presupuesto (>= 0) y
+        # ck_consulta_tiempo (> 0) para responder 400 en vez de 500.
+        extra_kwargs = {"presupuesto_bob": {"min_value": 0}}
+
+    def validate_tiempo_horas(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("tiempo_horas debe ser mayor a 0.")
+        return value
 
     def create(self, validated_data):
         coords = validated_data.pop("punto_partida", None)

@@ -64,3 +64,29 @@ class FragmentoEmbeddingWriteOnlyTests(TestCase):
         )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.assertNotIn("embedding", resp.data)
+
+    def test_create_embedding_dimension_invalida_400(self) -> None:
+        resp = self.cliente.post(
+            "/api/conocimiento/fragmentos/",
+            {
+                "fuente": str(self.fuente.id_fuente),
+                "numero_fragmento": 2,
+                "contenido": "Vector corto",
+                "embedding": [0.5, 0.6, 0.7],
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_embedding_no_numerico_400(self) -> None:
+        resp = self.cliente.post(
+            "/api/conocimiento/fragmentos/",
+            {
+                "fuente": str(self.fuente.id_fuente),
+                "numero_fragmento": 3,
+                "contenido": "Vector sucio",
+                "embedding": ["x"] * 1536,
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)

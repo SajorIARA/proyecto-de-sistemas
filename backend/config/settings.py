@@ -109,16 +109,6 @@ if not DEBUG:
 # REST Framework: fail-closed por defecto, con paginación y throttling
 AUTH_USER_MODEL = "usuarios.Usuario"
 
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "USER_ID_FIELD": "id_usuario",
-    "USER_ID_CLAIM": "user_id",
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
-    "AUTH_HEADER_TYPES": ("Bearer",),
-}
-
 # REST Framework: fail-closed por defecto, con paginación y throttling
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [

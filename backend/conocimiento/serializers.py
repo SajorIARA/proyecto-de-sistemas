@@ -36,3 +36,18 @@ class FragmentoDocumentalSerializer(serializers.ModelSerializer):
         # El vector de 1536 dims nunca se expone en lectura (payload
         # pesado y dato interno del motor de búsqueda); solo escritura.
         extra_kwargs = {"embedding": {"required": True, "write_only": True}}
+
+    def validate_embedding(self, value) -> list[float]:
+        # La columna pgvector exige exactamente 1536 dimensiones;
+        # validar aquí evita un DataError 500 desde la BD.
+        if not isinstance(value, (list, tuple)) or len(value) != 1536:
+            raise serializers.ValidationError(
+                "embedding debe ser una lista de 1536 números."
+            )
+        try:
+            vector = [float(x) for x in value]
+        except (TypeError, ValueError) as exc:
+            raise serializers.ValidationError(
+                "embedding debe contener solo números."
+            ) from exc
+        return vector

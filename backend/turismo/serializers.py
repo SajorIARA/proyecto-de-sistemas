@@ -59,6 +59,9 @@ class TarifaSerializer(serializers.ModelSerializer):
             "observacion",
         ]
         read_only_fields = ["id_tarifa"]
+        # Replica el CHECK ck_tarifa_monto (>= 0) para responder
+        # 400 en vez de escalar a 500 por IntegrityError.
+        extra_kwargs = {"monto": {"min_value": 0}}
 
 
 class AtractivoSerializer(serializers.ModelSerializer):
