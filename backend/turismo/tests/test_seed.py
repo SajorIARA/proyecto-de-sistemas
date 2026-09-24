@@ -23,13 +23,9 @@ class SeedTests(TestCase):
             "Arqueología",
         }
 
-        categorias_existentes = set(
-            Categoria.objects.values_list("nombre", flat=True)
-        )
+        categorias_existentes = set(Categoria.objects.values_list("nombre", flat=True))
 
-        self.assertTrue(
-            categorias_requeridas.issubset(categorias_existentes)
-        )
+        self.assertTrue(categorias_requeridas.issubset(categorias_existentes))
 
         self.assertGreaterEqual(Atractivo.objects.count(), 5)
         self.assertGreaterEqual(Horario.objects.count(), 5)

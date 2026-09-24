@@ -81,20 +81,17 @@ class TurismoCategoriaCRUDTests(TestCase):
     def test_delete_categoria(self) -> None:
         cat = Categoria.objects.create(nombre="Borrar")
 
-        resp = self.cliente.delete(
-            f"/api/turismo/categorias/{cat.id_categoria}/"
-        )
+        resp = self.cliente.delete(f"/api/turismo/categorias/{cat.id_categoria}/")
 
         self.assertEqual(resp.status_code, 204)
 
         self.assertTrue(
-            Categoria.objects.filter(
-                id_categoria=cat.id_categoria
-            ).exists()
+            Categoria.objects.filter(id_categoria=cat.id_categoria).exists()
         )
 
         cat.refresh_from_db()
         self.assertFalse(cat.activo)
+
     def test_baja_categoria_conserva_relacion_con_atractivo(self) -> None:
         cat = Categoria.objects.create(nombre="Arqueología")
 
@@ -106,9 +103,7 @@ class TurismoCategoriaCRUDTests(TestCase):
 
         atractivo.categorias.add(cat)
 
-        resp = self.cliente.delete(
-            f"/api/turismo/categorias/{cat.id_categoria}/"
-        )
+        resp = self.cliente.delete(f"/api/turismo/categorias/{cat.id_categoria}/")
 
         self.assertEqual(resp.status_code, 204)
 
@@ -116,9 +111,7 @@ class TurismoCategoriaCRUDTests(TestCase):
         self.assertFalse(cat.activo)
 
         self.assertTrue(
-            atractivo.categorias.filter(
-                id_categoria=cat.id_categoria
-            ).exists()
+            atractivo.categorias.filter(id_categoria=cat.id_categoria).exists()
         )
 
     def test_read_public_without_auth(self) -> None:
@@ -135,6 +128,7 @@ class TurismoCategoriaCRUDTests(TestCase):
             format="json",
         )
         self.assertIn(resp.status_code, (401, 403))
+
     def test_categoria_inactiva_no_aparece_en_listado(self) -> None:
         cat = Categoria.objects.create(nombre="Inactiva")
 
@@ -148,10 +142,7 @@ class TurismoCategoriaCRUDTests(TestCase):
 
         self.assertEqual(resp_list.status_code, 200)
 
-        nombres = [
-            categoria["nombre"]
-            for categoria in resp_list.data["results"]
-        ]
+        nombres = [categoria["nombre"] for categoria in resp_list.data["results"]]
 
         self.assertNotIn("Inactiva", nombres)
 
