@@ -30,12 +30,12 @@ TIPOS_TARIFA = [
 ]
 
 CATEGORIAS = [
-    ("Cultural", "Atractivos históricos y culturales"),
-    ("Naturaleza", "Atractivos naturales y paisajísticos"),
+    ("Aventura", "Actividades y experiencias de aventura"),
+    ("Gastronomía", "Espacios gastronómicos, mercados y cocina local"),
+    ("Cultura", "Atractivos históricos, artísticos y culturales"),
     ("Miradores", "Miradores panorámicos de la ciudad"),
-    ("Museos", "Museos y espacios de exhibición"),
-    ("Gastronomía", "Espacios gastronómicos y mercados"),
-    ("Parques Urbanos", "Parques y áreas recreativas urbanas"),
+    ("Naturaleza", "Atractivos naturales y paisajísticos"),
+    ("Arqueología", "Sitios y espacios de interés arqueológico"),
 ]
 
 # (nombre, dirección, descripción, duración_min, (lng, lat), categorías,
@@ -62,7 +62,7 @@ ATRACTIVOS = [
         "Parque urbano con áreas verdes, juegos y espacio para eventos.",
         90,
         (-68.1266, -16.4993),
-        ["Parques Urbanos"],
+        ["Naturaleza"],
         ("06:00", "21:00"),
         None,
         {},
@@ -73,7 +73,7 @@ ATRACTIVOS = [
         "Plaza principal de la ciudad, sede del poder político del país.",
         45,
         (-68.1375, -16.4961),
-        ["Cultural"],
+        ["Cultura"],
         ("08:00", "20:00"),
         None,
         {},
@@ -84,7 +84,7 @@ ATRACTIVOS = [
         "Iglesia y museo religioso colonial en pleno centro de La Paz.",
         60,
         (-68.1385, -16.4945),
-        ["Cultural", "Museos"],
+        ["Cultura"],
         ("09:00", "18:00"),
         None,
         {"GENERAL": 5},
@@ -95,7 +95,7 @@ ATRACTIVOS = [
         "Callejón de artesanías, hierbas y objetos tradicionales.",
         90,
         (-68.1408, -16.4977),
-        ["Gastronomía", "Cultural"],
+        ["Gastronomía", "Cultura"],
         ("09:00", "19:00"),
         None,
         {},
@@ -120,7 +120,7 @@ ATRACTIVOS = [
         ),
         90,
         (-68.1386, -16.4940),
-        ["Museos", "Cultural"],
+        ["Cultura"],
         ("09:00", "18:00"),
         1,
         {"GENERAL": 20, "NINO": 5, "ESTUDIANTE": 7, "ADULTO_MAYOR": 0},
@@ -161,7 +161,7 @@ DEMO_USUARIO = {
 }
 
 DEMO_PREFERENCIAS = [
-    ("Cultural", Decimal("0.90")),
+    ("Cultura", Decimal("0.90")),
     ("Naturaleza", Decimal("0.70")),
     ("Gastronomía", Decimal("0.50")),
 ]
