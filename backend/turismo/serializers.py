@@ -1,4 +1,5 @@
 from django.contrib.gis.geos import Point
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from .models import (
@@ -59,6 +60,9 @@ class TarifaSerializer(serializers.ModelSerializer):
             "observacion",
         ]
         read_only_fields = ["id_tarifa"]
+        # Replica el CHECK ck_tarifa_monto (>= 0) para responder
+        # 400 en vez de escalar a 500 por IntegrityError.
+        extra_kwargs = {"monto": {"min_value": 0}}
 
 
 class AtractivoSerializer(serializers.ModelSerializer):
@@ -94,6 +98,7 @@ class AtractivoSerializer(serializers.ModelSerializer):
         point: Point = obj.ubicacion
         return {"longitud": point.x, "latitud": point.y}
 
+    @extend_schema_field({"type": "array", "items": {}, "nullable": True})
     def get_area(self, obj: Atractivo) -> object | None:
         if obj.area is None:
             return None

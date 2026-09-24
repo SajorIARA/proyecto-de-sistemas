@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -12,7 +15,12 @@ from rest_framework_simplejwt.serializers import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from usuarios.serializers import RegisterSerializer
+from usuarios.serializers import (
+    LogoutSerializer,
+    PasswordChangeSerializer,
+    RegisterSerializer,
+)
+from usuarios.throttles import AuthRateThrottle
 
 
 class LoginView(APIView):
@@ -27,7 +35,14 @@ class LoginView(APIView):
 
     authentication_classes = []
     permission_classes = []
+    throttle_classes = [AuthRateThrottle]
 
+    @extend_schema(
+        request=TokenObtainPairSerializer,
+        responses={200: OpenApiTypes.OBJECT},
+        description="Login con {email, password}. Retorna access+refresh "
+        "planos y el usuario con sus roles.",
+    )
     def post(self, request):
         serializer = TokenObtainPairSerializer(data=request.data)
         try:
@@ -57,7 +72,14 @@ class RegisterView(APIView):
 
     authentication_classes = []
     permission_classes = []
+    throttle_classes = [AuthRateThrottle]
 
+    @extend_schema(
+        request=RegisterSerializer,
+        responses={201: OpenApiTypes.OBJECT},
+        description="Registro público. Crea el usuario con hash PBKDF2, "
+        "asigna el rol TOURIST y retorna tokens.",
+    )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -86,11 +108,17 @@ class LogoutView(APIView):
 
     authentication_classes = [JWTAuthentication]
 
+    @extend_schema(
+        request=LogoutSerializer,
+        responses={204: None},
+        description="Logout: invalida el refresh token (blacklist).",
+    )
     def post(self, request):
+        serializer = LogoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         try:
-            refresh = request.data.get("refresh")
-            RefreshToken(refresh).blacklist()
-        except (TokenError, TokenBackendError, KeyError, TypeError):
+            RefreshToken(serializer.validated_data["refresh"]).blacklist()
+        except (TokenError, TokenBackendError):
             return Response(
                 {"detail": "refresh token inválido."},
                 status=status.HTTP_401_UNAUTHORIZED,
@@ -108,7 +136,13 @@ class TokenRefreshView(APIView):
 
     authentication_classes = []
     permission_classes = []
+    throttle_classes = [AuthRateThrottle]
 
+    @extend_schema(
+        request=TokenRefreshSerializer,
+        responses={200: OpenApiTypes.OBJECT},
+        description="Renovación de access con {refresh}. Retorna {access}.",
+    )
     def post(self, request):
         serializer = TokenRefreshSerializer(data=request.data)
         try:
@@ -119,3 +153,30 @@ class TokenRefreshView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         return Response({"access": serializer.validated_data["access"]})
+
+
+class PasswordChangeView(APIView):
+    """POST /api/auth/password/change/ — cambio de contraseña autenticado.
+
+    Body {current_password, new_password, new_password_confirm} → 200.
+    Requiere JWT válido; valida la contraseña actual con el hash PBKDF2
+    y exige mínimo 8 caracteres en la nueva.
+    """
+
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=PasswordChangeSerializer,
+        responses={200: OpenApiTypes.OBJECT},
+        description="Cambio de contraseña del usuario autenticado.",
+    )
+    def post(self, request):
+        serializer = PasswordChangeSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        usuario = request.user
+        usuario.set_password(serializer.validated_data["new_password"])
+        usuario.save(update_fields=["password", "fecha_actualizacion"])
+        return Response({"detail": "Contraseña actualizada correctamente."})
