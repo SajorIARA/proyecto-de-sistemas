@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -139,8 +140,15 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/hour",
         "user": "1000/hour",
+        "auth": "30/minute",
     },
 }
+
+# El throttle de auth se desactiva al correr la suite de tests
+# (manage.py test): decenas de logins/registros legítimos por minuto
+# agotarían el bucket compartido por IP y volverían flaky la suite.
+# En producción (runserver/gunicorn) siempre está activo.
+DISABLE_AUTH_THROTTLE = "test" in sys.argv
 
 # Simple JWT
 SIMPLE_JWT = {

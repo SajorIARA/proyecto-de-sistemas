@@ -67,12 +67,27 @@ class Usuario(AbstractBaseUser):
     def get_username(self) -> str:
         return self.email
 
-    # Interfaz mínima de permisos requerida por ModelBackend
+    # Permisos delegados al RBAC por roles (issue #12): solo el rol ADMIN
+    # concentra todos los permisos Django; el resto de roles no hereda nada
+    # por defecto. Los permisos de API se evalúan con las clases de
+    # usuarios.permissions (HasRole/IsAdmin/IsTurista/IsAdminOrReadOnly).
     def has_perm(self, perm: str, obj: object | None = None) -> bool:
-        return True
+        if not self.activo:
+            return False
+        return self.roles.filter(codigo="ADMIN").exists()
 
     def has_module_perms(self, app_label: str) -> bool:
-        return True
+        if not self.activo:
+            return False
+        return self.roles.filter(codigo="ADMIN").exists()
+
+    @property
+    def is_staff(self) -> bool:
+        return self.activo and self.roles.filter(codigo="ADMIN").exists()
+
+    @property
+    def is_superuser(self) -> bool:
+        return self.activo and self.roles.filter(codigo="ADMIN").exists()
 
     id_usuario: models.UUIDField[uuid.UUID, uuid.UUID] = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False

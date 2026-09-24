@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -13,6 +14,7 @@ from rest_framework_simplejwt.serializers import (
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from usuarios.serializers import RegisterSerializer
+from usuarios.throttles import AuthRateThrottle
 
 
 class LoginView(APIView):
@@ -27,6 +29,7 @@ class LoginView(APIView):
 
     authentication_classes = []
     permission_classes = []
+    throttle_classes = [AuthRateThrottle]
 
     def post(self, request):
         serializer = TokenObtainPairSerializer(data=request.data)
@@ -57,6 +60,7 @@ class RegisterView(APIView):
 
     authentication_classes = []
     permission_classes = []
+    throttle_classes = [AuthRateThrottle]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -108,6 +112,7 @@ class TokenRefreshView(APIView):
 
     authentication_classes = []
     permission_classes = []
+    throttle_classes = [AuthRateThrottle]
 
     def post(self, request):
         serializer = TokenRefreshSerializer(data=request.data)
@@ -119,3 +124,47 @@ class TokenRefreshView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         return Response({"access": serializer.validated_data["access"]})
+
+
+class PasswordChangeView(APIView):
+    """POST /api/auth/password/change/ — cambio de contraseña autenticado.
+
+    Body {current_password, new_password, new_password_confirm} → 200.
+    Requiere JWT válido; valida la contraseña actual con el hash PBKDF2
+    y exige mínimo 8 caracteres en la nueva.
+    """
+
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        usuario = request.user
+        actual = request.data.get("current_password")
+        nueva = request.data.get("new_password")
+        confirmacion = request.data.get("new_password_confirm")
+        if not actual or not nueva or not confirmacion:
+            return Response(
+                {
+                    "detail": "Se requieren current_password, new_password "
+                    "y new_password_confirm."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not usuario.check_password(actual):
+            return Response(
+                {"detail": "La contraseña actual es incorrecta."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if nueva != confirmacion:
+            return Response(
+                {"detail": "Las contraseñas nuevas no coinciden."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if len(nueva) < 8:
+            return Response(
+                {"detail": "La nueva contraseña debe tener al menos 8 caracteres."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        usuario.set_password(nueva)
+        usuario.save(update_fields=["password", "fecha_actualizacion"])
+        return Response({"detail": "Contraseña actualizada correctamente."})

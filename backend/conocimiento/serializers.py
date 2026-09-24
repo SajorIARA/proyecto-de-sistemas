@@ -33,4 +33,6 @@ class FragmentoDocumentalSerializer(serializers.ModelSerializer):
             "fecha_creacion",
         ]
         read_only_fields = ["id_fragmento", "fecha_creacion"]
-        extra_kwargs = {"embedding": {"required": True}}
+        # El vector de 1536 dims nunca se expone en lectura (payload
+        # pesado y dato interno del motor de búsqueda); solo escritura.
+        extra_kwargs = {"embedding": {"required": True, "write_only": True}}
