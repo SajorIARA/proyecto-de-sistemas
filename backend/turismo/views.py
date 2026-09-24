@@ -21,6 +21,19 @@ class CategoriaViewSet(ModelViewSet):
     serializer_class = CategoriaSerializer
     queryset = Categoria.objects.all().order_by("nombre")
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if self.action in ("list", "retrieve"):
+            return queryset.filter(activo=True)
+
+        return queryset
+
+    def perform_destroy(self, instance):
+        """Da de baja la categoría sin eliminarla físicamente."""
+        instance.activo = False
+        instance.save(update_fields=["activo"])
+
 
 class TipoTarifaViewSet(ModelViewSet):
     """CRUD tipos de tarifa. Lectura pública, escritura solo ADMIN."""
