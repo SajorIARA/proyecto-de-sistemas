@@ -1,4 +1,5 @@
 from django.contrib.gis.geos import Point
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from .models import (
@@ -97,6 +98,7 @@ class AtractivoSerializer(serializers.ModelSerializer):
         point: Point = obj.ubicacion
         return {"longitud": point.x, "latitud": point.y}
 
+    @extend_schema_field({"type": "array", "items": {}, "nullable": True})
     def get_area(self, obj: Atractivo) -> object | None:
         if obj.area is None:
             return None

@@ -20,6 +20,13 @@ class FuenteDocumentalSerializer(serializers.ModelSerializer):
 
 class FragmentoDocumentalSerializer(serializers.ModelSerializer):
     fuente_titulo = serializers.CharField(source="fuente.titulo", read_only=True)
+    # Vector pgvector de 1536 dims: solo escritura, nunca en lectura.
+    embedding = serializers.ListField(
+        child=serializers.FloatField(),
+        min_length=1536,
+        max_length=1536,
+        write_only=True,
+    )
 
     class Meta:
         model = FragmentoDocumental
@@ -33,21 +40,3 @@ class FragmentoDocumentalSerializer(serializers.ModelSerializer):
             "fecha_creacion",
         ]
         read_only_fields = ["id_fragmento", "fecha_creacion"]
-        # El vector de 1536 dims nunca se expone en lectura (payload
-        # pesado y dato interno del motor de búsqueda); solo escritura.
-        extra_kwargs = {"embedding": {"required": True, "write_only": True}}
-
-    def validate_embedding(self, value) -> list[float]:
-        # La columna pgvector exige exactamente 1536 dimensiones;
-        # validar aquí evita un DataError 500 desde la BD.
-        if not isinstance(value, (list, tuple)) or len(value) != 1536:
-            raise serializers.ValidationError(
-                "embedding debe ser una lista de 1536 números."
-            )
-        try:
-            vector = [float(x) for x in value]
-        except (TypeError, ValueError) as exc:
-            raise serializers.ValidationError(
-                "embedding debe contener solo números."
-            ) from exc
-        return vector

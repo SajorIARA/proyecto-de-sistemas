@@ -2,6 +2,7 @@ from django.contrib.gis.db.models.functions import Distance, Transform
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from django.db.models import Q
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -68,6 +69,33 @@ class AtractivoViewSet(ReadOnlyModelViewSet):
             queryset = queryset.filter(Q(nombre__icontains=query))
         return queryset
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "lat",
+                float,
+                OpenApiParameter.QUERY,
+                required=True,
+                description="Latitud del punto de referencia.",
+            ),
+            OpenApiParameter(
+                "lon",
+                float,
+                OpenApiParameter.QUERY,
+                required=True,
+                description="Longitud del punto de referencia.",
+            ),
+            OpenApiParameter(
+                "radio",
+                float,
+                OpenApiParameter.QUERY,
+                required=False,
+                description="Radio en metros (defecto 2000, máximo 50000).",
+            ),
+        ],
+        description="Atractivos activos dentro del radio, ordenados por "
+        "distancia. Cada item incluye distancia_m.",
+    )
     @action(detail=False, methods=["get"], url_path="cercanos")
     def cercanos(self, request):
         """GET /api/turismo/atractivos/cercanos/?lat=&lon=&radio= (metros).

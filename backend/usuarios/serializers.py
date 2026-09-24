@@ -9,6 +9,36 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from usuarios.models import Rol, Usuario
 
 
+class LogoutSerializer(serializers.Serializer):
+    """Body de logout: el refresh a invalidar."""
+
+    refresh = serializers.CharField()
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    """Cambio de contraseña autenticado con validación completa."""
+
+    current_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True, min_length=8)
+    new_password_confirm = serializers.CharField(write_only=True)
+
+    def validate(self, attrs: dict) -> dict:
+        usuario = self.context["request"].user
+        if not usuario.check_password(attrs["current_password"]):
+            raise serializers.ValidationError(
+                {"current_password": ["La contraseña actual es incorrecta."]}
+            )
+        if attrs["new_password"] != attrs.get("new_password_confirm"):
+            raise serializers.ValidationError(
+                {"new_password_confirm": ["Las contraseñas nuevas no coinciden."]}
+            )
+        try:
+            validate_password(attrs["new_password"], usuario)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"new_password": exc.messages}) from exc
+        return attrs
+
+
 class UsuarioListSerializer(serializers.ModelSerializer):
     roles = serializers.SlugRelatedField(
         many=True,

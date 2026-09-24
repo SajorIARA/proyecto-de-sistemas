@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError as DjangoValidationError
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.permissions import IsAuthenticated
@@ -15,7 +15,11 @@ from rest_framework_simplejwt.serializers import (
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from usuarios.serializers import RegisterSerializer
+from usuarios.serializers import (
+    LogoutSerializer,
+    PasswordChangeSerializer,
+    RegisterSerializer,
+)
 from usuarios.throttles import AuthRateThrottle
 
 
@@ -33,6 +37,12 @@ class LoginView(APIView):
     permission_classes = []
     throttle_classes = [AuthRateThrottle]
 
+    @extend_schema(
+        request=TokenObtainPairSerializer,
+        responses={200: OpenApiTypes.OBJECT},
+        description="Login con {email, password}. Retorna access+refresh "
+        "planos y el usuario con sus roles.",
+    )
     def post(self, request):
         serializer = TokenObtainPairSerializer(data=request.data)
         try:
@@ -64,6 +74,12 @@ class RegisterView(APIView):
     permission_classes = []
     throttle_classes = [AuthRateThrottle]
 
+    @extend_schema(
+        request=RegisterSerializer,
+        responses={201: OpenApiTypes.OBJECT},
+        description="Registro público. Crea el usuario con hash PBKDF2, "
+        "asigna el rol TOURIST y retorna tokens.",
+    )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -92,11 +108,17 @@ class LogoutView(APIView):
 
     authentication_classes = [JWTAuthentication]
 
+    @extend_schema(
+        request=LogoutSerializer,
+        responses={204: None},
+        description="Logout: invalida el refresh token (blacklist).",
+    )
     def post(self, request):
+        serializer = LogoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         try:
-            refresh = request.data.get("refresh")
-            RefreshToken(refresh).blacklist()
-        except (TokenError, TokenBackendError, KeyError, TypeError):
+            RefreshToken(serializer.validated_data["refresh"]).blacklist()
+        except (TokenError, TokenBackendError):
             return Response(
                 {"detail": "refresh token inválido."},
                 status=status.HTTP_401_UNAUTHORIZED,
@@ -116,6 +138,11 @@ class TokenRefreshView(APIView):
     permission_classes = []
     throttle_classes = [AuthRateThrottle]
 
+    @extend_schema(
+        request=TokenRefreshSerializer,
+        responses={200: OpenApiTypes.OBJECT},
+        description="Renovación de access con {refresh}. Retorna {access}.",
+    )
     def post(self, request):
         serializer = TokenRefreshSerializer(data=request.data)
         try:
@@ -139,36 +166,17 @@ class PasswordChangeView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        request=PasswordChangeSerializer,
+        responses={200: OpenApiTypes.OBJECT},
+        description="Cambio de contraseña del usuario autenticado.",
+    )
     def post(self, request):
+        serializer = PasswordChangeSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
         usuario = request.user
-        actual = request.data.get("current_password")
-        nueva = request.data.get("new_password")
-        confirmacion = request.data.get("new_password_confirm")
-        if not actual or not nueva or not confirmacion:
-            return Response(
-                {
-                    "detail": "Se requieren current_password, new_password "
-                    "y new_password_confirm."
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        if not usuario.check_password(actual):
-            return Response(
-                {"detail": "La contraseña actual es incorrecta."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        if nueva != confirmacion:
-            return Response(
-                {"detail": "Las contraseñas nuevas no coinciden."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        try:
-            validate_password(nueva, usuario)
-        except DjangoValidationError as exc:
-            return Response(
-                {"new_password": exc.messages},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        usuario.set_password(nueva)
+        usuario.set_password(serializer.validated_data["new_password"])
         usuario.save(update_fields=["password", "fecha_actualizacion"])
         return Response({"detail": "Contraseña actualizada correctamente."})

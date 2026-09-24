@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
+    "drf_spectacular",
     "usuarios",
     "turismo",
     "recomendaciones",
@@ -130,6 +131,14 @@ REST_FRAMEWORK = {
         "user": "1000/hour",
         "auth": "30/minute",
     },
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Turismo Melgarejo API",
+    "DESCRIPTION": "API del sistema de recomendación turística de La Paz.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 # El throttle de auth se desactiva al correr la suite de tests

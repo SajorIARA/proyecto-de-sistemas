@@ -1,4 +1,5 @@
 from django.contrib.gis.geos import Point
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from .models import ConsultaRecomendacion, UsuarioPreferencia
@@ -23,7 +24,42 @@ class UsuarioPreferenciaSerializer(serializers.ModelSerializer):
         extra_kwargs = {"nivel_interes": {"min_value": 0, "max_value": 1}}
 
 
+@extend_schema_field(
+    {
+        "type": "object",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {"type": "number"},
+                "minItems": 2,
+                "maxItems": 2,
+            }
+        },
+        "required": ["coordinates"],
+        "example": {"coordinates": [-68.1486, -16.4966]},
+    }
+)
+class PuntoPartidaField(serializers.Field):
+    """Punto de partida: acepta {coordinates: [lon, lat]} y lo deja
+    pasar para que create/update lo conviertan a Point 4326;
+    en lectura serializa el Point como WKT."""
+
+    def to_representation(self, value) -> str:
+        return str(value)
+
+    def to_internal_value(self, data):
+        try:
+            lon, lat = data["coordinates"]
+            return {"coordinates": [float(lon), float(lat)]}
+        except (KeyError, TypeError, ValueError) as exc:
+            raise serializers.ValidationError(
+                "punto_partida debe ser {coordinates: [lon, lat]}."
+            ) from exc
+
+
 class ConsultaRecomendacionSerializer(serializers.ModelSerializer):
+    punto_partida = PuntoPartidaField()
+
     class Meta:
         model = ConsultaRecomendacion
         fields = [
