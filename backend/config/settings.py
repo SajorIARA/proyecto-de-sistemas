@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -23,13 +24,13 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "django.contrib.contenttypes",
     "django.contrib.auth",
-    "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
+    "drf_spectacular",
     "usuarios",
     "turismo",
     "recomendaciones",
@@ -39,14 +40,19 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
 ]
+# NOTA: sin SessionMiddleware/AuthenticationMiddleware/MessageMiddleware a
+# propósito: la API es 100% JWT vía DRF (request.user lo resuelve cada
+# vista con sus authentication_classes); no hay admin site, login por
+# sesión ni mensajes entre vistas. django.contrib.auth se mantiene
+# instalado (AbstractBaseUser, hashers PBKDF2, ModelBackend de simplejwt).
 
 AUTH_USER_MODEL = "usuarios.Usuario"
+# NOTA: django.contrib.auth se mantiene instalado aunque sus tablas
+# auth_group/auth_permission no se usan: provee AbstractBaseUser, los
+# hashers PBKDF2 y el ModelBackend que usa simplejwt al autenticar.
 
 ROOT_URLCONF = "config.urls"
 TEMPLATES = [
@@ -56,9 +62,7 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
-                "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
             ]
         },
     }
@@ -106,26 +110,12 @@ if not DEBUG:
     X_FRAME_OPTIONS = "DENY"
 
 # REST Framework: fail-closed por defecto, con paginación y throttling
-AUTH_USER_MODEL = "usuarios.Usuario"
-
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "USER_ID_FIELD": "id_usuario",
-    "USER_ID_CLAIM": "user_id",
-    "ROTATE_REFRESH_TOKENS": True,
-    "BLACKLIST_AFTER_ROTATION": True,
-    "AUTH_HEADER_TYPES": ("Bearer",),
-}
-
-# REST Framework: fail-closed por defecto, con paginación y throttling
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -139,8 +129,23 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/hour",
         "user": "1000/hour",
+        "auth": "30/minute",
     },
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Turismo Melgarejo API",
+    "DESCRIPTION": "API del sistema de recomendación turística de La Paz.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
+
+# El throttle de auth se desactiva al correr la suite de tests
+# (manage.py test): decenas de logins/registros legítimos por minuto
+# agotarían el bucket compartido por IP y volverían flaky la suite.
+# En producción (runserver/gunicorn) siempre está activo.
+DISABLE_AUTH_THROTTLE = "test" in sys.argv
 
 # Simple JWT
 SIMPLE_JWT = {
@@ -152,6 +157,14 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 8},
+    },
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+]
 
 # Logging
 LOGGING = {

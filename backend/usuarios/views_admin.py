@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from drf_spectacular.utils import extend_schema
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 
@@ -24,6 +25,10 @@ class UsuariosAdminView(APIView):
     permission_classes = [IsAdmin]
     pagination_class = UsuarioAdminPagination
 
+    @extend_schema(
+        responses={200: UsuarioListSerializer(many=True)},
+        description="Lista paginada de usuarios (solo ADMIN).",
+    )
     def get(self, request):
         usuarios = (
             Usuario.objects.prefetch_related("roles").all().order_by("-fecha_creacion")
