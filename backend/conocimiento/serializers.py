@@ -20,6 +20,13 @@ class FuenteDocumentalSerializer(serializers.ModelSerializer):
 
 class FragmentoDocumentalSerializer(serializers.ModelSerializer):
     fuente_titulo = serializers.CharField(source="fuente.titulo", read_only=True)
+    # Vector pgvector de 1536 dims: solo escritura, nunca en lectura.
+    embedding = serializers.ListField(
+        child=serializers.FloatField(),
+        min_length=1536,
+        max_length=1536,
+        write_only=True,
+    )
 
     class Meta:
         model = FragmentoDocumental
@@ -33,4 +40,3 @@ class FragmentoDocumentalSerializer(serializers.ModelSerializer):
             "fecha_creacion",
         ]
         read_only_fields = ["id_fragmento", "fecha_creacion"]
-        extra_kwargs = {"embedding": {"required": True}}
