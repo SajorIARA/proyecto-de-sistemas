@@ -144,6 +144,7 @@ class AtractivoViewSet(ReadOnlyModelViewSet):
             item["distancia_m"] = round(obj.distancia.m, 1)
         return Response(datos)
 
+
 class AtractivoAdminViewSet(ModelViewSet):
     """CRUD de destinos turísticos. Solo usuarios con rol ADMIN.
 
