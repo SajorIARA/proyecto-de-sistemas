@@ -2,10 +2,11 @@ from django.db.models import Q
 from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from usuarios.permissions import IsAdminOrReadOnly
+from usuarios.permissions import IsAdmin, IsAdminOrReadOnly
 
 from .models import Atractivo, Categoria, Horario, Tarifa, TipoTarifa
 from .serializers import (
+    AtractivoAdminSerializer,
     AtractivoSerializer,
     CategoriaSerializer,
     HorarioSerializer,
@@ -62,3 +63,17 @@ class AtractivoViewSet(ReadOnlyModelViewSet):
         if query:
             queryset = queryset.filter(Q(nombre__icontains=query))
         return queryset
+
+
+class AtractivoAdminViewSet(ModelViewSet):
+    """CRUD de destinos turísticos. Solo usuarios con rol ADMIN.
+
+    Endpoints (bajo /api/turismo/admin/atractivos/):
+    POST crear · GET listar/detalle · PUT/PATCH actualizar · DELETE eliminar.
+    Las coordenadas se reciben como {longitud, latitud} y se persisten
+    como Point SRID 4326 en PostGIS.
+    """
+
+    permission_classes = [IsAdmin]
+    serializer_class = AtractivoAdminSerializer
+    queryset = Atractivo.objects.prefetch_related("categorias").all().order_by("nombre")

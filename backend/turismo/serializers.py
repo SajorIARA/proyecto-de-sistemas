@@ -98,3 +98,74 @@ class AtractivoSerializer(serializers.ModelSerializer):
         if obj.area is None:
             return None
         return obj.area.coords
+
+
+class UbicacionField(serializers.Field):
+    """Campo {longitud, latitud} <-> Point SRID 4326."""
+
+    def to_representation(self, value: Point) -> dict[str, float]:
+        return {"longitud": value.x, "latitud": value.y}
+
+    def to_internal_value(self, data: dict) -> Point:
+        try:
+            longitud = float(data["longitud"])
+            latitud = float(data["latitud"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise serializers.ValidationError(
+                "ubicacion debe ser {longitud: float, latitud: float}."
+            ) from exc
+        if not -180 <= longitud <= 180 or not -90 <= latitud <= 90:
+            raise serializers.ValidationError(
+                "longitud debe estar en [-180, 180] y latitud en [-90, 90]."
+            )
+        return Point(longitud, latitud, srid=4326)
+
+
+class AtractivoAdminSerializer(serializers.ModelSerializer):
+    """Escritura de destinos turísticos (solo ADMIN).
+
+    Acepta ``ubicacion`` como dict ``{"longitud": float, "latitud": float}``
+    y lo persiste como ``Point`` SRID 4326 en PostGIS. ``categorias`` se
+    escribe como lista de IDs de categoría.
+    """
+
+    ubicacion = UbicacionField()
+    categorias = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Categoria.objects.all(), required=False
+    )
+
+    class Meta:
+        model = Atractivo
+        fields = [
+            "id_atractivo",
+            "nombre",
+            "descripcion",
+            "direccion",
+            "duracion_minutos",
+            "ubicacion",
+            "area",
+            "categorias",
+            "fuente_origen",
+            "activo",
+            "fecha_creacion",
+            "fecha_actualizacion",
+        ]
+        read_only_fields = [
+            "id_atractivo",
+            "fecha_creacion",
+            "fecha_actualizacion",
+        ]
+
+    def create(self, validated_data):
+        categorias = validated_data.pop("categorias", [])
+        atractivo = super().create(validated_data)
+        if categorias:
+            atractivo.categorias.set(categorias)
+        return atractivo
+
+    def update(self, instance, validated_data):
+        categorias = validated_data.pop("categorias", None)
+        atractivo = super().update(instance, validated_data)
+        if categorias is not None:
+            atractivo.categorias.set(categorias)
+        return atractivo
