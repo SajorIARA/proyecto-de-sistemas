@@ -80,10 +80,38 @@ class TurismoCategoriaCRUDTests(TestCase):
 
     def test_delete_categoria(self) -> None:
         cat = Categoria.objects.create(nombre="Borrar")
+
         resp = self.cliente.delete(f"/api/turismo/categorias/{cat.id_categoria}/")
+
         self.assertEqual(resp.status_code, 204)
-        self.assertFalse(
+
+        self.assertTrue(
             Categoria.objects.filter(id_categoria=cat.id_categoria).exists()
+        )
+
+        cat.refresh_from_db()
+        self.assertFalse(cat.activo)
+
+    def test_baja_categoria_conserva_relacion_con_atractivo(self) -> None:
+        cat = Categoria.objects.create(nombre="Arqueología")
+
+        atractivo = Atractivo.objects.create(
+            nombre="Sitio arqueológico de prueba",
+            descripcion="Atractivo usado para probar la relación con categorías.",
+            ubicacion=Point(-68.15, -16.5, srid=4326),
+        )
+
+        atractivo.categorias.add(cat)
+
+        resp = self.cliente.delete(f"/api/turismo/categorias/{cat.id_categoria}/")
+
+        self.assertEqual(resp.status_code, 204)
+
+        cat.refresh_from_db()
+        self.assertFalse(cat.activo)
+
+        self.assertTrue(
+            atractivo.categorias.filter(id_categoria=cat.id_categoria).exists()
         )
 
     def test_read_public_without_auth(self) -> None:
@@ -100,6 +128,23 @@ class TurismoCategoriaCRUDTests(TestCase):
             format="json",
         )
         self.assertIn(resp.status_code, (401, 403))
+
+    def test_categoria_inactiva_no_aparece_en_listado(self) -> None:
+        cat = Categoria.objects.create(nombre="Inactiva")
+
+        resp_delete = self.cliente.delete(
+            f"/api/turismo/categorias/{cat.id_categoria}/"
+        )
+
+        self.assertEqual(resp_delete.status_code, 204)
+
+        resp_list = self.cliente.get("/api/turismo/categorias/")
+
+        self.assertEqual(resp_list.status_code, 200)
+
+        nombres = [categoria["nombre"] for categoria in resp_list.data["results"]]
+
+        self.assertNotIn("Inactiva", nombres)
 
 
 class TurismoTipoTarifaCRUDTests(TestCase):
