@@ -23,7 +23,7 @@ services:
       retries: 12
 
   backend:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.4}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.6}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -53,7 +53,7 @@ services:
       retries: 12
 
   frontend:
-    image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG:-1.0.4}
+    image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG:-1.0.5}
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
