@@ -24,7 +24,11 @@ describe("HomePage", () => {
 
     expect(
       screen.getByRole("heading", {
+<<<<<<< HEAD
         name: /Explora La Paz\s*como nunca antes\./i,
+=======
+        name: /La Paz,\s*más cerca de ti/i,
+>>>>>>> origin/main
       }),
     ).toBeInTheDocument();
 
@@ -65,6 +69,7 @@ describe("HomePage", () => {
     ).toBeInTheDocument();
 
     expect(
+<<<<<<< HEAD
       screen.getByRole("heading", { name: "Miradores" }),
     ).toBeInTheDocument();
 
@@ -74,6 +79,9 @@ describe("HomePage", () => {
 
     expect(
       screen.getByRole("heading", { name: "Arqueología" }),
+=======
+      screen.getByRole("heading", { name: "Ciudad" }),
+>>>>>>> origin/main
     ).toBeInTheDocument();
   });
 });
