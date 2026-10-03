@@ -275,7 +275,8 @@ class AtractivoAdminViewSet(ModelViewSet):
     """CRUD de destinos turísticos. Solo usuarios con rol ADMIN.
 
     Endpoints (bajo /api/turismo/admin/atractivos/):
-    POST crear · GET listar/detalle · PUT/PATCH actualizar · DELETE eliminar.
+    POST crear · GET listar/detalle · PUT/PATCH actualizar ·
+    DELETE baja lógica (activo=false, preserva relacionados).
     Las coordenadas se reciben como {longitud, latitud} y se persisten
     como Point SRID 4326 en PostGIS.
     """
@@ -283,3 +284,12 @@ class AtractivoAdminViewSet(ModelViewSet):
     permission_classes = [IsAdmin]
     serializer_class = AtractivoAdminSerializer
     queryset = Atractivo.objects.prefetch_related("categorias").all().order_by("nombre")
+
+    def perform_destroy(self, instance: Atractivo) -> None:
+        """Baja lógica (issue #20): marca inactivo en vez de borrar.
+
+        Preserva horarios, tarifas y fuentes relacionadas (FK CASCADE /
+        SET NULL no se disparan) y mantiene el historial del destino.
+        """
+        instance.activo = False
+        instance.save(update_fields=["activo", "fecha_actualizacion"])
