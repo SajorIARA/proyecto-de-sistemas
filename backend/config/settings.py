@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "turismo",
     "recomendaciones",
     "conocimiento",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -174,6 +175,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
+# Celery + Redis (issue #21): broker y backend de resultados por env,
+# con defaults locales. Las tareas se descubren en cada app (tasks.py).
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
+CELERY_TIMEZONE = "America/La_Paz"
+CELERY_TASK_TRACK_STARTED = True
 
 # Logging
 LOGGING = {
