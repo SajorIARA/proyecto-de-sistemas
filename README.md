@@ -67,9 +67,9 @@ docker compose -f docker-compose.prod.yml up -d --build
 # Backend (tests Django)
 docker compose run --rm backend python manage.py test
 
-# Backend (linters)
-docker compose run --rm backend ruff check .
-docker compose run --rm backend black --check .
+# Backend (linters: ruff/black no están en la imagen prod, se usa python slim)
+docker run --rm -v "$PWD/backend:/app" -w /app python:3.11-slim sh -c \
+  "pip install -q 'ruff==0.16.9' 'black==26.5.1' && ruff check . && black --check ."
 
 # Backend (datos de referencia: roles, categorías, atractivos)
 docker compose run --rm backend python manage.py seed

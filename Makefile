@@ -14,8 +14,8 @@ DOCKER  ?= docker
 REPO    := raisiar/proyecto-de-sistemas
 
 BACKEND_CTR  := turismo-melgarejo_backend
-BACKEND_TAG  ?= 1.0.6
-FRONTEND_TAG ?= 1.0.5
+BACKEND_TAG  ?= 1.0.8
+FRONTEND_TAG ?= 1.0.6
 
 BACKEND_IMG  := $(REPO)-backend:$(BACKEND_TAG)
 FRONTEND_IMG := $(REPO)-frontend:$(FRONTEND_TAG)
@@ -35,8 +35,11 @@ build: build-backend build-frontend build-db build-proxy ## Construye las 4 imá
 build-backend: ## backend:$(BACKEND_TAG)
 	$(DOCKER) build -t $(BACKEND_IMG) -f backend/Dockerfile backend
 
-build-frontend: ## frontend:$(FRONTEND_TAG) (Dockerfile.dev, igual que compose)
-	$(DOCKER) build -t $(FRONTEND_IMG) -f frontend/Dockerfile.dev frontend
+build-frontend: ## frontend:$(FRONTEND_TAG) (Dockerfile prod; para dev usar build-frontend-dev)
+	$(DOCKER) build -t $(FRONTEND_IMG) -f frontend/Dockerfile frontend
+
+build-frontend-dev: ## frontend:$(FRONTEND_TAG)-dev (Dockerfile.dev, solo local)
+	$(DOCKER) build -t $(FRONTEND_IMG)-dev -f frontend/Dockerfile.dev frontend
 
 build-db: ## db:latest (PostGIS + pgvector)
 	$(DOCKER) build -t $(DB_IMG) -f database/Dockerfile database
@@ -63,8 +66,10 @@ test-frontend: ## Tests Vitest (frontend) en contenedor node efímero
 
 ## -------- Calidad --------
 lint: ## ruff + black + makemigrations --check / eslint + tests (backend y frontend)
-	$(DOCKER) run --rm -v "$$(pwd)/backend:/app" -w /app backend:$(BACKEND_TAG) sh -c \
-		"ruff check backend && black --check backend && python manage.py makemigrations --check --dry-run"
+	$(DOCKER) run --rm -v "$$(pwd)/backend:/app" -w /app python:3.11-slim sh -c \
+		"pip install -q 'ruff==0.16.9' 'black==26.5.1' && ruff check . && black --check ."
+	$(DOCKER) run --rm -v "$$(pwd)/backend:/app" -w /app $(BACKEND_IMG) \
+		python manage.py makemigrations --check --dry-run
 	$(DOCKER) run --rm -v "$$(pwd)/frontend:/app" -w /app node:22-alpine \
 		sh -c "test -d node_modules || npm ci; npx eslint . ; npx vitest run"
 
