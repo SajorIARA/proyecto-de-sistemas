@@ -5,7 +5,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from turismo.models import Atractivo, Categoria
+from turismo.models import Atractivo, Categoria, Horario, Tarifa, TipoTarifa
 from usuarios.models import Rol, Usuario
 
 ADMIN_URL = "/api/turismo/admin/atractivos/"
@@ -168,11 +168,53 @@ class AtractivoAdminCRUDTests(TestCase):
         atractivo = Atractivo.objects.get(pk=creado["id_atractivo"])
         self.assertFalse(atractivo.activo)
 
-    def test_eliminar_destino(self) -> None:
+    def test_eliminar_destino_es_baja_logica(self) -> None:
         creado = self.cliente.post(ADMIN_URL, _payload(), format="json").data
         resp = self.cliente.delete(f"{ADMIN_URL}{creado['id_atractivo']}/")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Atractivo.objects.filter(pk=creado["id_atractivo"]).exists())
+        atractivo = Atractivo.objects.get(pk=creado["id_atractivo"])
+        self.assertFalse(atractivo.activo)
+
+    def test_baja_logica_preserva_relacionados(self) -> None:
+        creado = self.cliente.post(ADMIN_URL, _payload(), format="json").data
+        atractivo = Atractivo.objects.get(pk=creado["id_atractivo"])
+        tipo = TipoTarifa.objects.create(codigo="TB", nombre="Baja")
+        tarifa = Tarifa.objects.create(
+            atractivo=atractivo, tipo_tarifa=tipo, monto="10.00", moneda="BOB"
+        )
+        horario = Horario.objects.create(
+            atractivo=atractivo, dia_semana=1, cerrado=True
+        )
+        self.cliente.delete(f"{ADMIN_URL}{creado['id_atractivo']}/")
+        self.assertTrue(
+            Tarifa.objects.filter(pk=tarifa.pk).exists(),
+            "La tarifa debe sobrevivir a la baja lógica",
+        )
+        self.assertTrue(
+            Horario.objects.filter(pk=horario.pk).exists(),
+            "El horario debe sobrevivir a la baja lógica",
+        )
+
+    def test_baja_logica_excluye_de_catalogo_publico(self) -> None:
+        creado = self.cliente.post(ADMIN_URL, _payload(), format="json").data
+        self.cliente.delete(f"{ADMIN_URL}{creado['id_atractivo']}/")
+        resp = APIClient().get(PUBLIC_URL)
+        nombres = [item["nombre"] for item in resp.data["results"]]
+        self.assertNotIn("Plaza Murillo", nombres)
+
+    def test_put_preserva_identidad_e_historial(self) -> None:
+        creado = self.cliente.post(ADMIN_URL, _payload(), format="json").data
+        antes = Atractivo.objects.get(pk=creado["id_atractivo"])
+        resp = self.cliente.put(
+            f"{ADMIN_URL}{creado['id_atractivo']}/",
+            _payload(nombre="Murillo Renovada"),
+            format="json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        despues = Atractivo.objects.get(pk=creado["id_atractivo"])
+        self.assertEqual(despues.id_atractivo, antes.id_atractivo)
+        self.assertEqual(despues.nombre, "Murillo Renovada")
+        self.assertGreaterEqual(despues.fecha_actualizacion, antes.fecha_actualizacion)
 
     def test_destino_creado_aparece_en_catalogo_publico(self) -> None:
         self.cliente.post(ADMIN_URL, _payload(), format="json")
