@@ -114,7 +114,7 @@ export function PerfilPage() {
 
               <p className="mt-4 text-xs leading-6 text-[#746D63]">
                 {esAdmin
-                  ? "Como administrador tenés acceso al panel de usuarios de la plataforma."
+                  ? "Como administrador tenés acceso a la gestión de destinos y al panel de usuarios de la plataforma."
                   : "Tu rol de turista te permite explorar el catálogo y gestionar tu cuenta."}
               </p>
             </div>
@@ -122,6 +122,12 @@ export function PerfilPage() {
             {/* Atajos al panel (solo ADMIN) */}
             {esAdmin && (
               <div className="mt-7 space-y-3">
+                <AtajoAdmin
+                  to="/mi-cuenta/destinos"
+                  titulo="Gestión de destinos"
+                  descripcion="Alta, edición y baja del catálogo"
+                />
+
                 <AtajoAdmin
                   to="/mi-cuenta/usuarios"
                   titulo="Panel de usuarios"

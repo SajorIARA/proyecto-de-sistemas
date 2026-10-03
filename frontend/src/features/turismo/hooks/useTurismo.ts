@@ -14,6 +14,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
   listarAtractivos,
+  listarCategorias,
   listarHorariosDe,
   listarTarifasDe,
   obtenerAtractivo,
@@ -122,6 +123,23 @@ export function useTarifasDestino(id: string) {
     queryKey: KeysTurismo.tarifas(id),
     queryFn: () => listarTarifasDe(id),
     enabled: Boolean(id),
+    staleTime: RELACIONADO_STALE_MS,
+  });
+}
+
+/**
+ * Categorías activas del catálogo.
+ *
+ * El catálogo público las obtiene de `/atractivos/facetas/`, pero el panel de
+ * administración necesita los **ids** (`AtractivoAdminSerializer.categorias`
+ * viaja como `number[]`) y las facetas los traen en un formato distinto. Esta
+ * consulta va directo a `/turismo/categorias/`, que además pagina, por eso el
+ * `staleTime` largo: cambiaron muy pocas veces en la vida del proyecto.
+ */
+export function useCategorias() {
+  return useQuery({
+    queryKey: KeysTurismo.categorias(),
+    queryFn: listarCategorias,
     staleTime: RELACIONADO_STALE_MS,
   });
 }

@@ -108,3 +108,73 @@ export interface DestinoCard {
   atractivo: Atractivo;
   categoriaPrincipal: string | null;
 }
+
+/* ==========================================================================
+   ADMINISTRACIÓN DE DESTINOS — `AtractivoAdminViewSet`
+   ========================================================================== */
+
+/**
+ * Destino tal como lo devuelve `AtractivoAdminSerializer`.
+ *
+ * Difiere de `Atractivo` en dos puntos que importan:
+ *
+ * 1. La clave primaria se llama **`id_atractivo`**, no `id`.
+ * 2. `categorias` contiene **ids numéricos**, no nombres. Por eso el panel
+ *    admin cruza el destino con `/turismo/categorias/` para poder mostrar y
+ *    editar las categorías.
+ *
+ * El listado admin trae también los destinos dados de baja (`activo=false`),
+ * a diferencia del catálogo público.
+ */
+export interface AtractivoAdmin {
+  id_atractivo: string;
+  nombre: string;
+  descripcion: string;
+  direccion: string | null;
+  duracion_minutos: number | null;
+  ubicacion: Coordenada | null;
+  area: Anillo | null;
+  /** Ids de `Categoria.id_categoria`. */
+  categorias: number[];
+  fuente_origen: string;
+  activo: boolean;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+}
+
+/** Campos que acepta `AtractivoAdminSerializer` al escribir. */
+export interface AtractivoAdminInput {
+  nombre: string;
+  descripcion: string;
+  direccion: string | null;
+  /** `null` o un entero `>= 1`. Nunca `0`: ver `DURACION_MIN_MINUTOS`. */
+  duracion_minutos: number | null;
+  /** Obligatoria: el backend responde 400 si falta. */
+  ubicacion: Coordenada;
+  /** Ids de categoría. Puede ir vacía. */
+  categorias: number[];
+  fuente_origen: string;
+  activo: boolean;
+}
+
+/**
+ * Estado del formulario de alta/edición.
+ *
+ * Los campos se guardan como **texto** y se convierten al construir el
+ * payload: es la única forma de que el usuario pueda escribir un campo a medio
+ * completar sin que el `number` intermedio lo convierta en `NaN`.
+ */
+export interface DestinoFormValues {
+  nombre: string;
+  descripcion: string;
+  direccion: string;
+  duracionMinutos: string;
+  longitud: string;
+  latitud: string;
+  categorias: number[];
+  fuenteOrigen: string;
+  activo: boolean;
+}
+
+/** Filtro del listado admin. El backend no filtra, así que es local. */
+export type FiltroEstadoDestino = "activos" | "inactivos" | "todos";

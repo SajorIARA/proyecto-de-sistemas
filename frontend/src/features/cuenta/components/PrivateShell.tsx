@@ -24,8 +24,13 @@ function useNavegacionPrivada() {
   ];
 
   if (esAdmin) {
-    // Se inserta entre el perfil y el catálogo: es la sección de trabajo.
-    enlaces.splice(1, 0, { to: "/mi-cuenta/usuarios", label: "Usuarios" });
+    // Se insertan entre el perfil y el catálogo: son las secciones de trabajo.
+    enlaces.splice(
+      1,
+      0,
+      { to: "/mi-cuenta/destinos", label: "Destinos" },
+      { to: "/mi-cuenta/usuarios", label: "Usuarios" },
+    );
   }
 
   return enlaces;
