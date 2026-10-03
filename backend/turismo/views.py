@@ -1,9 +1,11 @@
 from django.contrib.gis.db.models.functions import Distance, Transform
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
-from django.db.models import Q
+from django.db.models import Avg, Count, Max, Min, Q
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
@@ -67,10 +69,59 @@ class TarifaViewSet(ModelViewSet):
 
 
 class AtractivoViewSet(ReadOnlyModelViewSet):
-    """Catálogo público de atractivos (solo lectura)."""
+    """Catálogo público de atractivos (solo lectura).
+
+    Filtros combinables (issue #18, pensados para buscador con debounce):
+    q (nombre/descripción/dirección), categoria (nombre o id, repetible o
+    coma-separado), zona (texto en dirección), precio_min/precio_max
+    (BOB, sobre tarifas). Ej:
+    ``/api/turismo/atractivos/?q=museo&categoria=Cultura&precio_max=50``.
+    """
 
     permission_classes = [AllowAny]
     serializer_class = AtractivoSerializer
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "q",
+                str,
+                OpenApiParameter.QUERY,
+                required=False,
+                description="Texto en nombre, descripción o dirección.",
+            ),
+            OpenApiParameter(
+                "categoria",
+                str,
+                OpenApiParameter.QUERY,
+                required=False,
+                description="Nombre o id de categoría (repetible o coma-separado).",
+            ),
+            OpenApiParameter(
+                "zona",
+                str,
+                OpenApiParameter.QUERY,
+                required=False,
+                description="Texto libre sobre la dirección (ej. Mallasa).",
+            ),
+            OpenApiParameter(
+                "precio_min",
+                float,
+                OpenApiParameter.QUERY,
+                required=False,
+                description="Tarifa mínima en BOB.",
+            ),
+            OpenApiParameter(
+                "precio_max",
+                float,
+                OpenApiParameter.QUERY,
+                required=False,
+                description="Tarifa máxima en BOB.",
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
         queryset = (
@@ -78,10 +129,42 @@ class AtractivoViewSet(ReadOnlyModelViewSet):
             .prefetch_related("categorias")
             .order_by("nombre")
         )
-        query = self.request.query_params.get("q")
+        params = self.request.query_params
+        query = params.get("q")
         if query:
-            queryset = queryset.filter(Q(nombre__icontains=query))
-        return queryset
+            queryset = queryset.filter(
+                Q(nombre__icontains=query)
+                | Q(descripcion__icontains=query)
+                | Q(direccion__icontains=query)
+            )
+        categorias = params.getlist("categoria")
+        if len(categorias) == 1 and "," in categorias[0]:
+            categorias = [c.strip() for c in categorias[0].split(",")]
+        categorias = [c for c in categorias if c]
+        if categorias:
+            por_id = [c for c in categorias if c.isdigit()]
+            por_nombre = [c for c in categorias if not c.isdigit()]
+            filtro_categoria = Q()
+            if por_id:
+                filtro_categoria |= Q(categorias__id_categoria__in=por_id)
+            if por_nombre:
+                filtro_categoria |= Q(categorias__nombre__in=por_nombre)
+            queryset = queryset.filter(filtro_categoria)
+        zona = params.get("zona")
+        if zona:
+            queryset = queryset.filter(direccion__icontains=zona)
+        try:
+            precio_min = float(params["precio_min"]) if "precio_min" in params else None
+            precio_max = float(params["precio_max"]) if "precio_max" in params else None
+        except (TypeError, ValueError):
+            raise ValidationError(
+                {"detail": "precio_min y precio_max deben ser numéricos (BOB)."}
+            )
+        if precio_min is not None:
+            queryset = queryset.filter(tarifas__monto__gte=precio_min)
+        if precio_max is not None:
+            queryset = queryset.filter(tarifas__monto__lte=precio_max)
+        return queryset.distinct()
 
     @extend_schema(
         parameters=[
@@ -156,6 +239,36 @@ class AtractivoViewSet(ReadOnlyModelViewSet):
         for item, obj in zip(datos, queryset):
             item["distancia_m"] = round(obj.distancia.m, 1)
         return Response(datos)
+
+    @extend_schema(
+        responses={200: OpenApiTypes.OBJECT},
+        description="Facetas para el panel de filtros: categorías con "
+        "conteo de atractivos activos y rango de precios BOB.",
+    )
+    @action(detail=False, methods=["get"], url_path="facetas")
+    def facetas(self, request):
+        """GET /api/turismo/atractivos/facetas/ — opciones del panel."""
+        activos = Atractivo.objects.filter(activo=True)
+        categorias = list(
+            Categoria.objects.filter(atractivos__activo=True)
+            .annotate(total=Count("atractivos"))
+            .order_by("nombre")
+            .values("id_categoria", "nombre", "total")
+        )
+        precios = Tarifa.objects.filter(atractivo__activo=True).aggregate(
+            min=Min("monto"), max=Max("monto"), promedio=Avg("monto")
+        )
+        return Response(
+            {
+                "total_atractivos": activos.count(),
+                "categorias": categorias,
+                "precios_bob": {
+                    "min": precios["min"],
+                    "max": precios["max"],
+                    "promedio": precios["promedio"],
+                },
+            }
+        )
 
 
 class AtractivoAdminViewSet(ModelViewSet):
