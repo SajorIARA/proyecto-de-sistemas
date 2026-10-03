@@ -13,6 +13,10 @@ from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
     TokenRefreshSerializer,
 )
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from usuarios.serializers import (
@@ -117,7 +121,10 @@ class LogoutView(APIView):
         serializer = LogoutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            RefreshToken(serializer.validated_data["refresh"]).blacklist()
+            refresh = RefreshToken(serializer.validated_data["refresh"])
+            if refresh.get("user_id") != str(request.user.id_usuario):
+                raise TokenError("El token no pertenece al usuario.")
+            refresh.blacklist()
         except (TokenError, TokenBackendError):
             return Response(
                 {"detail": "refresh token inválido."},
@@ -179,4 +186,8 @@ class PasswordChangeView(APIView):
         usuario = request.user
         usuario.set_password(serializer.validated_data["new_password"])
         usuario.save(update_fields=["password", "fecha_actualizacion"])
+        # Invalida todos los refresh vivos: el cambio de contraseña
+        # cierra las demás sesiones del usuario.
+        for outstanding in OutstandingToken.objects.filter(user=usuario):
+            BlacklistedToken.objects.get_or_create(token=outstanding)
         return Response({"detail": "Contraseña actualizada correctamente."})
