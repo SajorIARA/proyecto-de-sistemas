@@ -13,11 +13,17 @@ import type {
   AuthUser,
   LoginPayload,
   RegisterPayload,
+  RolCodigo,
 } from "../../../types/auth";
+import { esRolCodigo } from "../../../types/auth";
 
 interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
+  /** Códigos de rol válidos del usuario en sesión (puede estar vacío). */
+  roles: RolCodigo[];
+  /** `true` solo con rol ADMIN. Base de las rutas y acciones restringidas. */
+  esAdmin: boolean;
   login: (payload: LoginPayload) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<boolean>;
   logout: () => Promise<void>;
@@ -89,15 +95,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  /**
+   * Roles derivados del usuario persistido.
+   *
+   * Se filtran con `esRolCodigo` porque vienen de `localStorage` (JSON que
+   * el usuario podría editar a mano) y porque el backend podría añadir
+   * códigos nuevos: un valor desconocido se descarta en vez de abrir la
+   * puerta a una sección restringida.
+   *
+   * Limitación conocida: el JWT no incluye roles y no existe endpoint
+   * `/auth/me/`, así que los roles solo se actualizan al volver a iniciar
+   * sesión. Si a un usuario lo promueven en la BD, el frontend lo refleja
+   * recién en el próximo login.
+   */
+  const roles = useMemo<RolCodigo[]>(
+    () => (user?.roles ?? []).filter(esRolCodigo),
+    [user],
+  );
+
+  const esAdmin = roles.includes("ADMIN");
+
   const value = useMemo(
     () => ({
       user,
       isAuthenticated: hasAccessToken,
+      roles,
+      esAdmin,
       login,
       register,
       logout,
     }),
-    [user, hasAccessToken, login, register, logout],
+    [user, hasAccessToken, roles, esAdmin, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -84,6 +84,12 @@ export function HomePage() {
                 <a href="#inicio" className="transition hover:text-white">
                   Inicio
                 </a>
+                <Link
+                  to="/destinos"
+                  className="transition hover:text-white"
+                >
+                  Catálogo
+                </Link>
                 <a href="#experiencias" className="transition hover:text-white">
                   Experiencias
                 </a>
@@ -279,7 +285,12 @@ export function HomePage() {
                 </p>
 
                 <div className="mt-7 flex items-center gap-2 text-sm font-black">
-                  Descubrir
+                  <Link
+                    to={`/destinos?categoria=${encodeURIComponent(categoria.nombre)}`}
+                    className="transition hover:text-amber-700"
+                  >
+                    Ver {categoria.nombre.toLowerCase()}
+                  </Link>
                   <span className="transition group-hover:translate-x-1">→</span>
                 </div>
               </article>
