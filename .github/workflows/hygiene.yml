@@ -1,0 +1,62 @@
+name: Higiene (shell, workflows)
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: shellcheck scripts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar shellcheck
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+      - name: Revisar scripts shell
+        run: |
+          sh_files=$(git ls-files '*.sh')
+          if [ -z "$sh_files" ]; then
+            echo "Sin scripts .sh versionados."
+            exit 0
+          fi
+          echo "$sh_files" | xargs shellcheck --severity=warning
+
+  actionlint:
+    name: actionlint workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar actionlint fijado
+        run: |
+          curl -sSL -o /tmp/actionlint.tar.gz \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.1/actionlint_1.7.1_linux_amd64.tar.gz
+          tar -xzf /tmp/actionlint.tar.gz -C /tmp actionlint
+          chmod +x /tmp/actionlint
+      - name: Revisar workflows
+        run: /tmp/actionlint -color
+
+  workflows-yaml:
+    name: YAML válido en workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parsear YAML
+        run: |
+          python3 -c "
+          import glob, sys, yaml
+          ok = True
+          for f in sorted(glob.glob('.github/workflows/*.yml')):
+              try:
+                  yaml.safe_load(open(f))
+                  print(f'OK {f}')
+              except Exception as e:
+                  print(f'FAIL {f}: {e}')
+                  ok = False
+          sys.exit(0 if ok else 1)
+          "
