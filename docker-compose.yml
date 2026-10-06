@@ -111,7 +111,9 @@ services:
     image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.8}
     container_name: turismo-melgarejo_worker
     restart: always
-    command: sh -c "python manage.py migrate --noinput && celery -A config worker --loglevel=info --concurrency=2"
+    # Solo el backend migra (evita carreras de CREATE EXTENSION entre
+    # migradores concurrentes); el worker espera a que esté healthy.
+    command: celery -A config worker --loglevel=info --concurrency=2
     volumes:
       - ./backend:/app
     environment:
@@ -128,6 +130,8 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      backend:
         condition: service_healthy
     networks:
       - app-network
@@ -137,7 +141,7 @@ services:
     image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.8}
     container_name: turismo-melgarejo_beat
     restart: always
-    command: sh -c "python manage.py migrate --noinput && celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    command: celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
       - ./backend:/app
     environment:
@@ -154,6 +158,8 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      backend:
         condition: service_healthy
     networks:
       - app-network
