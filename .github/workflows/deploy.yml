@@ -11,7 +11,10 @@ on:
         options:
           - staging
           - production
-  push:
+  # Solo desplegar si el CI pasó: evita publicar con tests/lint rotos.
+  workflow_run:
+    workflows: ["CI Principal"]
+    types: [completed]
     branches: [dev, main]
 
 permissions:
@@ -22,11 +25,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  gate:
+    name: Verificar CI en verde
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # En dispatch manual el responsable asume el estado; en automático
+    # solo se despliega si el CI concluyó con éxito.
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - run: echo "CI OK, procediendo al deploy."
+
   deploy:
     name: Deploy to Railway (${{ github.ref_name }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.ref_name == 'main' && 'production' || 'staging') }}
+    needs: [gate]
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'staging') }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
@@ -40,8 +54,8 @@ jobs:
           RAILWAY_SERVICE: turismo-melgarejo-backend
         run: |
           if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "::warning::RAILWAY_TOKEN no configurado. Deploy omitido."
-            exit 0
+            echo "::error::RAILWAY_TOKEN no configurado. Deploy no ejecutado."
+            exit 1
           fi
           npx @railway/cli up --service "$RAILWAY_SERVICE" --ci
 
@@ -51,6 +65,7 @@ jobs:
           RAILWAY_SERVICE: turismo-melgarejo-frontend
         run: |
           if [ -z "$RAILWAY_TOKEN" ]; then
-            exit 0
+            echo "::error::RAILWAY_TOKEN no configurado. Deploy no ejecutado."
+            exit 1
           fi
           npx @railway/cli up --service "$RAILWAY_SERVICE" --ci

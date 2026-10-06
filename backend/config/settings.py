@@ -132,6 +132,7 @@ REST_FRAMEWORK = {
         "user": "1000/hour",
         "auth": "30/minute",
     },
+    "NUM_PROXIES": 1,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
@@ -141,6 +142,10 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
+
+# Docs OpenAPI servidas salvo apagado explícito (SERVE_DOCS=0 en prod
+# si se prefiere no exponer el contrato públicamente).
+SERVE_DOCS = os.getenv("SERVE_DOCS", "1") == "1"
 
 # El throttle de auth se desactiva al correr la suite de tests
 # (manage.py test): decenas de logins/registros legítimos por minuto
@@ -165,6 +170,10 @@ AUTH_PASSWORD_VALIDATORS = [
         "OPTIONS": {"min_length": 8},
     },
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 # Celery + Redis (issue #21): broker y backend de resultados por env,

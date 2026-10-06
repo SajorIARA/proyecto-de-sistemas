@@ -1,6 +1,6 @@
 from rest_framework.viewsets import ModelViewSet
 
-from usuarios.permissions import IsAdminOrReadOnly
+from recomendaciones.permissions import IsAuthenticatedOwnerOrAdmin
 
 from .models import ConsultaRecomendacion, UsuarioPreferencia
 from .serializers import (
@@ -9,17 +9,31 @@ from .serializers import (
 )
 
 
-class UsuarioPreferenciaViewSet(ModelViewSet):
-    """CRUD preferencias de usuario. Lectura pública, escritura solo ADMIN."""
+def _es_admin(usuario) -> bool:
+    return usuario.roles.filter(codigo="ADMIN").exists()
 
-    permission_classes = [IsAdminOrReadOnly]
+
+class UsuarioPreferenciaViewSet(ModelViewSet):
+    """CRUD preferencias. Autenticados ven lo propio; ADMIN todo y escribe."""
+
+    permission_classes = [IsAuthenticatedOwnerOrAdmin]
     serializer_class = UsuarioPreferenciaSerializer
-    queryset = UsuarioPreferencia.objects.select_related("usuario", "categoria").all()
+
+    def get_queryset(self):
+        base = UsuarioPreferencia.objects.select_related("usuario", "categoria").all()
+        if _es_admin(self.request.user):
+            return base
+        return base.filter(usuario=self.request.user)
 
 
 class ConsultaRecomendacionViewSet(ModelViewSet):
-    """CRUD consultas de recomendación. Lectura pública, escritura solo ADMIN."""
+    """CRUD consultas. Autenticados ven lo propio; ADMIN todo y escribe."""
 
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAuthenticatedOwnerOrAdmin]
     serializer_class = ConsultaRecomendacionSerializer
-    queryset = ConsultaRecomendacion.objects.select_related("usuario").all()
+
+    def get_queryset(self):
+        base = ConsultaRecomendacion.objects.select_related("usuario").all()
+        if _es_admin(self.request.user):
+            return base
+        return base.filter(usuario=self.request.user)
