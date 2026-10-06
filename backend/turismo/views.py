@@ -15,6 +15,11 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from usuarios.permissions import IsAdmin, IsAdminOrReadOnly
 
+try:
+    from cloudinary.utils import api_sign_request
+except ImportError:  # pragma: no cover - SDK ausente: firma degradada a 503
+    api_sign_request = None
+
 from .models import Atractivo, Categoria, Foto, Horario, Tarifa, TipoTarifa
 from .serializers import (
     AtractivoAdminSerializer,
@@ -343,14 +348,6 @@ class FirmaFotoView(APIView):
         description="Firma una subida directa a Cloudinary.",
     )
     def post(self, request):
-        cloud_name = settings.CLOUDINARY.get("cloud_name")
-        api_key = settings.CLOUDINARY.get("api_key")
-        api_secret = settings.CLOUDINARY.get("api_secret")
-        if not (cloud_name and api_key and api_secret):
-            return Response(
-                {"detail": "Cloudinary no configurado."},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE,
-            )
         atractivo_id = request.data.get("atractivo")
         formato = str(request.data.get("formato", "")).lower().lstrip(".")
         try:
@@ -372,9 +369,15 @@ class FirmaFotoView(APIView):
                 {"detail": "bytes debe estar en (0, 10MB]."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        cloud_name = settings.CLOUDINARY.get("cloud_name")
+        api_key = settings.CLOUDINARY.get("api_key")
+        api_secret = settings.CLOUDINARY.get("api_secret")
+        if not (cloud_name and api_key and api_secret) or api_sign_request is None:
+            return Response(
+                {"detail": "Cloudinary no configurado."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
         import time
-
-        from cloudinary.utils import api_sign_request
 
         timestamp = int(time.time())
         params = {

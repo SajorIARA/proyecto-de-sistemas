@@ -131,7 +131,7 @@ class FirmaFotoTests(TestCase):
                 clear=False,
             ),
             mock.patch(
-                "cloudinary.utils.api_sign_request", return_value="firma123"
+                "turismo.views.api_sign_request", return_value="firma123"
             ) as mock_firma,
         ):
             resp = self.cliente.post(
