@@ -42,6 +42,9 @@ services:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ci-placeholder}
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
     depends_on:
       db:
         condition: service_healthy

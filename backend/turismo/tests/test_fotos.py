@@ -94,9 +94,7 @@ class FotoAdminCRUDTests(TestCase):
             orden=0,
         )
         resp = APIClient().get("/api/turismo/atractivos/")
-        self.assertEqual(
-            resp.data["results"][0]["imagenes"], ["turismo/dev/portada"]
-        )
+        self.assertEqual(resp.data["results"][0]["imagenes"], ["turismo/dev/portada"])
 
 
 class FirmaFotoTests(TestCase):
@@ -115,9 +113,7 @@ class FirmaFotoTests(TestCase):
             format="json",
         )
         # Sin CLOUDINARY_* en env de tests -> degradado controlado.
-        self.assertEqual(
-            resp.status_code, status.HTTP_503_SERVICE_UNAVAILABLE
-        )
+        self.assertEqual(resp.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
 
     def test_anonimo_401(self) -> None:
         resp = APIClient().post(FIRMA_URL, {}, format="json")

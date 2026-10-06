@@ -287,7 +287,11 @@ class AtractivoAdminViewSet(ModelViewSet):
 
     permission_classes = [IsAdmin]
     serializer_class = AtractivoAdminSerializer
-    queryset = Atractivo.objects.prefetch_related("categorias", "fotos").all().order_by("nombre")
+    queryset = (
+        Atractivo.objects.prefetch_related("categorias", "fotos")
+        .all()
+        .order_by("nombre")
+    )
 
     def perform_destroy(self, instance: Atractivo) -> None:
         """Baja lógica (issue #20): marca inactivo en vez de borrar.
