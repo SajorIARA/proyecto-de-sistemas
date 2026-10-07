@@ -380,11 +380,12 @@ class FirmaFotoView(APIView):
         import time
 
         timestamp = int(time.time())
+        # Solo parámetros que el frontend reenvía tal cual en el upload;
+        # todo lo firmado debe enviarse o Cloudinary rechaza la firma.
         params = {
             "timestamp": timestamp,
             "folder": f"turismo/{atractivo_id}",
             "allowed_formats": ",".join(FORMATOS_FOTO),
-            "max_bytes": MAX_BYTES_FOTO,
         }
         firma = api_sign_request(params, api_secret)
         return Response(
