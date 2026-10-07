@@ -1,16 +1,14 @@
 /**
- * Espacio reservado para el mapa del destino.
+ * Mapa interactivo del destino (Leaflet + OpenStreetMap).
  *
- * El PO pide "mapa estático/interactivo con su coordenada PostGIS", pero
- * el mapa se encarga el backend y queda fuera de este sprint. Por eso
- * aquí NO se integra ninguna librería de mapas: se reserva el layout, se
- * muestran las coordenadas reales que llegan de PostGIS
- * (`Atractivo.ubicacion` → `{longitud, latitud}`) y se deja el hueco
- * listo para montar el mapa cuando exista.
- *
- * Cuando el backend exponga la URL del mapa o las coordenadas enrichecidas,
- * basta con reemplazar el cuerpo de este componente.
+ * Centra el mapa en la coordenada PostGIS que entrega el backend
+ * (`Atractivo.ubicacion` → `{longitud, latitud}`) con un marcador
+ * circular de marca. Sin dependencias de API keys.
  */
+
+import { useMemo } from "react";
+import { CircleMarker, MapContainer, Popup, TileLayer } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 import type { Coordenada } from "../../../types/turismo";
 import { formatearCoordenadas } from "../utils/formato";
@@ -20,8 +18,14 @@ interface MapaDestinoProps {
   nombreDestino: string;
 }
 
+const ZOOM = 15;
+
 export function MapaDestino({ ubicacion, nombreDestino }: MapaDestinoProps) {
-  const hayCoordenada = Boolean(ubicacion);
+  const centro = useMemo<[number, number] | null>(
+    () =>
+      ubicacion ? [ubicacion.latitud, ubicacion.longitud] : null,
+    [ubicacion],
+  );
 
   return (
     <section
@@ -42,73 +46,53 @@ export function MapaDestino({ ubicacion, nombreDestino }: MapaDestinoProps) {
           </h3>
         </div>
 
-        <span
-          className="shrink-0 rounded-full border border-[#C6923B]/30 bg-[#C6923B]/12 px-3 py-1.5 text-[0.58rem] font-black uppercase tracking-[0.16em] text-[#8D4F32]"
-        >
-          Mapa pendiente
+        <span className="shrink-0 rounded-full border border-[#6F8064]/25 bg-[#EDF2E9] px-3 py-1.5 text-[0.58rem] font-black uppercase tracking-[0.16em] text-[#304A38]">
+          Mapa interactivo
         </span>
       </header>
 
-      {/* Hueco reservado para el mapa interactivo */}
-      <div
-        className="relative flex min-h-[19rem] flex-col items-center justify-center overflow-hidden bg-[#E9DFC9] px-6 py-12 text-center"
-        data-testid="mapa-placeholder"
-      >
-        {/* Textura de mapa en tonos de la identidad */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.16]"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(47,75,59,.55) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(47,75,59,.55) 1px, transparent 1px)
-            `,
-            backgroundSize: "46px 46px",
-          }}
-          aria-hidden="true"
-        />
-
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(circle at 50% 45%, rgba(198,146,59,.28), transparent 60%)",
-          }}
-          aria-hidden="true"
-        />
-
-        <span
-          className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full bg-[#2F4B3B] text-2xl shadow-[0_14px_34px_rgba(47,75,59,0.35)]"
-          aria-hidden="true"
-        >
-          📍
-        </span>
-
-        <p className="relative z-10 mt-5 max-w-sm text-sm font-bold leading-6 text-[#263029]">
-          El mapa interactivo de {nombreDestino} se habilitará en la próxima
-          entrega.
-        </p>
-
-        <p className="relative z-10 mt-2 text-xs leading-5 text-[#514B43]">
-          La coordenada PostGIS del destino ya está disponible y se muestra
-          lista para el mapa.
-        </p>
-
-        {/* Coordenadas reales del backend */}
-        <div className="relative z-10 mt-6 rounded-full border border-[#5B3A29]/12 bg-[#FFFDF8]/85 px-5 py-2.5 backdrop-blur">
-          <p className="text-[0.58rem] font-black uppercase tracking-[0.2em] text-[#8D4F32]">
-            Coordenadas
-          </p>
-
-          <p className="mt-1 font-mono text-sm font-bold tabular-nums text-[#233128]">
-            {formatearCoordenadas(ubicacion)}
-          </p>
+      {centro ? (
+        <div data-testid="mapa-interactivo">
+          <MapContainer
+            center={centro}
+            zoom={ZOOM}
+            scrollWheelZoom={false}
+            className="z-0 h-[19rem] w-full"
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <CircleMarker
+              center={centro}
+              radius={10}
+              pathOptions={{
+                color: "#9A5B3C",
+                weight: 3,
+                fillColor: "#C6923B",
+                fillOpacity: 0.9,
+              }}
+            >
+              <Popup>{nombreDestino}</Popup>
+            </CircleMarker>
+          </MapContainer>
         </div>
-
-        {!hayCoordenada && (
-          <p className="relative z-10 mt-4 text-xs font-semibold text-[#8A8177]">
+      ) : (
+        <div
+          className="flex min-h-[19rem] flex-col items-center justify-center px-6 py-12 text-center"
+          data-testid="mapa-sin-coordenada"
+        >
+          <p className="text-sm font-bold text-[#263029]">
             Este destino aún no tiene coordenada registrada.
           </p>
-        )}
+        </div>
+      )}
+
+      {/* Coordenadas reales del backend */}
+      <div className="flex items-center justify-center border-t border-[#5B3A29]/[0.08] px-6 py-4">
+        <p className="font-mono text-sm font-bold tabular-nums text-[#233128]">
+          {formatearCoordenadas(ubicacion)}
+        </p>
       </div>
     </section>
   );

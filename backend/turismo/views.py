@@ -1,22 +1,31 @@
+from django.conf import settings
 from django.contrib.gis.db.models.functions import Distance, Transform
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from django.db.models import Avg, Count, Max, Min, Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from usuarios.permissions import IsAdmin, IsAdminOrReadOnly
 
-from .models import Atractivo, Categoria, Horario, Tarifa, TipoTarifa
+try:
+    from cloudinary.utils import api_sign_request
+except ImportError:  # pragma: no cover - SDK ausente: firma degradada a 503
+    api_sign_request = None
+
+from .models import Atractivo, Categoria, Foto, Horario, Tarifa, TipoTarifa
 from .serializers import (
     AtractivoAdminSerializer,
     AtractivoSerializer,
     CategoriaSerializer,
+    FotoSerializer,
     HorarioSerializer,
     TarifaSerializer,
     TipoTarifaSerializer,
@@ -126,7 +135,7 @@ class AtractivoViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         queryset = (
             Atractivo.objects.filter(activo=True)
-            .prefetch_related("categorias")
+            .prefetch_related("categorias", "fotos")
             .order_by("nombre")
         )
         params = self.request.query_params
@@ -224,7 +233,7 @@ class AtractivoViewSet(ReadOnlyModelViewSet):
         punto_utm = punto.transform(32719, clone=True)
         queryset = (
             Atractivo.objects.filter(activo=True)
-            .prefetch_related("categorias")
+            .prefetch_related("categorias", "fotos")
             .annotate(distancia=Distance(Transform("ubicacion", 32719), punto_utm))
             .filter(distancia__lte=D(m=radio))
             .order_by("distancia")
@@ -283,7 +292,11 @@ class AtractivoAdminViewSet(ModelViewSet):
 
     permission_classes = [IsAdmin]
     serializer_class = AtractivoAdminSerializer
-    queryset = Atractivo.objects.prefetch_related("categorias").all().order_by("nombre")
+    queryset = (
+        Atractivo.objects.prefetch_related("categorias", "fotos")
+        .all()
+        .order_by("nombre")
+    )
 
     def perform_destroy(self, instance: Atractivo) -> None:
         """Baja lógica (issue #20): marca inactivo en vez de borrar.
@@ -293,3 +306,94 @@ class AtractivoAdminViewSet(ModelViewSet):
         """
         instance.activo = False
         instance.save(update_fields=["activo", "fecha_actualizacion"])
+
+
+FORMATOS_FOTO = ("jpg", "jpeg", "png", "webp")
+MAX_BYTES_FOTO = 10 * 1024 * 1024
+
+
+class FotoAdminViewSet(ModelViewSet):
+    """CRUD de fotos de destinos. Solo ADMIN."""
+
+    permission_classes = [IsAdmin]
+    serializer_class = FotoSerializer
+    queryset = (
+        Foto.objects.select_related("atractivo")
+        .all()
+        .order_by("atractivo", "orden", "id_foto")
+    )
+
+
+class FirmaFotoView(APIView):
+    """POST /api/turismo/admin/fotos/firma/ — firma subida directa.
+
+    El frontend sube el archivo directo a Cloudinary con estos
+    parámetros (el API secret nunca sale del backend). 503 si
+    Cloudinary no está configurado.
+    """
+
+    permission_classes = [IsAdmin]
+
+    @extend_schema(
+        request={
+            "type": "object",
+            "properties": {
+                "atractivo": {"type": "string", "format": "uuid"},
+                "formato": {"type": "string", "enum": list(FORMATOS_FOTO)},
+                "bytes": {"type": "integer", "minimum": 1},
+            },
+            "required": ["atractivo", "formato", "bytes"],
+        },
+        responses={200: OpenApiTypes.OBJECT},
+        description="Firma una subida directa a Cloudinary.",
+    )
+    def post(self, request):
+        atractivo_id = request.data.get("atractivo")
+        formato = str(request.data.get("formato", "")).lower().lstrip(".")
+        try:
+            peso = int(request.data.get("bytes", 0))
+        except (TypeError, ValueError):
+            peso = 0
+        if not Atractivo.objects.filter(pk=atractivo_id).exists():
+            return Response(
+                {"detail": "Atractivo inexistente."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if formato not in FORMATOS_FOTO:
+            return Response(
+                {"detail": f"formato debe ser uno de {list(FORMATOS_FOTO)}."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not 0 < peso <= MAX_BYTES_FOTO:
+            return Response(
+                {"detail": "bytes debe estar en (0, 10MB]."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        cloud_name = settings.CLOUDINARY.get("cloud_name")
+        api_key = settings.CLOUDINARY.get("api_key")
+        api_secret = settings.CLOUDINARY.get("api_secret")
+        if not (cloud_name and api_key and api_secret) or api_sign_request is None:
+            return Response(
+                {"detail": "Cloudinary no configurado."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        import time
+
+        timestamp = int(time.time())
+        params = {
+            "timestamp": timestamp,
+            "folder": f"turismo/{atractivo_id}",
+            "allowed_formats": ",".join(FORMATOS_FOTO),
+            "max_bytes": MAX_BYTES_FOTO,
+        }
+        firma = api_sign_request(params, api_secret)
+        return Response(
+            {
+                "cloud_name": cloud_name,
+                "api_key": api_key,
+                "signature": firma,
+                "timestamp": timestamp,
+                "folder": params["folder"],
+                "allowed_formats": list(FORMATOS_FOTO),
+            }
+        )

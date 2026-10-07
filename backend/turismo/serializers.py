@@ -5,6 +5,7 @@ from rest_framework import serializers
 from .models import (
     Atractivo,
     Categoria,
+    Foto,
     Horario,
     Tarifa,
     TipoTarifa,
@@ -70,6 +71,7 @@ class AtractivoSerializer(serializers.ModelSerializer):
     categorias = serializers.SerializerMethodField()
     ubicacion = serializers.SerializerMethodField()
     area = serializers.SerializerMethodField()
+    imagenes = serializers.SerializerMethodField()
 
     class Meta:
         model = Atractivo
@@ -82,6 +84,7 @@ class AtractivoSerializer(serializers.ModelSerializer):
             "ubicacion",
             "area",
             "categorias",
+            "imagenes",
             "fuente_origen",
             "activo",
             "fecha_creacion",
@@ -94,6 +97,9 @@ class AtractivoSerializer(serializers.ModelSerializer):
             categoria.nombre for categoria in obj.categorias.all() if categoria.activo
         ]
 
+    def get_imagenes(self, obj: Atractivo) -> list[str]:
+        return [foto.public_id for foto in obj.fotos.all().order_by("orden", "id_foto")]
+
     def get_ubicacion(self, obj: Atractivo) -> dict[str, float]:
         point: Point = obj.ubicacion
         return {"longitud": point.x, "latitud": point.y}
@@ -103,6 +109,22 @@ class AtractivoSerializer(serializers.ModelSerializer):
         if obj.area is None:
             return None
         return obj.area.coords
+
+
+class FotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Foto
+        fields = [
+            "id_foto",
+            "atractivo",
+            "public_id",
+            "url",
+            "ancho",
+            "alto",
+            "orden",
+            "fecha_creacion",
+        ]
+        read_only_fields = ["id_foto", "fecha_creacion"]
 
 
 class UbicacionField(serializers.Field):

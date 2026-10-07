@@ -58,6 +58,6 @@ database/backups/
 .opencode/
 
 # ============================================================
-# Carpeta local SQA (no versionada)
+# Carpeta local SQA + archivos personales (nunca commitear)
 # ============================================================
 sqa/
