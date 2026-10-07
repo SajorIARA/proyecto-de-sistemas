@@ -92,6 +92,17 @@ class SubirFotoViewTests(TestCase):
         )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_subir_nombre_con_traversal_400(self) -> None:
+        resp = self.cliente.post(
+            SUBIR_URL,
+            {
+                "atractivo": str(self.atractivo.id_atractivo),
+                "archivo": self._archivo("x.jpg/../evil", b"00"),
+            },
+            format="multipart",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_subir_peso_excedido_400(self) -> None:
         grande = b"0" * (11 * 1024 * 1024)
         resp = self.cliente.post(
