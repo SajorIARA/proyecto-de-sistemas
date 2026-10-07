@@ -189,6 +189,17 @@ CLOUDINARY = {
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
 CELERY_TIMEZONE = "America/La_Paz"
 CELERY_TASK_TRACK_STARTED = True
+CELERY_BEAT_SCHEDULE = {
+    "purga-staging-medios": {
+        "task": "turismo.tasks.purgar_staging",
+        "schedule": 3600.0,
+    },
+}
+
+# Staging de medios: directorio COMPARTIDO entre backend y worker
+# (volumen staging_data). La API guarda el temporal y el worker lo
+# consume; fuera de compose usar /tmp local.
+STAGING_DIR = os.getenv("STAGING_DIR", str(BASE_DIR / "staging"))
 
 # Logging
 LOGGING = {

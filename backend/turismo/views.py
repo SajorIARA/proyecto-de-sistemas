@@ -1,3 +1,5 @@
+import uuid
+
 from django.conf import settings
 from django.contrib.gis.db.models.functions import Distance, Transform
 from django.contrib.gis.geos import Point
@@ -396,5 +398,127 @@ class FirmaFotoView(APIView):
                 "timestamp": timestamp,
                 "folder": params["folder"],
                 "allowed_formats": list(FORMATOS_FOTO),
+            }
+        )
+
+
+EXTENSIONES_IMAGEN = ("jpg", "jpeg", "png", "webp")
+EXTENSIONES_VIDEO = ("mp4", "mov", "webm")
+
+
+class SubirFotoView(APIView):
+    """POST /api/turismo/admin/fotos/subir/ (multipart) — flujo async.
+
+    Recibe {atractivo, archivo, tipo, orden}, guarda el temporal en
+    staging compartido, crea la Foto en pending y encola la subida.
+    Responde 202 inmediato; el avance se consulta en estado/.
+    """
+
+    permission_classes = [IsAdmin]
+
+    @extend_schema(
+        request={
+            "type": "object",
+            "properties": {
+                "atractivo": {"type": "string", "format": "uuid"},
+                "tipo": {"type": "string", "enum": ["imagen", "video"]},
+                "orden": {"type": "integer", "minimum": 0},
+            },
+            "required": ["atractivo"],
+        },
+        responses={202: OpenApiTypes.OBJECT},
+        description="Recibe el archivo y encola la subida a Cloudinary.",
+    )
+    def post(self, request):
+        from .tasks import (
+            MAX_BYTES_IMAGEN,
+            MAX_BYTES_VIDEO,
+            _staging,
+            nombre_temporal,
+            subir_foto_task,
+        )
+
+        try:
+            atractivo = Atractivo.objects.get(pk=request.data.get("atractivo"))
+        except (Atractivo.DoesNotExist, ValueError, TypeError):
+            return Response(
+                {"detail": "Atractivo inexistente."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        tipo = request.data.get("tipo", Foto.TIPO_IMAGEN)
+        if tipo not in (Foto.TIPO_IMAGEN, Foto.TIPO_VIDEO):
+            return Response(
+                {"detail": "tipo debe ser imagen o video."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        archivo = request.FILES.get("archivo")
+        if archivo is None:
+            return Response(
+                {"detail": "Falta el archivo (campo archivo)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        permitidas = (
+            EXTENSIONES_VIDEO if tipo == Foto.TIPO_VIDEO else EXTENSIONES_IMAGEN
+        )
+        # Allowlist de pertenencia para el contrato (400); el temporal
+        # usa extensión fija por tipo (nunca la del usuario): cierra path
+        # traversal por construcción, no solo por validación.
+        extension_pedida = (
+            archivo.name.rsplit(".", 1)[-1] if "." in archivo.name else ""
+        ).lower()
+        maximo = MAX_BYTES_VIDEO if tipo == Foto.TIPO_VIDEO else MAX_BYTES_IMAGEN
+        if extension_pedida not in permitidas:
+            return Response(
+                {"detail": f"Extensión no permitida para {tipo}."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        extension = "mp4" if tipo == Foto.TIPO_VIDEO else "jpg"
+        if archivo.size is not None and archivo.size > maximo:
+            return Response(
+                {"detail": f"Archivo supera el máximo ({maximo} bytes)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        foto = Foto.objects.create(
+            atractivo=atractivo,
+            public_id=f"turismo/pending/{uuid.uuid4().hex}",
+            tipo=tipo,
+            estado=Foto.ESTADO_PENDING,
+            orden=int(request.data.get("orden", 0) or 0),
+        )
+        destino = _staging() / nombre_temporal(foto.id_foto, extension)
+        with open(destino, "wb") as salida:
+            for parte in archivo.chunks():
+                salida.write(parte)
+        subir_foto_task.delay(foto.id_foto, destino.name)
+        return Response(
+            {"id_foto": foto.id_foto, "estado": foto.estado},
+            status=status.HTTP_202_ACCEPTED,
+        )
+
+
+class EstadoFotoView(APIView):
+    """GET /api/turismo/admin/fotos/<id>/estado/ — avance de la subida."""
+
+    permission_classes = [IsAdmin]
+
+    @extend_schema(
+        responses={200: OpenApiTypes.OBJECT},
+        description="Estado pending/processing/completed/failed de la foto.",
+    )
+    def get(self, request, pk: int):
+        try:
+            foto = Foto.objects.get(pk=pk)
+        except (Foto.DoesNotExist, ValueError, TypeError):
+            return Response(
+                {"detail": "Foto inexistente."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        return Response(
+            {
+                "id_foto": foto.id_foto,
+                "estado": foto.estado,
+                "tipo": foto.tipo,
+                "url": foto.url or None,
+                "public_id": foto.public_id,
             }
         )
