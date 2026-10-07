@@ -185,16 +185,22 @@ describe("DestinoDetailPage", () => {
     expect(await within(seccionCostos).findByText("Gratuito")).toBeInTheDocument();
   });
 
-  it("reserva el espacio del mapa con la coordenada PostGIS", async () => {
+  it("muestra el mapa interactivo con la coordenada PostGIS", async () => {
     vi.mocked(obtenerAtractivo).mockResolvedValue(atractivo());
 
     renderDetalle();
 
-    const mapa = await screen.findByTestId("mapa-placeholder");
+    const mapa = await screen.findByTestId("mapa-interactivo");
 
     expect(mapa).toBeInTheDocument();
-    // latitud, longitud con 5 decimales
-    expect(mapa).toHaveTextContent("-16.56850, -68.06730");
+    // latitud, longitud con 5 decimales (puede repetirse en la ficha)
+    const coords = await screen.findAllByText("-16.56850, -68.06730");
+    expect(coords.length).toBeGreaterThanOrEqual(1);
+    expect(
+      within(mapa.closest("section") as HTMLElement).getByText(
+        "-16.56850, -68.06730",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("deja reservado el bloque de descripción histórica", async () => {

@@ -243,3 +243,50 @@ class Tarifa(models.Model):
 
     def __str__(self) -> str:
         return f"{self.atractivo} · {self.tipo_tarifa} · {self.monto} {self.moneda}"
+
+
+class Foto(models.Model):
+    """Foto de un destino, almacenada en Cloudinary (issue medios).
+
+    La BD solo guarda referencias (public_id/URL/dimensiones): ningún
+    binario vive en PostgreSQL ni pasa por Django (subida directa
+    firmada por el backend, entrega por CDN).
+    """
+
+    id_foto: models.BigAutoField[int, int] = models.BigAutoField(primary_key=True)
+    atractivo: models.ForeignKey[Atractivo, Atractivo] = models.ForeignKey(
+        Atractivo,
+        db_column="id_atractivo",
+        on_delete=models.CASCADE,
+        related_name="fotos",
+        db_index=False,
+    )
+    public_id: models.CharField[str, str] = models.CharField(
+        max_length=300, unique=True
+    )
+    url: models.URLField[str, str] = models.URLField(max_length=500)
+    ancho: models.IntegerField[int | None, int | None] = models.IntegerField(
+        null=True, blank=True
+    )
+    alto: models.IntegerField[int | None, int | None] = models.IntegerField(
+        null=True, blank=True
+    )
+    orden: models.IntegerField[int, int] = models.IntegerField(default=0)
+    fecha_creacion: models.DateTimeField[datetime, datetime] = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    class Meta:
+        db_table = "foto"
+        constraints = [
+            models.CheckConstraint(check=models.Q(orden__gte=0), name="ck_foto_orden"),
+        ]
+        indexes = [
+            models.Index(
+                fields=["atractivo", "orden"],
+                name="idx_foto_atractivo_orden",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.atractivo} · {self.public_id}"
