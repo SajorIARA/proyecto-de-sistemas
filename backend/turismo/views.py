@@ -1,4 +1,3 @@
-import re
 import uuid
 
 from django.conf import settings
@@ -460,17 +459,19 @@ class SubirFotoView(APIView):
         permitidas = (
             EXTENSIONES_VIDEO if tipo == Foto.TIPO_VIDEO else EXTENSIONES_IMAGEN
         )
-        extension = (
+        # Allowlist de pertenencia para el contrato (400); el temporal
+        # usa extensión fija por tipo (nunca la del usuario): cierra path
+        # traversal por construcción, no solo por validación.
+        extension_pedida = (
             archivo.name.rsplit(".", 1)[-1] if "." in archivo.name else ""
         ).lower()
         maximo = MAX_BYTES_VIDEO if tipo == Foto.TIPO_VIDEO else MAX_BYTES_IMAGEN
-        # Allowlist doble: pertenencia + alfanumérica (cierra path traversal
-        # del nombre original hacia staging; ej. "x.jpg/../evil").
-        if not re.fullmatch(r"[a-z0-9]+", extension) or extension not in permitidas:
+        if extension_pedida not in permitidas:
             return Response(
                 {"detail": f"Extensión no permitida para {tipo}."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        extension = "mp4" if tipo == Foto.TIPO_VIDEO else "jpg"
         if archivo.size is not None and archivo.size > maximo:
             return Response(
                 {"detail": f"Archivo supera el máximo ({maximo} bytes)."},
