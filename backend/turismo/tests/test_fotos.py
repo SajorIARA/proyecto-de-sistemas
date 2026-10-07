@@ -103,15 +103,21 @@ class FirmaFotoTests(TestCase):
         self.atractivo = _atractivo()
 
     def test_sin_credenciales_503(self) -> None:
-        resp = self.cliente.post(
-            FIRMA_URL,
-            {
-                "atractivo": str(self.atractivo.id_atractivo),
-                "formato": "jpg",
-                "bytes": 1000,
-            },
-            format="json",
-        )
+        # Fuerza el caso sin configurar aunque el entorno tenga credenciales.
+        with mock.patch.dict(
+            "django.conf.settings.CLOUDINARY",
+            {"cloud_name": "", "api_key": "", "api_secret": ""},
+            clear=False,
+        ):
+            resp = self.cliente.post(
+                FIRMA_URL,
+                {
+                    "atractivo": str(self.atractivo.id_atractivo),
+                    "formato": "jpg",
+                    "bytes": 1000,
+                },
+                format="json",
+            )
         # Sin CLOUDINARY_* en env de tests -> degradado controlado.
         self.assertEqual(resp.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
 
