@@ -128,8 +128,19 @@ class SubirFotoTaskTests(TestCase):
                     "width": 800,
                     "height": 600,
                 }
-                with mock.patch.dict(
-                    "sys.modules", {"cloudinary.uploader": falso_uploader}
+                with (
+                    mock.patch.dict(
+                        "django.conf.settings.CLOUDINARY",
+                        {
+                            "cloud_name": "test",
+                            "api_key": "k",
+                            "api_secret": "s",
+                        },
+                        clear=False,
+                    ),
+                    mock.patch.dict(
+                        "sys.modules", {"cloudinary.uploader": falso_uploader}
+                    ),
                 ):
                     resultado = subir_foto_task(str(foto.id_foto), ruta.name)
         foto.refresh_from_db()
