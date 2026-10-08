@@ -30,7 +30,7 @@ export function DestinoCard({ atractivo }: DestinoCardProps) {
   const detalle = `/destinos/${atractivo.id}`;
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-[1.85rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] shadow-[0_16px_40px_rgba(72,55,38,0.09)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_60px_rgba(72,55,38,0.16)] focus-within:-translate-y-1.5">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-[1.85rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] shadow-[0_16px_40px_rgba(72,55,38,0.09)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_60px_rgba(72,55,38,0.16)] focus-within:-translate-y-1.5">
       {/* Barra cultural superior */}
       <div className="flex h-[3px] shrink-0 overflow-hidden">
         <span className="flex-1 bg-[#2F4B3B]" />
@@ -78,11 +78,11 @@ export function DestinoCard({ atractivo }: DestinoCardProps) {
           <span>{ubicacion || "Ubicación no registrada"}</span>
         </p>
 
-        <p className="mt-4 flex-1 text-sm leading-6 text-[#514B43]">
+        <p className="mt-4 text-sm leading-6 text-[#514B43]">
           {descripcion || "Sin descripción disponible por el momento."}
         </p>
 
-        <div className="mt-6">
+        <div className="mt-auto pt-6">
           <Link
             to={detalle}
             className="inline-flex w-full items-center justify-center gap-2.5 rounded-full bg-[#2F4B3B] px-5 py-3.5 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]"
