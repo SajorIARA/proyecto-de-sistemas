@@ -155,6 +155,29 @@ class PasswordChangeTests(TestCase):
         )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_cambio_invalida_refresh_previo(self) -> None:
+        login = APIClient().post(
+            "/api/auth/login/",
+            {"email": "cambio@test.com", "password": "clave1234!"},
+            format="json",
+        )
+        refresh_viejo = login.data["refresh"]
+        self.cliente.post(
+            self.URL,
+            {
+                "current_password": "clave1234!",
+                "new_password": "nuevaClave99!",
+                "new_password_confirm": "nuevaClave99!",
+            },
+            format="json",
+        )
+        resp = APIClient().post(
+            "/api/auth/token/refresh/",
+            {"refresh": refresh_viejo},
+            format="json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_401_UNAUTHORIZED)
+
 
 class PasswordValidatorsTests(TestCase):
     """AUTH_PASSWORD_VALIDATORS se aplican en registro."""
@@ -171,6 +194,37 @@ class PasswordValidatorsTests(TestCase):
             format="json",
         )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_registro_password_numerica_retorna_400(self) -> None:
+        resp = APIClient().post(
+            "/api/auth/register/",
+            {
+                "nombre": "Numerico",
+                "email": "numerico@test.com",
+                "password": "12345678",
+                "password_confirm": "12345678",
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_registro_carrera_email_duplicado_retorna_400(self) -> None:
+        # Simula la carrera: validate() pasó pero el email se duplicó
+        # antes del create() -> IntegrityError debe volverse 400, no 500.
+        from rest_framework import serializers as drf_serializers
+
+        from usuarios.serializers import RegisterSerializer
+
+        _crear_usuario("carrera@test.com", "TOURIST")
+        with self.assertRaises(drf_serializers.ValidationError):
+            RegisterSerializer().create(
+                {
+                    "nombre": "Carrera",
+                    "email": "carrera@test.com",
+                    "password": "Clave99!",
+                    "password_confirm": "Clave99!",
+                }
+            )
 
 
 @override_settings(DISABLE_AUTH_THROTTLE=False)

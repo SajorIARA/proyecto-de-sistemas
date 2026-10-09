@@ -132,6 +132,7 @@ REST_FRAMEWORK = {
         "user": "1000/hour",
         "auth": "30/minute",
     },
+    "NUM_PROXIES": 1,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
@@ -141,6 +142,10 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
+
+# Docs OpenAPI servidas salvo apagado explícito (SERVE_DOCS=0 en prod
+# si se prefiere no exponer el contrato públicamente).
+SERVE_DOCS = os.getenv("SERVE_DOCS", "1") == "1"
 
 # El throttle de auth se desactiva al correr la suite de tests
 # (manage.py test): decenas de logins/registros legítimos por minuto
@@ -165,14 +170,36 @@ AUTH_PASSWORD_VALIDATORS = [
         "OPTIONS": {"min_length": 8},
     },
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 # Celery + Redis (issue #21): broker y backend de resultados por env,
 # con defaults locales. Las tareas se descubren en cada app (tasks.py).
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+# Cloudinary (medios): credenciales solo por env. Sin ellas, la firma
+# responde 503 y el resto de la API sigue funcionando.
+CLOUDINARY = {
+    "cloud_name": os.getenv("CLOUDINARY_CLOUD_NAME", ""),
+    "api_key": os.getenv("CLOUDINARY_API_KEY", ""),
+    "api_secret": os.getenv("CLOUDINARY_API_SECRET", ""),
+}
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
 CELERY_TIMEZONE = "America/La_Paz"
 CELERY_TASK_TRACK_STARTED = True
+CELERY_BEAT_SCHEDULE = {
+    "purga-staging-medios": {
+        "task": "turismo.tasks.purgar_staging",
+        "schedule": 3600.0,
+    },
+}
+
+# Staging de medios: directorio COMPARTIDO entre backend y worker
+# (volumen staging_data). La API guarda el temporal y el worker lo
+# consume; fuera de compose usar /tmp local.
+STAGING_DIR = os.getenv("STAGING_DIR", str(BASE_DIR / "staging"))
 
 # Logging
 LOGGING = {

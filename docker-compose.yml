@@ -23,7 +23,7 @@ services:
       retries: 12
 
   backend:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.8}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -32,6 +32,7 @@ services:
     command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./backend:/app
+      - staging_data:/app/staging
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -42,6 +43,10 @@ services:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ci-placeholder}
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      STAGING_DIR: /app/staging
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
     depends_on:
       db:
         condition: service_healthy
@@ -55,7 +60,7 @@ services:
       retries: 12
 
   frontend:
-    image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG:-1.0.6}
+    image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG:-1.0.7}
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
@@ -108,12 +113,15 @@ services:
       retries: 12
 
   worker:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.8}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
     container_name: turismo-melgarejo_worker
     restart: always
-    command: sh -c "python manage.py migrate --noinput && celery -A config worker --loglevel=info --concurrency=2"
+    # Solo el backend migra (evita carreras de CREATE EXTENSION entre
+    # migradores concurrentes); el worker espera a que esté healthy.
+    command: celery -A config worker --loglevel=info --concurrency=2
     volumes:
       - ./backend:/app
+      - staging_data:/app/staging
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -124,20 +132,26 @@ services:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ci-placeholder}
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      STAGING_DIR: /app/staging
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
     depends_on:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      backend:
         condition: service_healthy
     networks:
       - app-network
       - datos-network
 
   beat:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.8}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
     container_name: turismo-melgarejo_beat
     restart: always
-    command: sh -c "python manage.py migrate --noinput && celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    command: celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
       - ./backend:/app
     environment:
@@ -150,17 +164,23 @@ services:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ci-placeholder}
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      STAGING_DIR: /app/staging
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
     depends_on:
       db:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      backend:
         condition: service_healthy
     networks:
       - app-network
       - datos-network
 
   flower:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.8}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
     container_name: turismo-melgarejo_flower
     restart: always
     command: celery -A config flower --address=0.0.0.0 --port=5555 --persistent=True --db=/tmp/flower.db
@@ -171,6 +191,10 @@ services:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ci-placeholder}
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      STAGING_DIR: /app/staging
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
     depends_on:
       redis:
         condition: service_healthy
@@ -194,4 +218,6 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  staging_data:
     driver: local

@@ -1,22 +1,33 @@
+import uuid
+
+from django.conf import settings
 from django.contrib.gis.db.models.functions import Distance, Transform
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from django.db.models import Avg, Count, Max, Min, Q
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from usuarios.permissions import IsAdmin, IsAdminOrReadOnly
 
-from .models import Atractivo, Categoria, Horario, Tarifa, TipoTarifa
+try:
+    from cloudinary.utils import api_sign_request
+except ImportError:  # pragma: no cover - SDK ausente: firma degradada a 503
+    api_sign_request = None
+
+from .models import Atractivo, Categoria, Foto, Horario, Tarifa, TipoTarifa
 from .serializers import (
     AtractivoAdminSerializer,
     AtractivoSerializer,
     CategoriaSerializer,
+    FotoSerializer,
     HorarioSerializer,
     TarifaSerializer,
     TipoTarifaSerializer,
@@ -126,7 +137,7 @@ class AtractivoViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         queryset = (
             Atractivo.objects.filter(activo=True)
-            .prefetch_related("categorias")
+            .prefetch_related("categorias", "fotos")
             .order_by("nombre")
         )
         params = self.request.query_params
@@ -224,7 +235,7 @@ class AtractivoViewSet(ReadOnlyModelViewSet):
         punto_utm = punto.transform(32719, clone=True)
         queryset = (
             Atractivo.objects.filter(activo=True)
-            .prefetch_related("categorias")
+            .prefetch_related("categorias", "fotos")
             .annotate(distancia=Distance(Transform("ubicacion", 32719), punto_utm))
             .filter(distancia__lte=D(m=radio))
             .order_by("distancia")
@@ -283,7 +294,11 @@ class AtractivoAdminViewSet(ModelViewSet):
 
     permission_classes = [IsAdmin]
     serializer_class = AtractivoAdminSerializer
-    queryset = Atractivo.objects.prefetch_related("categorias").all().order_by("nombre")
+    queryset = (
+        Atractivo.objects.prefetch_related("categorias", "fotos")
+        .all()
+        .order_by("nombre")
+    )
 
     def perform_destroy(self, instance: Atractivo) -> None:
         """Baja lógica (issue #20): marca inactivo en vez de borrar.
@@ -293,3 +308,217 @@ class AtractivoAdminViewSet(ModelViewSet):
         """
         instance.activo = False
         instance.save(update_fields=["activo", "fecha_actualizacion"])
+
+
+FORMATOS_FOTO = ("jpg", "jpeg", "png", "webp")
+MAX_BYTES_FOTO = 10 * 1024 * 1024
+
+
+class FotoAdminViewSet(ModelViewSet):
+    """CRUD de fotos de destinos. Solo ADMIN."""
+
+    permission_classes = [IsAdmin]
+    serializer_class = FotoSerializer
+    queryset = (
+        Foto.objects.select_related("atractivo")
+        .all()
+        .order_by("atractivo", "orden", "id_foto")
+    )
+
+
+class FirmaFotoView(APIView):
+    """POST /api/turismo/admin/fotos/firma/ — firma subida directa.
+
+    El frontend sube el archivo directo a Cloudinary con estos
+    parámetros (el API secret nunca sale del backend). 503 si
+    Cloudinary no está configurado.
+    """
+
+    permission_classes = [IsAdmin]
+
+    @extend_schema(
+        request={
+            "type": "object",
+            "properties": {
+                "atractivo": {"type": "string", "format": "uuid"},
+                "formato": {"type": "string", "enum": list(FORMATOS_FOTO)},
+                "bytes": {"type": "integer", "minimum": 1},
+            },
+            "required": ["atractivo", "formato", "bytes"],
+        },
+        responses={200: OpenApiTypes.OBJECT},
+        description="Firma una subida directa a Cloudinary.",
+    )
+    def post(self, request):
+        atractivo_id = request.data.get("atractivo")
+        formato = str(request.data.get("formato", "")).lower().lstrip(".")
+        try:
+            peso = int(request.data.get("bytes", 0))
+        except (TypeError, ValueError):
+            peso = 0
+        if not Atractivo.objects.filter(pk=atractivo_id).exists():
+            return Response(
+                {"detail": "Atractivo inexistente."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if formato not in FORMATOS_FOTO:
+            return Response(
+                {"detail": f"formato debe ser uno de {list(FORMATOS_FOTO)}."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not 0 < peso <= MAX_BYTES_FOTO:
+            return Response(
+                {"detail": "bytes debe estar en (0, 10MB]."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        cloud_name = settings.CLOUDINARY.get("cloud_name")
+        api_key = settings.CLOUDINARY.get("api_key")
+        api_secret = settings.CLOUDINARY.get("api_secret")
+        if not (cloud_name and api_key and api_secret) or api_sign_request is None:
+            return Response(
+                {"detail": "Cloudinary no configurado."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        import time
+
+        timestamp = int(time.time())
+        # Solo parámetros que el frontend reenvía tal cual en el upload;
+        # todo lo firmado debe enviarse o Cloudinary rechaza la firma.
+        params = {
+            "timestamp": timestamp,
+            "folder": f"turismo/{atractivo_id}",
+            "allowed_formats": ",".join(FORMATOS_FOTO),
+        }
+        firma = api_sign_request(params, api_secret)
+        return Response(
+            {
+                "cloud_name": cloud_name,
+                "api_key": api_key,
+                "signature": firma,
+                "timestamp": timestamp,
+                "folder": params["folder"],
+                "allowed_formats": list(FORMATOS_FOTO),
+            }
+        )
+
+
+EXTENSIONES_IMAGEN = ("jpg", "jpeg", "png", "webp")
+EXTENSIONES_VIDEO = ("mp4", "mov", "webm")
+
+
+class SubirFotoView(APIView):
+    """POST /api/turismo/admin/fotos/subir/ (multipart) — flujo async.
+
+    Recibe {atractivo, archivo, tipo, orden}, guarda el temporal en
+    staging compartido, crea la Foto en pending y encola la subida.
+    Responde 202 inmediato; el avance se consulta en estado/.
+    """
+
+    permission_classes = [IsAdmin]
+
+    @extend_schema(
+        request={
+            "type": "object",
+            "properties": {
+                "atractivo": {"type": "string", "format": "uuid"},
+                "tipo": {"type": "string", "enum": ["imagen", "video"]},
+                "orden": {"type": "integer", "minimum": 0},
+            },
+            "required": ["atractivo"],
+        },
+        responses={202: OpenApiTypes.OBJECT},
+        description="Recibe el archivo y encola la subida a Cloudinary.",
+    )
+    def post(self, request):
+        from .tasks import (
+            MAX_BYTES_IMAGEN,
+            MAX_BYTES_VIDEO,
+            _staging,
+            nombre_temporal,
+            subir_foto_task,
+        )
+
+        try:
+            atractivo = Atractivo.objects.get(pk=request.data.get("atractivo"))
+        except (Atractivo.DoesNotExist, ValueError, TypeError):
+            return Response(
+                {"detail": "Atractivo inexistente."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        tipo = request.data.get("tipo", Foto.TIPO_IMAGEN)
+        if tipo not in (Foto.TIPO_IMAGEN, Foto.TIPO_VIDEO):
+            return Response(
+                {"detail": "tipo debe ser imagen o video."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        archivo = request.FILES.get("archivo")
+        if archivo is None:
+            return Response(
+                {"detail": "Falta el archivo (campo archivo)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        permitidas = (
+            EXTENSIONES_VIDEO if tipo == Foto.TIPO_VIDEO else EXTENSIONES_IMAGEN
+        )
+        # Allowlist de pertenencia para el contrato (400); el temporal
+        # usa extensión fija por tipo (nunca la del usuario): cierra path
+        # traversal por construcción, no solo por validación.
+        extension_pedida = (
+            archivo.name.rsplit(".", 1)[-1] if "." in archivo.name else ""
+        ).lower()
+        maximo = MAX_BYTES_VIDEO if tipo == Foto.TIPO_VIDEO else MAX_BYTES_IMAGEN
+        if extension_pedida not in permitidas:
+            return Response(
+                {"detail": f"Extensión no permitida para {tipo}."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        extension = "mp4" if tipo == Foto.TIPO_VIDEO else "jpg"
+        if archivo.size is not None and archivo.size > maximo:
+            return Response(
+                {"detail": f"Archivo supera el máximo ({maximo} bytes)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        foto = Foto.objects.create(
+            atractivo=atractivo,
+            public_id=f"turismo/pending/{uuid.uuid4().hex}",
+            tipo=tipo,
+            estado=Foto.ESTADO_PENDING,
+            orden=int(request.data.get("orden", 0) or 0),
+        )
+        destino = _staging() / nombre_temporal(foto.id_foto, extension)
+        with open(destino, "wb") as salida:
+            for parte in archivo.chunks():
+                salida.write(parte)
+        subir_foto_task.delay(foto.id_foto, destino.name)
+        return Response(
+            {"id_foto": foto.id_foto, "estado": foto.estado},
+            status=status.HTTP_202_ACCEPTED,
+        )
+
+
+class EstadoFotoView(APIView):
+    """GET /api/turismo/admin/fotos/<id>/estado/ — avance de la subida."""
+
+    permission_classes = [IsAdmin]
+
+    @extend_schema(
+        responses={200: OpenApiTypes.OBJECT},
+        description="Estado pending/processing/completed/failed de la foto.",
+    )
+    def get(self, request, pk: int):
+        try:
+            foto = Foto.objects.get(pk=pk)
+        except (Foto.DoesNotExist, ValueError, TypeError):
+            return Response(
+                {"detail": "Foto inexistente."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        return Response(
+            {
+                "id_foto": foto.id_foto,
+                "estado": foto.estado,
+                "tipo": foto.tipo,
+                "url": foto.url or None,
+                "public_id": foto.public_id,
+            }
+        )
