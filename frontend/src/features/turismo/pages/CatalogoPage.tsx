@@ -128,7 +128,7 @@ export function CatalogoPage() {
           aria-hidden="true"
         />
 
-        <div className="relative mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-10 lg:py-20">
+        <div className="contenedor-amplio relative px-6 py-10 sm:px-8 lg:px-10 lg:py-14">
           {/* Navegación */}
           <nav className="flex items-center justify-between gap-4">
             <Link
@@ -163,7 +163,7 @@ export function CatalogoPage() {
           </nav>
 
           {/* Titular */}
-          <div className="mt-14 max-w-3xl">
+          <div className="mt-10 max-w-3xl">
             <p className="inline-flex items-center gap-2.5 rounded-full border border-[#E9DFC9]/20 bg-[#1A241C]/40 px-4 py-2 text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#F1D79D] backdrop-blur-xl">
               <span className="h-2 w-2 rounded-full bg-[#E7B75F]" />
               Catálogo turístico
@@ -176,7 +176,7 @@ export function CatalogoPage() {
               </span>
             </h1>
 
-            <p className="mt-6 max-w-xl text-sm leading-7 text-[#F5EFE4]/70 sm:text-base">
+            <p className="mt-5 max-w-xl text-sm leading-7 text-[#F5EFE4]/70 sm:text-base">
               Historia, cultura, miradores y sabores paceños. Elige una
               categoría y empieza a planificar tu próxima visita.
             </p>
@@ -188,7 +188,7 @@ export function CatalogoPage() {
           FILTROS
       ========================================================== */}
       <div className="sticky top-0 z-30 border-b border-[#5B3A29]/[0.08] bg-[#F3EBDD]/92 backdrop-blur-xl">
-        <div className="mx-auto max-w-7xl px-6 py-5 sm:px-8 lg:px-10">
+        <div className="contenedor-amplio px-6 py-4 sm:px-8 lg:px-10">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <CategoriaFiltros
               seleccionada={categoria}
@@ -212,7 +212,7 @@ export function CatalogoPage() {
       {/* =========================================================
           CUADRÍCULA
       ========================================================== */}
-      <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-10 lg:py-16">
+      <div className="contenedor-amplio px-6 py-8 sm:px-8 lg:px-10 lg:py-12">
         <h2 className="sr-only">{titulo}</h2>
 
         {isError && <CatalogoError onReintentar={() => void recargar()} />}
@@ -225,11 +225,11 @@ export function CatalogoPage() {
             </p>
 
             <ul
-              className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+              className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
               data-testid="catalogo-skeletons"
             >
               {Array.from({ length: SKELETONS }).map((_, indice) => (
-                <li key={indice}>
+                <li key={indice} className="h-full">
                   <DestinoCardSkeleton />
                 </li>
               ))}
@@ -248,9 +248,9 @@ export function CatalogoPage() {
         {/* Tarjetas */}
         {!isPending && !isError && destinos.length > 0 && (
           <>
-            <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               {destinos.map((atractivo) => (
-                <li key={atractivo.id}>
+                <li key={atractivo.id} className="h-full">
                   <DestinoCard atractivo={atractivo} />
                 </li>
               ))}

@@ -41,7 +41,7 @@ export function DestinoDetailPage() {
   if (isPending) {
     return (
       <main className="min-h-screen bg-[#F3EBDD] px-6 py-14 text-[#263029] sm:px-8 lg:px-10">
-        <div className="mx-auto max-w-6xl">
+        <div className="contenedor-medio">
           <Link
             to={volverA}
             className="inline-flex items-center gap-2 text-sm font-bold text-[#8D4F32] underline-offset-4 hover:underline"
@@ -138,7 +138,7 @@ export function DestinoDetailPage() {
           aria-hidden="true"
         />
 
-        <div className="relative mx-auto max-w-6xl px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
+        <div className="contenedor-medio relative px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
           <Link
             to={volverA}
             className="inline-flex items-center gap-2.5 rounded-full border border-[#E9DFC9]/20 bg-[#1A241C]/35 px-4 py-2.5 text-xs font-black text-[#F3EBDD] backdrop-blur-xl transition hover:bg-[#1A241C]/60"
@@ -202,7 +202,7 @@ export function DestinoDetailPage() {
       {/* =========================================================
           CONTENIDO
       ========================================================== */}
-      <div className="mx-auto max-w-6xl px-6 py-12 sm:px-8 lg:px-10 lg:py-16">
+      <div className="contenedor-medio px-6 py-12 sm:px-8 lg:px-10 lg:py-16">
         <GaleriaDestino atractivo={destino} />
 
         <div className="mt-12 grid gap-10 lg:grid-cols-[1.25fr_1fr] lg:gap-12">
