@@ -9,12 +9,13 @@
  */
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "../../../auth/context/AuthContext";
 import * as api from "../api/destinosAdminApi";
+import * as fotos from "../api/fotosAdminApi";
 import * as turismo from "../../api/turismoApi";
 import { AdminDestinoFormPage } from "./AdminDestinoFormPage";
 
@@ -23,7 +24,22 @@ vi.mock("../api/destinosAdminApi", async () => {
     typeof import("../api/destinosAdminApi")
   >("../api/destinosAdminApi");
 
-  return { ...real, obtenerDestino: vi.fn(), listarDestinos: vi.fn() };
+  return {
+    ...real,
+    obtenerDestino: vi.fn(),
+    listarDestinos: vi.fn(),
+    crearDestino: vi.fn(),
+  };
+});
+
+// La subida real a Cloudinary no se ejerce acá: se comprueba que el alta la
+// dispare con el id recién creado. Las partes puras quedan sin mockear.
+vi.mock("../api/fotosAdminApi", async () => {
+  const real = await vi.importActual<typeof import("../api/fotosAdminApi")>(
+    "../api/fotosAdminApi",
+  );
+
+  return { ...real, subirFotoDestino: vi.fn() };
 });
 
 vi.mock("../../api/turismoApi", async () => {
@@ -33,6 +49,29 @@ vi.mock("../../api/turismoApi", async () => {
 
   return { ...real, listarCategorias: vi.fn() };
 });
+
+// La galería (solo en edición) consulta fotos; se neutraliza para que la
+// prueba de la página no dependa de la red.
+vi.mock("../hooks/useFotosAdmin", () => ({
+  useFotosDe: () => ({
+    data: [],
+    isPending: false,
+    isError: false,
+    error: null,
+  }),
+  useSubirFoto: () => ({
+    subir: vi.fn(),
+    error: null,
+    apiError: null,
+    pendiente: false,
+  }),
+  useEliminarFoto: () => ({
+    eliminar: vi.fn(),
+    error: null,
+    pendiente: false,
+    idEnCurso: null,
+  }),
+}));
 
 function cliente() {
   return new QueryClient({
@@ -119,6 +158,7 @@ describe("AdminDestinoFormPage", () => {
       ubicacion: { longitud: -68.1375, latitud: -16.4961 },
       area: null,
       categorias: [5],
+      fotos: [],
       fuente_origen: "INSTITUCIONAL",
       activo: true,
       fecha_creacion: "2026-10-03T18:14:30Z",
@@ -156,5 +196,89 @@ describe("AdminDestinoFormPage", () => {
     expect(
       screen.queryByRole("button", { name: /crear destino/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it("en alta ofrece la sección para adjuntar imágenes", async () => {
+    renderEn("/mi-cuenta/destinos/nuevo");
+
+    await screen.findByRole("button", { name: /crear destino/i });
+
+    expect(
+      screen.getByRole("heading", { name: /fotografías y videos/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText(/agregar imágenes o videos/i),
+    ).toBeInTheDocument();
+    // El estado vacío propio del borrador (distinto al de `GaleriaAdmin`).
+    expect(
+      screen.getByText(/todavía no agregaste archivos/i),
+    ).toBeInTheDocument();
+  });
+
+  it("en alta sube los archivos adjuntos tras crear el destino", async () => {
+    const NUEVO_ID = "b1b2c3d4-0000-4000-8000-000000000001";
+
+    vi.mocked(api.crearDestino).mockResolvedValue({
+      id_atractivo: NUEVO_ID,
+      nombre: "Nuevo destino",
+      descripcion: "Una descripción.",
+      direccion: null,
+      duracion_minutos: null,
+      ubicacion: { longitud: -68.13, latitud: -16.49 },
+      area: null,
+      categorias: [],
+      fotos: [],
+      fuente_origen: "INSTITUCIONAL",
+      activo: true,
+      fecha_creacion: "2026-10-03T18:14:30Z",
+      fecha_actualizacion: "2026-10-03T18:14:30Z",
+    });
+
+    vi.mocked(fotos.subirFotoDestino).mockResolvedValue({
+      id_foto: 1,
+      atractivo: NUEVO_ID,
+      public_id: "turismo/nuevo/foto",
+      url: "https://res.cloudinary.com/x/foto",
+      tipo: "imagen",
+      estado: "completed",
+      ancho: 800,
+      alto: 600,
+      orden: 0,
+      fecha_creacion: "2026-10-03T18:14:30Z",
+    });
+
+    renderEn("/mi-cuenta/destinos/nuevo");
+
+    const crear = await screen.findByRole("button", { name: /crear destino/i });
+    await waitFor(() => expect(crear).not.toBeDisabled());
+
+    fireEvent.change(screen.getByLabelText(/agregar imágenes o videos/i), {
+      target: { files: [new File(["x"], "foto.jpg", { type: "image/jpeg" })] },
+    });
+
+    fireEvent.change(screen.getByLabelText(/nombre del destino/i), {
+      target: { value: "Nuevo destino" },
+    });
+    fireEvent.change(screen.getByLabelText(/descripción/i), {
+      target: { value: "Una descripción." },
+    });
+    fireEvent.change(screen.getByLabelText(/longitud/i), {
+      target: { value: "-68.13" },
+    });
+    fireEvent.change(screen.getByLabelText(/latitud/i), {
+      target: { value: "-16.49" },
+    });
+
+    fireEvent.click(crear);
+
+    await waitFor(() => expect(api.crearDestino).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(fotos.subirFotoDestino).toHaveBeenCalledTimes(1),
+    );
+
+    expect(fotos.subirFotoDestino).toHaveBeenCalledWith(
+      expect.objectContaining({ atractivo: NUEVO_ID, orden: 0 }),
+      expect.any(Function),
+    );
   });
 });

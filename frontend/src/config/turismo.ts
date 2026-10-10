@@ -25,6 +25,19 @@ export const TURISMO_ENDPOINTS = {
    */
   atractivoAdminList: "/turismo/admin/atractivos/",
   atractivoAdminDetalle: (id: string) => `/turismo/admin/atractivos/${id}/`,
+
+  /**
+   * Fotos (`FotoAdminViewSet`, `IsAdmin`). `fotosAdminList` admite
+   * `?atractivo=<uuid>` desde que el backend filtra por destino.
+   */
+  fotosAdminList: "/turismo/admin/fotos/",
+  fotoAdminDetalle: (id: number) => `/turismo/admin/fotos/${id}/`,
+  /** Firma una subida directa a Cloudinary (`FirmaFotoView`). */
+  fotoFirma: "/turismo/admin/fotos/firma/",
+  /** Recibe el archivo y encola la subida por Celery (`SubirFotoView`). */
+  fotoSubir: "/turismo/admin/fotos/subir/",
+  /** Estado del procesamiento asíncrono (`EstadoFotoView`). */
+  fotoEstado: (id: number) => `/turismo/admin/fotos/${id}/estado/`,
 } as const;
 
 /**
@@ -128,6 +141,31 @@ export const CLOUDINARY_TRANSFORM = {
   detalle: "f_auto,q_auto,w_1600,h_1000,c_fill,g_auto",
   miniatura: "f_auto,q_auto,w_320,h_240,c_fill,g_auto",
 } as const;
+
+/**
+ * Base del endpoint de subida de Cloudinary. Vacío si no hay cloud
+ * configurado, en cuyo caso el panel deshabilita la subida directa (el
+ * backend igual respondería 503 en la firma).
+ */
+export const CLOUDINARY_UPLOAD_BASE = CLOUDINARY_CLOUD_NAME
+  ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}`
+  : "";
+
+/**
+ * Formatos y pesos que espeja el backend. La firma valida formatos
+ * (`allowed_formats`) y la ViewSet multipart valida extensión y tamaño;
+ * replicarlos aquí permite avisar antes de subir sin depender del 400.
+ */
+export const FOTO_FORMATOS = {
+  imagen: ["jpg", "jpeg", "png", "webp"],
+  video: ["mp4", "mov", "webm"],
+} as const;
+
+/** Mismos topes que `turismo.tasks` (10 MB imagen / 100 MB video). */
+export const FOTO_MAX_BYTES: Record<"imagen" | "video", number> = {
+  imagen: 10 * 1024 * 1024,
+  video: 100 * 1024 * 1024,
+};
 
 /**
  * Días de la semana en el formato de `Horario.dia_semana`

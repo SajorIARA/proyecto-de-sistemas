@@ -286,6 +286,7 @@ function normalizar(atractivo: AtractivoAdmin): AtractivoAdmin {
     duracion_minutos: Number.isFinite(duracion) && duracion > 0 ? duracion : null,
     ubicacion: atractivo.ubicacion ?? null,
     categorias: Array.isArray(atractivo.categorias) ? atractivo.categorias : [],
+    fotos: Array.isArray(atractivo.fotos) ? atractivo.fotos : [],
     activo: atractivo.activo !== false,
   };
 }
