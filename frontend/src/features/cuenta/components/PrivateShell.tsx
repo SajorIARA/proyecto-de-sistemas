@@ -13,6 +13,7 @@ import { useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
 import { RoleBadge } from "./RoleBadge";
+import { EncabezadoImagen } from "../../../components/EncabezadoImagen";
 
 /** Enlaces del área privada, resueltos según el rol. */
 function useNavegacionPrivada() {
@@ -153,19 +154,26 @@ export function PrivateShell({
           CONTENIDO
       ========================================================== */}
       <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-12 sm:px-8 lg:px-10 lg:py-16">
-        <div className="mb-10 max-w-2xl">
-          <p className="inline-flex items-center gap-2.5 rounded-full border border-[#9A5B3C]/25 bg-[#9A5B3C]/10 px-4 py-2 text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#8D4F32]">
-            <span className="h-2 w-2 rounded-full bg-[#9A5B3C]" />
-            {eyebrow}
-          </p>
+        <div className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="inline-flex items-center gap-2.5 rounded-full border border-[#9A5B3C]/25 bg-[#9A5B3C]/10 px-4 py-2 text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#8D4F32]">
+              <span className="h-2 w-2 rounded-full bg-[#9A5B3C]" />
+              {eyebrow}
+            </p>
 
-          <h1 className="mt-5 text-[clamp(2rem,4.5vw,3rem)] font-black leading-[0.98] tracking-[-0.04em] text-[#233128]">
-            {titulo}
-          </h1>
+            <h1 className="mt-5 text-[clamp(2rem,4.5vw,3rem)] font-black leading-[0.98] tracking-[-0.04em] text-[#233128]">
+              {titulo}
+            </h1>
 
-          <p className="mt-4 text-sm leading-7 text-[#514B43] sm:text-base">
-            {descripcion}
-          </p>
+            <p className="mt-4 text-sm leading-7 text-[#514B43] sm:text-base">
+              {descripcion}
+            </p>
+          </div>
+
+          <EncabezadoImagen
+            prioritaria
+            className="h-24 w-auto max-w-[40%] shrink-0 sm:h-28 lg:h-32"
+          />
         </div>
 
         {children}
