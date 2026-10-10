@@ -67,6 +67,10 @@ services:
     container_name: turismo-melgarejo_frontend
     restart: always
     command: pnpm dev --host 0.0.0.0 --port 3000
+    environment:
+      # Vite expone al bundle cualquier variable VITE_* presente en el
+      # proceso; el frontend la usa para armar URLs de Cloudinary.
+      VITE_CLOUDINARY_CLOUD_NAME: ${VITE_CLOUDINARY_CLOUD_NAME:-}
     networks:
       - app-network
       - turismo-network
