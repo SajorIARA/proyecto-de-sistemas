@@ -9,6 +9,7 @@
 
 import type { Atractivo } from "../../../types/turismo";
 import { anguloDe, gradienteDe, imagenesDe } from "../utils/destinoImages";
+import { CarruselImagenes } from "./CarruselImagenes";
 import { DestinoImagen } from "./DestinoImagen";
 
 interface GaleriaDestinoProps {
@@ -35,19 +36,19 @@ export function GaleriaDestino({ atractivo }: GaleriaDestinoProps) {
     );
   }
 
-  const [principal, ...secundarias] = imagenes;
+  const secundarias = imagenes.slice(1);
   const [desde, hasta] = gradienteDe(categoria);
   const angulo = anguloDe(atractivo.id);
 
   return (
     <div className="grid gap-3 sm:grid-cols-4 sm:grid-rows-2">
       <figure className="overflow-hidden rounded-[1.85rem] sm:col-span-3 sm:row-span-2">
-        <img
-          src={principal}
+        <CarruselImagenes
+          imagenes={imagenes}
           alt={atractivo.nombre}
-          loading="eager"
-          decoding="async"
-          className="h-full min-h-[16rem] w-full object-cover"
+          prioritaria
+          sizes="(min-width: 640px) 60vw, 100vw"
+          className="h-full min-h-[16rem] w-full"
         />
       </figure>
 
