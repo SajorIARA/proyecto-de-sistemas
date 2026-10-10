@@ -69,6 +69,8 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           platforms: linux/amd64
+          build-args: |
+            VITE_CLOUDINARY_CLOUD_NAME=${{ vars.VITE_CLOUDINARY_CLOUD_NAME }}
           tags: |
             ${{ env.IMAGE_PREFIX }}-frontend:${{ steps.meta.outputs.semver }}
             ${{ env.IMAGE_PREFIX }}-frontend:${{ steps.meta.outputs.minor }}
