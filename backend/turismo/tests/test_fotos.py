@@ -96,6 +96,41 @@ class FotoAdminCRUDTests(TestCase):
         resp = APIClient().get("/api/turismo/atractivos/")
         self.assertEqual(resp.data["results"][0]["imagenes"], ["turismo/dev/portada"])
 
+    def test_admin_serializa_fotos_del_destino(self) -> None:
+        Foto.objects.create(
+            atractivo=self.atractivo,
+            public_id="turismo/dev/a",
+            url="https://res.cloudinary.com/x/a",
+            estado=Foto.ESTADO_COMPLETED,
+            orden=1,
+        )
+        resp = self.cliente.get(
+            f"/api/turismo/admin/atractivos/{self.atractivo.id_atractivo}/"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(resp.data["fotos"]), 1)
+        self.assertEqual(resp.data["fotos"][0]["public_id"], "turismo/dev/a")
+        self.assertEqual(resp.data["fotos"][0]["estado"], Foto.ESTADO_COMPLETED)
+
+    def test_filtrar_fotos_por_atractivo(self) -> None:
+        otro = _atractivo()
+        Foto.objects.create(atractivo=self.atractivo, public_id="turismo/dev/p")
+        Foto.objects.create(atractivo=otro, public_id="turismo/dev/q")
+
+        resp = self.cliente.get(FOTOS_URL, {"atractivo": str(self.atractivo.id_atractivo)})
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        public_ids = [item["public_id"] for item in resp.data["results"]]
+        self.assertEqual(public_ids, ["turismo/dev/p"])
+
+    def test_filtrar_fotos_uuid_invalido_no_rompe(self) -> None:
+        Foto.objects.create(atractivo=self.atractivo, public_id="turismo/dev/p")
+
+        resp = self.cliente.get(FOTOS_URL, {"atractivo": "no-es-un-uuid"})
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEqual(resp.data["count"], 0)
+
 
 class FirmaFotoTests(TestCase):
     def setUp(self) -> None:

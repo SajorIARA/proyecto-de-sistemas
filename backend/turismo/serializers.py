@@ -112,6 +112,16 @@ class AtractivoSerializer(serializers.ModelSerializer):
 
 
 class FotoSerializer(serializers.ModelSerializer):
+    """Foto/video de un destino.
+
+    Es el serializer de escritura de ``FotoAdminViewSet`` y, a la vez, el
+    serializer anidado de solo lectura que ``AtractivoAdminSerializer``
+    expone en ``fotos``. ``tipo`` y ``estado`` son escribibles para que el
+    flujo de subida directa (firma → Cloudinary → POST del registro) pueda
+    nacer en ``completed``; las subidas pesadas por Celery los reciben del
+    default del modelo.
+    """
+
     class Meta:
         model = Foto
         fields = [
@@ -119,6 +129,8 @@ class FotoSerializer(serializers.ModelSerializer):
             "atractivo",
             "public_id",
             "url",
+            "tipo",
+            "estado",
             "ancho",
             "alto",
             "orden",
@@ -160,6 +172,7 @@ class AtractivoAdminSerializer(serializers.ModelSerializer):
     categorias = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Categoria.objects.all(), required=False
     )
+    fotos = FotoSerializer(many=True, read_only=True)
 
     class Meta:
         model = Atractivo
@@ -172,6 +185,7 @@ class AtractivoAdminSerializer(serializers.ModelSerializer):
             "ubicacion",
             "area",
             "categorias",
+            "fotos",
             "fuente_origen",
             "activo",
             "fecha_creacion",
