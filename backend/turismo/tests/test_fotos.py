@@ -117,7 +117,9 @@ class FotoAdminCRUDTests(TestCase):
         Foto.objects.create(atractivo=self.atractivo, public_id="turismo/dev/p")
         Foto.objects.create(atractivo=otro, public_id="turismo/dev/q")
 
-        resp = self.cliente.get(FOTOS_URL, {"atractivo": str(self.atractivo.id_atractivo)})
+        resp = self.cliente.get(
+            FOTOS_URL, {"atractivo": str(self.atractivo.id_atractivo)}
+        )
 
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         public_ids = [item["public_id"] for item in resp.data["results"]]
