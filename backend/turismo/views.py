@@ -325,6 +325,34 @@ class FotoAdminViewSet(ModelViewSet):
         .order_by("atractivo", "orden", "id_foto")
     )
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "atractivo",
+                str,
+                OpenApiParameter.QUERY,
+                required=False,
+                description="UUID del atractivo; filtra sus fotos.",
+            ),
+        ],
+        description="Fotos de un destino (o todas si se omite `atractivo`).",
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        atractivo = self.request.query_params.get("atractivo")
+        if not atractivo:
+            return queryset
+        try:
+            # Un UUID mal formado haría estallar el filtro con un 500; se
+            # devuelve el queryset sin resultados en su lugar.
+            uuid.UUID(atractivo)
+        except (ValueError, TypeError):
+            return queryset.none()
+        return queryset.filter(atractivo_id=atractivo)
+
 
 class FirmaFotoView(APIView):
     """POST /api/turismo/admin/fotos/firma/ — firma subida directa.

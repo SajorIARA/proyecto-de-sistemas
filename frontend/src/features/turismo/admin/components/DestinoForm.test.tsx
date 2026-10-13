@@ -65,6 +65,7 @@ function creado(overrides: Partial<AtractivoAdmin> = {}): AtractivoAdmin {
     ubicacion: { longitud: -68.1375, latitud: -16.4961 },
     area: null,
     categorias: [],
+    fotos: [],
     fuente_origen: "INSTITUCIONAL",
     activo: true,
     fecha_creacion: "2026-10-03T19:04:13Z",
