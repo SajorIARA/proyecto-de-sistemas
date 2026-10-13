@@ -23,6 +23,11 @@ COPY . .
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
 
+# Nombre del cloud de Cloudinary, horneado en el bundle estático. Railway
+# y el workflow de release lo inyectan como build-arg; vacío = placeholders.
+ARG VITE_CLOUDINARY_CLOUD_NAME=
+ENV VITE_CLOUDINARY_CLOUD_NAME=$VITE_CLOUDINARY_CLOUD_NAME
+
 RUN ./node_modules/.bin/vite build
 
 # ============================================================
