@@ -32,10 +32,10 @@ export function DestinoDetailPage() {
   const { id = "" } = useParams();
   const [parametros] = useSearchParams();
 
-  // Conserva el filtro de categoría al volver al catálogo.
-  const volverA = parametros.get("categoria")
-    ? `/destinos?categoria=${encodeURIComponent(parametros.get("categoria") as string)}`
-    : "/destinos";
+  // Conserva la combinación de filtros activa al volver al catálogo
+  // (categoría, texto, zona y rango de precio).
+  const query = parametros.toString();
+  const volverA = query ? `/destinos?${query}` : "/destinos";
 
   const { data: destino, isPending, isError, error, refetch } = useDestino(id);
 

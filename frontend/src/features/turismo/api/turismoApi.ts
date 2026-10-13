@@ -23,6 +23,7 @@ import type {
   Atractivo,
   Categoria,
   Facetas,
+  FiltrosCatalogo,
   Horario,
   Paginado,
   Tarifa,
@@ -133,29 +134,41 @@ function normalizarAtractivo(atractivo: Atractivo): Atractivo {
   };
 }
 
-export interface ListarAtractivosParams {
+export interface ListarAtractivosParams extends Partial<FiltrosCatalogo> {
   page?: number;
   pageSize?: number;
-  /** Nombre o id de categoría. `null`/vacío = sin filtro (Todos). */
-  categoria?: string | null;
-  /** Búsqueda de texto libre (la API la soporta con `q`). */
-  q?: string;
 }
 
-/** GET /api/turismo/atractivos/ */
+/**
+ * GET /api/turismo/atractivos/
+ *
+ * Traduce el estado del panel a los query params optimizados del backend:
+ * `categoria`, `q`, `zona`, `precio_min` y `precio_max`. Los filtros vacíos se
+ * omiten para no ensuciar la URL (y para que la caché por clave no distinga
+ * `q=""` de `q` ausente).
+ */
 export async function listarAtractivos({
   page = 1,
   pageSize = CATALOGO_PAGE_SIZE,
   categoria = null,
   q = "",
+  zona = null,
+  precioMin = null,
+  precioMax = null,
 }: ListarAtractivosParams = {}): Promise<Paginado<Atractivo>> {
   try {
+    const texto = q.trim();
+    const zonaLimpia = zona?.trim() ?? "";
+
     const { data } = await api.get(TURISMO_ENDPOINTS.atractivoList, {
       params: {
         page,
         page_size: pageSize,
         ...(categoria ? { categoria } : {}),
-        ...(q.trim() ? { q: q.trim() } : {}),
+        ...(texto ? { q: texto } : {}),
+        ...(zonaLimpia ? { zona: zonaLimpia } : {}),
+        ...(precioMin !== null ? { precio_min: precioMin } : {}),
+        ...(precioMax !== null ? { precio_max: precioMax } : {}),
       },
     });
 
