@@ -12,9 +12,12 @@
  * 100 req/hora. La tarifa se muestra en la vista de detalle.
  */
 
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import type { Atractivo } from "../../../types/turismo";
+import { imagenesDe } from "../utils/destinoImages";
 import { formatearDuracion, recortar } from "../utils/formato";
+import { CarruselImagenes } from "./CarruselImagenes";
 import { CategoriaBadge } from "./CategoriaBadge";
 import { DestinoImagen } from "./DestinoImagen";
 
@@ -28,6 +31,7 @@ export function DestinoCard({ atractivo }: DestinoCardProps) {
   const descripcion = recortar(atractivo.descripcion);
   const duracion = formatearDuracion(atractivo.duracion_minutos);
   const detalle = `/destinos/${atractivo.id}`;
+  const imagenes = useMemo(() => imagenesDe(atractivo), [atractivo]);
 
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-[1.85rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] shadow-[0_16px_40px_rgba(72,55,38,0.09)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_60px_rgba(72,55,38,0.16)] focus-within:-translate-y-1.5">
@@ -39,14 +43,23 @@ export function DestinoCard({ atractivo }: DestinoCardProps) {
         <span className="flex-1 bg-[#6F8064]" />
       </div>
 
-      {/* Fotografía */}
+      {/* Fotografía: si el destino tiene varias, se alternan solas. */}
       <div className="relative aspect-[4/3] shrink-0 overflow-hidden bg-[#E9DFC9]">
-        <DestinoImagen
-          atractivo={atractivo}
-          categoria={categoria}
+        <CarruselImagenes
+          imagenes={imagenes}
+          alt={atractivo.nombre}
           prioritaria
           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           className="h-full w-full transition duration-700 group-hover:scale-[1.06]"
+          fallback={
+            <DestinoImagen
+              atractivo={atractivo}
+              categoria={categoria}
+              prioritaria
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+              className="h-full w-full transition duration-700 group-hover:scale-[1.06]"
+            />
+          }
         />
 
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#263029]/75 via-[#263029]/5 to-transparent" />
