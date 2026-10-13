@@ -29,6 +29,7 @@ from .serializers import (
     CategoriaSerializer,
     FotoSerializer,
     HorarioSerializer,
+    SubirFotoSerializer,
     TarifaSerializer,
     TipoTarifaSerializer,
 )
@@ -445,15 +446,7 @@ class SubirFotoView(APIView):
     permission_classes = [IsAdmin]
 
     @extend_schema(
-        request={
-            "type": "object",
-            "properties": {
-                "atractivo": {"type": "string", "format": "uuid"},
-                "tipo": {"type": "string", "enum": ["imagen", "video"]},
-                "orden": {"type": "integer", "minimum": 0},
-            },
-            "required": ["atractivo"],
-        },
+        request=SubirFotoSerializer,
         responses={202: OpenApiTypes.OBJECT},
         description="Recibe el archivo y encola la subida a Cloudinary.",
     )
@@ -466,19 +459,17 @@ class SubirFotoView(APIView):
             subir_foto_task,
         )
 
+        entrada = SubirFotoSerializer(data=request.data)
+        entrada.is_valid(raise_exception=True)
+        datos = entrada.validated_data
         try:
-            atractivo = Atractivo.objects.get(pk=request.data.get("atractivo"))
-        except (Atractivo.DoesNotExist, ValueError, TypeError):
+            atractivo = Atractivo.objects.get(pk=datos["atractivo"])
+        except Atractivo.DoesNotExist:
             return Response(
                 {"detail": "Atractivo inexistente."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        tipo = request.data.get("tipo", Foto.TIPO_IMAGEN)
-        if tipo not in (Foto.TIPO_IMAGEN, Foto.TIPO_VIDEO):
-            return Response(
-                {"detail": "tipo debe ser imagen o video."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        tipo = datos["tipo"]
         archivo = request.FILES.get("archivo")
         if archivo is None:
             return Response(
@@ -511,7 +502,7 @@ class SubirFotoView(APIView):
             public_id=f"turismo/pending/{uuid.uuid4().hex}",
             tipo=tipo,
             estado=Foto.ESTADO_PENDING,
-            orden=int(request.data.get("orden", 0) or 0),
+            orden=datos["orden"],
         )
         destino = _staging() / nombre_temporal(foto.id_foto, extension)
         with open(destino, "wb") as salida:
