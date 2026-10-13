@@ -236,7 +236,14 @@ export async function firmarFoto(entrada: {
   }
 }
 
-/** GET /turismo/admin/fotos/ — todas las páginas de las fotos del destino. */
+/**
+ * GET /turismo/admin/fotos/ — todas las páginas de las fotos del destino.
+ *
+ * El backend filtra con `?atractivo=`; aun así se vuelven a descartar en el
+ * cliente las fotos de otros destinos. Si el backend que responde no reconoce
+ * el parámetro (versión vieja o sin el filtro desplegado), devuelve la tabla
+ * completa y la galería de edición terminaría mostrando imágenes ajenas.
+ */
 export async function listarFotosDe(atractivo: string): Promise<Foto[]> {
   const acumulado: Foto[] = [];
   let url: string | null = TURISMO_ENDPOINTS.fotosAdminList;
@@ -251,7 +258,11 @@ export async function listarFotosDe(atractivo: string): Promise<Foto[]> {
       });
 
       const pagina = normalizarPagina<Foto>(respuesta.data);
-      acumulado.push(...pagina.results.map(normalizarFoto));
+      acumulado.push(
+        ...pagina.results
+          .map(normalizarFoto)
+          .filter((foto) => foto.atractivo === String(atractivo)),
+      );
       url = pagina.next;
       paginas += 1;
     }

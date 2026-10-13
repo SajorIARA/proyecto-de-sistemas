@@ -7,10 +7,21 @@
  * `GaleriaAdmin.test.tsx` con la capa de red mockeada.
  */
 
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({ get: vi.fn() }));
+
+vi.mock("../../../../api/http", () => ({
+  api: {
+    get: (...args: unknown[]) => mocks.get(...args),
+    post: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
 
 import {
   extensionDe,
+  listarFotosDe,
   normalizarFoto,
   tipoDeArchivo,
   validarArchivo,
@@ -124,5 +135,51 @@ describe("normalizarFoto", () => {
     expect(foto.estado).toBe("completed");
     expect(foto.orden).toBe(0);
     expect(foto.public_id).toBe("");
+  });
+});
+
+describe("listarFotosDe", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("pide las fotos del destino con ?atractivo=", async () => {
+    mocks.get.mockResolvedValue({
+      data: { count: 0, next: null, previous: null, results: [] },
+    });
+
+    await listarFotosDe("uuid-buscado");
+
+    expect(mocks.get).toHaveBeenCalledWith(
+      "/turismo/admin/fotos/",
+      expect.objectContaining({
+        params: { atractivo: "uuid-buscado", page_size: 100 },
+      }),
+    );
+  });
+
+  /**
+   * Blindaje del bug original: si el backend que responde ignora `?atractivo=`
+   * (versión sin el filtro desplegado) devuelve la tabla completa y la galería
+   * de edición mostraba las fotos de todos los destinos. El cliente las
+   * descarta antes de pintarlas.
+   */
+  it("descarta las fotos de otros destinos aunque el backend no filtre", async () => {
+    mocks.get.mockResolvedValue({
+      data: {
+        count: 3,
+        next: null,
+        previous: null,
+        results: [
+          { id_foto: 1, atractivo: "uuid-buscado", public_id: "turismo/a" },
+          { id_foto: 2, atractivo: "uuid-otro", public_id: "turismo/b" },
+          { id_foto: 3, atractivo: "uuid-buscado", public_id: "turismo/c" },
+        ],
+      },
+    });
+
+    const fotos = await listarFotosDe("uuid-buscado");
+
+    expect(fotos.map((foto) => foto.id_foto)).toEqual([1, 3]);
   });
 });
