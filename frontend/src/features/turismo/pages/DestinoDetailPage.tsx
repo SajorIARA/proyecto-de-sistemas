@@ -5,8 +5,8 @@
  *  - carga asíncrona del destino por id (sin recargas del navegador);
  *  - galería de imágenes (preparada para Cloudinary, con marcador de
  *    marca mientras el backend no envíe fotos);
- *  - descripción del destino + bloque reservado para la descripción
- *    histórica/cultural extendida;
+ *  - descripción del destino (el backend no expone un campo aparte de
+ *    historia/cultura, por eso no se duplica el mismo texto);
  *  - horario de atención y costos oficiales (endpoints `/horarios/` y
  *    `/tarifas/`, filtrados en cliente porque el backend no expone
  *    filter backends);
@@ -26,6 +26,7 @@ import { GaleriaDestino } from "../components/GaleriaDestino";
 import { HorarioTabla } from "../components/HorarioTabla";
 import { MapaDestino } from "../components/MapaDestino";
 import { TarifaTabla } from "../components/TarifaTabla";
+import { EncabezadoImagen } from "../../../components/EncabezadoImagen";
 
 export function DestinoDetailPage() {
   const { id = "" } = useParams();
@@ -147,54 +148,61 @@ export function DestinoDetailPage() {
             Volver al catálogo
           </Link>
 
-          <div className="mt-10 max-w-3xl">
-            {destino.categorias.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {destino.categorias.map((categoria) => (
-                  <span
-                    key={categoria}
-                    className="inline-flex items-center rounded-full border border-[#E9DFC9]/25 bg-[#1A241C]/40 px-1 py-1 backdrop-blur-xl"
-                  >
-                    <CategoriaBadge categoria={categoria} />
-                  </span>
-                ))}
-              </div>
-            )}
+          <div className="mt-10 flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+            <div className="max-w-3xl">
+              {destino.categorias.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {destino.categorias.map((categoria) => (
+                    <span
+                      key={categoria}
+                      className="inline-flex items-center rounded-full border border-[#E9DFC9]/25 bg-[#1A241C]/40 px-1 py-1 backdrop-blur-xl"
+                    >
+                      <CategoriaBadge categoria={categoria} />
+                    </span>
+                  ))}
+                </div>
+              )}
 
-            <h1 className="mt-5 text-[clamp(2.2rem,5.5vw,3.8rem)] font-black leading-[0.98] tracking-[-0.04em] text-[#FFFDF8]">
-              {destino.nombre}
-            </h1>
+              <h1 className="mt-5 text-[clamp(2.2rem,5.5vw,3.8rem)] font-black leading-[0.98] tracking-[-0.04em] text-[#FFFDF8]">
+                {destino.nombre}
+              </h1>
 
-            <p className="mt-5 flex items-start gap-2.5 text-sm font-semibold text-[#E8D8B7]/85">
-              <span className="mt-px" aria-hidden="true">
-                📍
-              </span>
+              <p className="mt-5 flex items-start gap-2.5 text-sm font-semibold text-[#E8D8B7]/85">
+                <span className="mt-px" aria-hidden="true">
+                  📍
+                </span>
 
-              <span>
-                {destino.direccion?.trim() || "Ubicación no registrada"}
-              </span>
-            </p>
+                <span>
+                  {destino.direccion?.trim() || "Ubicación no registrada"}
+                </span>
+              </p>
 
-            {/* Datos rápidos */}
-            <dl className="mt-8 flex flex-wrap gap-3">
-              <DatoRapido
-                etiqueta="Tiempo de visita"
-                valor={duracion}
-                insignia="⏱"
-              />
+              {/* Datos rápidos */}
+              <dl className="mt-8 flex flex-wrap gap-3">
+                <DatoRapido
+                  etiqueta="Tiempo de visita"
+                  valor={duracion}
+                  insignia="⏱"
+                />
 
-              <DatoRapido
-                etiqueta="Coordenadas"
-                valor={formatearCoordenadas(destino.ubicacion)}
-                insignia="🧭"
-              />
+                <DatoRapido
+                  etiqueta="Coordenadas"
+                  valor={formatearCoordenadas(destino.ubicacion)}
+                  insignia="🧭"
+                />
 
-              <DatoRapido
-                etiqueta="Fuente"
-                valor={destino.fuente_origen}
-                insignia="🗂️"
-              />
-            </dl>
+                <DatoRapido
+                  etiqueta="Fuente"
+                  valor={destino.fuente_origen}
+                  insignia="🗂️"
+                />
+              </dl>
+            </div>
+
+            <EncabezadoImagen
+              prioritaria
+              className="h-28 w-auto max-w-[42%] shrink-0 sm:h-40 lg:h-52"
+            />
           </div>
         </div>
       </header>
@@ -224,23 +232,6 @@ export function DestinoDetailPage() {
                 {destino.descripcion ||
                   "La descripción de este destino estará disponible próximamente."}
               </p>
-
-              {/* Bloque reservado para la descripción histórica/cultural
-                  extendida que cargará el backend más adelante. */}
-              <div
-                className="mt-6 rounded-[1.4rem] border border-dashed border-[#9A5B3C]/30 bg-[#C6923B]/[0.06] px-5 py-4"
-                data-testid="descripcion-historica-placeholder"
-              >
-                <p className="text-[0.58rem] font-black uppercase tracking-[0.2em] text-[#8D4F32]">
-                  Historia y cultura
-                </p>
-
-                <p className="mt-2 text-sm leading-6 text-[#514B43]">
-                  La descripción histórica y cultural completa de este
-                  atractivo se habilitará cuando el backend cargue ese
-                  contenido.
-                </p>
-              </div>
             </section>
 
             <MapaDestino

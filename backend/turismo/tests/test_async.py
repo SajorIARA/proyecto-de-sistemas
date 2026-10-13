@@ -119,6 +119,22 @@ class SubirFotoViewTests(TestCase):
         resp = self.cliente.get("/api/turismo/admin/fotos/999999/estado/")
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_subir_orden_invalido_400(self) -> None:
+        # dict no se puede codificar en multipart; se cubre vía serializer.
+        for orden in ("abc", "1.5", "-3"):
+            resp = self.cliente.post(
+                SUBIR_URL,
+                {
+                    "atractivo": str(self.atractivo.id_atractivo),
+                    "archivo": self._archivo(),
+                    "orden": orden,
+                },
+                format="multipart",
+            )
+            self.assertEqual(
+                resp.status_code, status.HTTP_400_BAD_REQUEST, f"orden={orden}"
+            )
+
 
 class SubirFotoTaskTests(TestCase):
     def test_tarea_completa_y_limpia_temporal(self) -> None:

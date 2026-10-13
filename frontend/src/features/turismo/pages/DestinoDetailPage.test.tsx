@@ -203,13 +203,17 @@ describe("DestinoDetailPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("deja reservado el bloque de descripción histórica", async () => {
+  it("muestra la descripción del destino en la sección 'Descripción'", async () => {
     vi.mocked(obtenerAtractivo).mockResolvedValue(atractivo());
 
     renderDetalle();
 
+    const seccion = await screen.findByRole("region", {
+      name: /descripción/i,
+    });
+
     expect(
-      await screen.findByTestId("descripcion-historica-placeholder"),
+      within(seccion).getByText("Formaciones rocosas modeladas por la erosión."),
     ).toBeInTheDocument();
   });
 

@@ -270,16 +270,26 @@ class Command(BaseCommand):
             )
 
     def _seed_demo_usuario(self):
-        usuario, _ = Usuario.objects.get_or_create(
+        usuario, creado = Usuario.objects.get_or_create(
             email=DEMO_USUARIO["email"],
             defaults={
                 "nombre": DEMO_USUARIO["nombre"],
             },
         )
-        if not usuario.has_usable_password():
+        # objects.create deja password="" (marcado "usable" pero inválido):
+        # hay que forzar el hash salvo que ya coincida.
+        if creado or not usuario.check_password(DEMO_USUARIO["password_llano"]):
             usuario.set_password(DEMO_USUARIO["password_llano"])
             usuario.nombre = DEMO_USUARIO["nombre"]
             usuario.save(update_fields=["password", "nombre"])
+        rol_turista, _ = Rol.objects.get_or_create(
+            codigo="TOURIST",
+            defaults={
+                "nombre": "Turista",
+                "descripcion": "Usuario visitante de la plataforma",
+            },
+        )
+        usuario.roles.add(rol_turista)
         for nombre_categoria, nivel_interes in DEMO_PREFERENCIAS:
             UsuarioPreferencia.objects.update_or_create(
                 usuario=usuario,

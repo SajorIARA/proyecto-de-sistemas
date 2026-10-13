@@ -1,15 +1,14 @@
 /**
  * Resolución de imágenes de destino con soporte para Cloudinary.
  *
- * El backend todavía NO expone imágenes (`AtractivoSerializer` no tiene
- * campo de imagen). Para no bloquear el sprint, el frontend está preparado
- * para consumir las imágenes en cuanto lleguen: en cuanto el backend
- * empiece a mandar cualquiera de los campos de `IMAGEN_CAMPOS` (una URL
- * absoluta de Cloudinary o un public_id), la card y la galería las
- * muestran sin tocar este código.
- *
- * Mientras tanto se devuelve `null` y los componentes pintan un
+ * `AtractivoSerializer` ya expone `imagenes`: la lista ordenada de
+ * `public_id` de las fotos del destino. Cada valor se normaliza desde
+ * `IMAGEN_CAMPOS` (una URL absoluta de Cloudinary o un public_id) y la
+ * card y la galería las muestran. Si no hay ninguna se pinta un
  * placeholder de marca, nunca una imagen rota.
+ *
+ * Construir la URL de entrega requiere `VITE_CLOUDINARY_CLOUD_NAME`
+ * (ver `config/turismo.ts`); sin ella `urlCloudinary` devuelve `null`.
  */
 
 import {
