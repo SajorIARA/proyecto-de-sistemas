@@ -1,3 +1,4 @@
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from recomendaciones.permissions import IsAuthenticatedOwnerOrAdmin
@@ -5,6 +6,7 @@ from recomendaciones.permissions import IsAuthenticatedOwnerOrAdmin
 from .models import ConsultaRecomendacion, UsuarioPreferencia
 from .serializers import (
     ConsultaRecomendacionSerializer,
+    MiPreferenciaSerializer,
     UsuarioPreferenciaSerializer,
 )
 
@@ -37,3 +39,23 @@ class ConsultaRecomendacionViewSet(ModelViewSet):
         if _es_admin(self.request.user):
             return base
         return base.filter(usuario=self.request.user)
+
+
+class MisPreferenciasViewSet(ModelViewSet):
+    """Preferencias del usuario autenticado (issue #22).
+
+    GET lista las propias, POST crea asignando el JWT, PATCH/DELETE solo
+    sobre las propias. Nunca expone ni acepta otro usuario.
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = MiPreferenciaSerializer
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
+    def get_queryset(self):
+        return UsuarioPreferencia.objects.select_related("usuario", "categoria").filter(
+            usuario=self.request.user
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(usuario=self.request.user)
