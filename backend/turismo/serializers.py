@@ -111,6 +111,21 @@ class AtractivoSerializer(serializers.ModelSerializer):
         return obj.area.coords
 
 
+class SubirFotoSerializer(serializers.Serializer):
+    """Validación del POST multipart de subida async (issue medios).
+
+    Todo escalar pasa por DRF: UUID válido, tipo permitido y orden
+    entero >= 0. El archivo se valida por separado (extensión y peso).
+    """
+
+    atractivo = serializers.UUIDField()
+    tipo = serializers.ChoiceField(
+        choices=[Foto.TIPO_IMAGEN, Foto.TIPO_VIDEO],
+        default=Foto.TIPO_IMAGEN,
+    )
+    orden = serializers.IntegerField(min_value=0, required=False, default=0)
+
+
 class FotoSerializer(serializers.ModelSerializer):
     """Foto/video de un destino.
 
