@@ -103,6 +103,8 @@ Ver `.env.example`. Las claves principales:
 | `DJANGO_DEBUG` | `1` en desarrollo, `0` en producción |
 | `DJANGO_ALLOWED_HOSTS` | Hosts permitidos, separados por coma |
 | `CORS_ALLOWED_ORIGINS` | Orígenes permitidos, separados por coma |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Credenciales de Cloudinary (firma de subidas y CDN). Vacías = medios deshabilitados |
+| `VITE_CLOUDINARY_CLOUD_NAME` | Mismo cloud expuesto al frontend para armar las URLs de las imágenes |
 | `IMAGE_TAG` | Etiqueta de imágenes en producción |
 
 ## CI/CD y Git
