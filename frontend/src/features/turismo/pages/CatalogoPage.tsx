@@ -30,6 +30,7 @@ import { CategoriaFiltros } from "../components/CategoriaFiltros";
 import { DestinoCard } from "../components/DestinoCard";
 import { DestinoCardSkeleton } from "../components/Skeletons";
 import { CatalogoError } from "../components/CatalogoError";
+import { EncabezadoImagen } from "../../../components/EncabezadoImagen";
 
 /**
  * Tarjetas de esqueleto durante la carga inicial. Se igualan al
@@ -163,23 +164,30 @@ export function CatalogoPage() {
           </nav>
 
           {/* Titular */}
-          <div className="mt-10 max-w-3xl">
-            <p className="inline-flex items-center gap-2.5 rounded-full border border-[#E9DFC9]/20 bg-[#1A241C]/40 px-4 py-2 text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#F1D79D] backdrop-blur-xl">
-              <span className="h-2 w-2 rounded-full bg-[#E7B75F]" />
-              Catálogo turístico
-            </p>
+          <div className="mt-10 flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+            <div className="max-w-3xl">
+              <p className="inline-flex items-center gap-2.5 rounded-full border border-[#E9DFC9]/20 bg-[#1A241C]/40 px-4 py-2 text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#F1D79D] backdrop-blur-xl">
+                <span className="h-2 w-2 rounded-full bg-[#E7B75F]" />
+                Catálogo turístico
+              </p>
 
-            <h1 className="mt-6 text-[clamp(2.4rem,6vw,4.2rem)] font-black leading-[0.95] tracking-[-0.04em] text-[#FFFDF8]">
-              Descubre La Paz
-              <span className="block text-[#E8D8B7]">
-                atractivo por atractivo.
-              </span>
-            </h1>
+              <h1 className="mt-6 text-[clamp(2.4rem,6vw,4.2rem)] font-black leading-[0.95] tracking-[-0.04em] text-[#FFFDF8]">
+                Descubre La Paz
+                <span className="block text-[#E8D8B7]">
+                  atractivo por atractivo.
+                </span>
+              </h1>
 
-            <p className="mt-5 max-w-xl text-sm leading-7 text-[#F5EFE4]/70 sm:text-base">
-              Historia, cultura, miradores y sabores paceños. Elige una
-              categoría y empieza a planificar tu próxima visita.
-            </p>
+              <p className="mt-5 max-w-xl text-sm leading-7 text-[#F5EFE4]/70 sm:text-base">
+                Historia, cultura, miradores y sabores paceños. Elige una
+                categoría y empieza a planificar tu próxima visita.
+              </p>
+            </div>
+
+            <EncabezadoImagen
+              prioritaria
+              className="h-28 w-auto max-w-[42%] shrink-0 sm:h-40 lg:h-52"
+            />
           </div>
         </div>
       </header>
