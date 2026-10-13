@@ -81,7 +81,7 @@ RUN rm -rf \
 COPY . .
 
 RUN useradd --create-home --system appuser \
-    && mkdir -p /app/staticfiles /app/logs \
+    && mkdir -p /app/staticfiles /app/logs /app/staging \
     && chown -R appuser:appuser /app
 
 USER appuser

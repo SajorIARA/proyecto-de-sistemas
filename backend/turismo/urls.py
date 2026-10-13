@@ -5,9 +5,11 @@ from .views import (
     AtractivoAdminViewSet,
     AtractivoViewSet,
     CategoriaViewSet,
+    EstadoFotoView,
     FirmaFotoView,
     FotoAdminViewSet,
     HorarioViewSet,
+    SubirFotoView,
     TarifaViewSet,
     TipoTarifaViewSet,
 )
@@ -30,5 +32,15 @@ urlpatterns = [
         "admin/fotos/firma/",
         FirmaFotoView.as_view(),
         name="foto-firma",
+    ),
+    path(
+        "admin/fotos/subir/",
+        SubirFotoView.as_view(),
+        name="foto-subir",
+    ),
+    path(
+        "admin/fotos/<int:pk>/estado/",
+        EstadoFotoView.as_view(),
+        name="foto-estado",
     ),
 ] + router.urls

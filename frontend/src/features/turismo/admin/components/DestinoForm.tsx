@@ -29,7 +29,7 @@ import {
   FUENTE_ORIGEN_MAX,
   NOMBRE_MAX,
 } from "../../../../config/turismo";
-import type { Categoria, DestinoFormValues } from "../../../../types/turismo";
+import type { AtractivoAdmin, Categoria, DestinoFormValues } from "../../../../types/turismo";
 import { aPayload } from "../api/destinosAdminApi";
 import { useGuardarDestino } from "../hooks/useDestinosAdmin";
 import {
@@ -75,8 +75,14 @@ export function DestinoForm({
   categorias: Categoria[];
   /** `true` mientras se cargan los datos del destino a editar. */
   pendienteCarga?: boolean;
-  /** Se llama cuando el backend confirma el guardado. */
-  alGuardar: () => void;
+  /**
+   * Se llama cuando el backend confirma el guardado.
+   *
+   * Recibe el destino guardado: en el alta, la página lo usa para navegar a
+   * la edición y poder subir fotos (que necesitan el `id_atractivo` ya
+   * creado).
+   */
+  alGuardar: (destino: AtractivoAdmin) => void;
 }) {
   const editando = Boolean(idDestino);
 
@@ -150,7 +156,7 @@ export function DestinoForm({
 
     if (guardado) {
       setTocados(false);
-      alGuardar();
+      alGuardar(guardado);
     }
   }
 

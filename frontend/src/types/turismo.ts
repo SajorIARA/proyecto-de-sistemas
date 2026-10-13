@@ -103,6 +103,48 @@ export interface Paginado<T> {
   results: T[];
 }
 
+/* ==========================================================================
+   FOTOS DE DESTINO — `FotoAdminViewSet` y `AtractivoAdminSerializer.fotos`
+   ========================================================================== */
+
+/** `Foto.TIPOS` del backend. */
+export type TipoFoto = "imagen" | "video";
+
+/** Ciclo de vida de la subida (`Foto.ESTADOS`). */
+export type EstadoFoto = "pending" | "processing" | "completed" | "failed";
+
+/**
+ * Registro de una foto/video de destino.
+ *
+ * El binario nunca vive en la base: `public_id` es la clave en Cloudinary
+ * (borrar/transformar) y `url` la URL de entrega (`secure_url`).
+ */
+export interface Foto {
+  id_foto: number;
+  /** UUID del atractivo dueño. */
+  atractivo: string;
+  public_id: string;
+  url: string;
+  tipo: TipoFoto;
+  estado: EstadoFoto;
+  ancho: number | null;
+  alto: number | null;
+  orden: number;
+  fecha_creacion: string;
+}
+
+/** Cuerpo que acepta `FotoAdminViewSet` al crear (subida directa). */
+export interface FotoInput {
+  atractivo: string;
+  public_id: string;
+  url: string;
+  tipo: TipoFoto;
+  estado: EstadoFoto;
+  ancho?: number | null;
+  alto?: number | null;
+  orden?: number;
+}
+
 /** Fila combinando un destino con sus datos derivados para la card. */
 export interface DestinoCard {
   atractivo: Atractivo;
@@ -136,6 +178,8 @@ export interface AtractivoAdmin {
   area: Anillo | null;
   /** Ids de `Categoria.id_categoria`. */
   categorias: number[];
+  /** Fotos del destino (registros completos, ordenados). */
+  fotos: Foto[];
   fuente_origen: string;
   activo: boolean;
   fecha_creacion: string;

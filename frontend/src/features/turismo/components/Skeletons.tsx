@@ -9,7 +9,7 @@
 export function DestinoCardSkeleton() {
   return (
     <div
-      className="flex flex-col overflow-hidden rounded-[1.85rem] border border-[#5B3A29]/[0.06] bg-[#FFFDF8] shadow-[0_16px_40px_rgba(72,55,38,0.06)]"
+      className="flex h-full flex-col overflow-hidden rounded-[1.85rem] border border-[#5B3A29]/[0.06] bg-[#FFFDF8] shadow-[0_16px_40px_rgba(72,55,38,0.06)]"
       data-testid="destino-card-skeleton"
     >
       <div className="flex h-[3px] shrink-0 overflow-hidden">

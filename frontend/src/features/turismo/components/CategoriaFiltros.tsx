@@ -35,7 +35,7 @@ export function CategoriaFiltros({
     <div
       role="group"
       aria-label="Filtrar catálogo por categoría"
-      className="flex flex-wrap items-center gap-2.5"
+      className="flex items-center gap-3 overflow-x-auto pb-1 sin-scrollbar"
     >
       <Chip
         etiqueta={CATEGORIA_TODOS}

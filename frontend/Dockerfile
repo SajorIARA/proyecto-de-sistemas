@@ -11,16 +11,22 @@ RUN apk upgrade --no-cache
 
 COPY package.json pnpm-lock.yaml ./
 
-RUN corepack enable \
-	&& corepack prepare pnpm@10.34.5 --activate \
+# pnpm standalone desde GitHub releases (sin npm ni corepack):
+# el build no depende de registry.npmjs.org.
+RUN wget -qO /usr/local/bin/pnpm "https://github.com/pnpm/pnpm/releases/download/v10.34.5/pnpm-linuxstatic-x64" \
+	&& chmod +x /usr/local/bin/pnpm \
 	&& pnpm install --frozen-lockfile \
-	&& rm -rf /usr/local/lib/node_modules/npm /root/.cache/node/corepack \
-	&& rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/pnpm /usr/local/bin/pnpx
+	&& rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 COPY . .
 
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
+
+# Nombre del cloud de Cloudinary, horneado en el bundle estático. Railway
+# y el workflow de release lo inyectan como build-arg; vacío = placeholders.
+ARG VITE_CLOUDINARY_CLOUD_NAME=
+ENV VITE_CLOUDINARY_CLOUD_NAME=$VITE_CLOUDINARY_CLOUD_NAME
 
 RUN ./node_modules/.bin/vite build
 

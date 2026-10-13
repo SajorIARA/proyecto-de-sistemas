@@ -235,6 +235,35 @@ video {
 }
 
 /* =========================================================
+   CONTENEDORES DE PÁGINA
+   Aprovechan el ancho disponible en monitores grandes sin
+   saturar la interfaz: ~92% del viewport con tope de 1500px
+   para catálogo e índices, y 1280px para páginas de detalle
+   con bloques de texto largo.
+========================================================= */
+
+.contenedor-amplio {
+  width: min(92%, 1500px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.contenedor-medio {
+  width: min(92%, 1280px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Carrusel horizontal de chips sin scrollbar visible */
+.sin-scrollbar {
+  scrollbar-width: none;
+}
+
+.sin-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* =========================================================
    MOTION ACCESSIBILITY
 ========================================================= */
 

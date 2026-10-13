@@ -6,6 +6,7 @@ from decimal import Decimal
 
 from django.contrib.gis.db import models
 from django.contrib.postgres.indexes import GistIndex
+from django.utils.text import slugify
 
 
 class Categoria(models.Model):
@@ -28,6 +29,9 @@ class Atractivo(models.Model):
         primary_key=True, default=uuid.uuid4, editable=False
     )
     nombre: models.CharField[str, str] = models.CharField(max_length=200)
+    slug: models.CharField[str, str] = models.CharField(
+        max_length=120, blank=True, default=""
+    )
     descripcion: models.TextField[str, str] = models.TextField()
     direccion: models.CharField[str | None, str | None] = models.CharField(
         max_length=300, null=True, blank=True
@@ -74,6 +78,11 @@ class Atractivo(models.Model):
 
     def __str__(self) -> str:
         return self.nombre
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.nombre)[:120]
+        return super().save(*args, **kwargs)
 
 
 class AtractivoCategoria(models.Model):
@@ -246,12 +255,28 @@ class Tarifa(models.Model):
 
 
 class Foto(models.Model):
-    """Foto de un destino, almacenada en Cloudinary (issue medios).
+    """Foto/video de un destino, almacenada en Cloudinary.
 
     La BD solo guarda referencias (public_id/URL/dimensiones): ningún
-    binario vive en PostgreSQL ni pasa por Django (subida directa
-    firmada por el backend, entrega por CDN).
+    binario vive en PostgreSQL. Subidas pesadas van por Celery
+    (estado pending->processing->completed/failed); directas por firma
+    nacen completed.
     """
+
+    TIPO_IMAGEN = "imagen"
+    TIPO_VIDEO = "video"
+    TIPOS = [(TIPO_IMAGEN, "Imagen"), (TIPO_VIDEO, "Video")]
+
+    ESTADO_PENDING = "pending"
+    ESTADO_PROCESSING = "processing"
+    ESTADO_COMPLETED = "completed"
+    ESTADO_FAILED = "failed"
+    ESTADOS = [
+        (ESTADO_PENDING, "Pendiente"),
+        (ESTADO_PROCESSING, "Procesando"),
+        (ESTADO_COMPLETED, "Completada"),
+        (ESTADO_FAILED, "Fallida"),
+    ]
 
     id_foto: models.BigAutoField[int, int] = models.BigAutoField(primary_key=True)
     atractivo: models.ForeignKey[Atractivo, Atractivo] = models.ForeignKey(
@@ -264,7 +289,15 @@ class Foto(models.Model):
     public_id: models.CharField[str, str] = models.CharField(
         max_length=300, unique=True
     )
-    url: models.URLField[str, str] = models.URLField(max_length=500)
+    url: models.URLField[str, str] = models.URLField(
+        max_length=500, blank=True, default=""
+    )
+    tipo: models.CharField[str, str] = models.CharField(
+        max_length=10, choices=TIPOS, default=TIPO_IMAGEN
+    )
+    estado: models.CharField[str, str] = models.CharField(
+        max_length=12, choices=ESTADOS, default=ESTADO_PENDING
+    )
     ancho: models.IntegerField[int | None, int | None] = models.IntegerField(
         null=True, blank=True
     )

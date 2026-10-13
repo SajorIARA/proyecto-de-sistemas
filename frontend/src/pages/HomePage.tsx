@@ -40,7 +40,7 @@ export function HomePage() {
   return (
     <main className="min-h-screen overflow-hidden bg-slate-950 text-white">
       {/* HERO */}
-      <section className="relative min-h-screen p-0">
+      <section className="relative min-h-[88vh] p-0">
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute -left-20 top-24 h-72 w-72 rounded-full bg-amber-300/35 blur-[120px]" />
           <div className="absolute right-0 top-0 h-96 w-96 rounded-full bg-sky-300/30 blur-[130px]" />
@@ -48,7 +48,7 @@ export function HomePage() {
 
         <div className="relative w-full">
           <div
-            className="relative min-h-screen w-full overflow-hidden bg-slate-950"
+            className="relative min-h-[88vh] w-full overflow-hidden bg-slate-950"
             style={{
               backgroundImage: `
                 linear-gradient(
@@ -140,7 +140,7 @@ export function HomePage() {
             </div>
 
             {/* CONTENIDO PRINCIPAL */}
-            <div className="relative z-20 flex min-h-[650px] items-end px-6 pb-10 sm:px-8 sm:pb-14 lg:px-12 lg:pb-16">
+            <div className="relative z-20 flex min-h-[540px] items-end px-6 pb-8 sm:px-8 sm:pb-10 lg:px-12 lg:pb-12">
               <div className="flex w-full flex-col justify-between gap-10 lg:flex-row lg:items-end">
                 <div className="max-w-2xl">
                   <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-amber-200 backdrop-blur-xl">
@@ -236,7 +236,7 @@ export function HomePage() {
         id="experiencias"
         className="relative bg-[#ece8df] px-5 py-20 text-slate-950 sm:px-8 lg:px-10"
       >
-        <div className="mx-auto max-w-7xl">
+        <div className="contenedor-amplio">
           <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.24em] text-amber-700">
@@ -259,12 +259,12 @@ export function HomePage() {
 
           <div
             id="categorias"
-            className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            className="mt-12 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3"
           >
             {categorias.map((categoria, index) => (
               <article
                 key={categoria.nombre}
-                className="group relative overflow-hidden rounded-[1.8rem] border border-slate-900/5 bg-white p-6 shadow-[0_15px_45px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_55px_rgba(15,23,42,0.12)]"
+                className="group relative flex h-full flex-col overflow-hidden rounded-[1.8rem] border border-slate-900/5 bg-white p-6 shadow-[0_15px_45px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_55px_rgba(15,23,42,0.12)]"
               >
                 <div className="flex items-start justify-between">
                   <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-950 text-2xl">
@@ -284,7 +284,7 @@ export function HomePage() {
                   {categoria.descripcion}
                 </p>
 
-                <div className="mt-7 flex items-center gap-2 text-sm font-black">
+                <div className="mt-auto flex items-center gap-2 pt-7 text-sm font-black">
                   <Link
                     to={`/destinos?categoria=${encodeURIComponent(categoria.nombre)}`}
                     className="transition hover:text-amber-700"
@@ -304,7 +304,7 @@ export function HomePage() {
         id="descubre"
         className="bg-[#ece8df] px-5 pb-12 sm:px-8 lg:px-10"
       >
-        <div className="mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-14 text-center text-white sm:px-10 lg:py-20">
+        <div className="contenedor-amplio overflow-hidden rounded-[2rem] bg-slate-950 px-6 py-10 text-center text-white sm:px-10 lg:py-14">
           <p className="text-xs font-black uppercase tracking-[0.24em] text-amber-300">
             Tu próxima experiencia empieza aquí
           </p>
