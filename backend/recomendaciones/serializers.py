@@ -24,6 +24,23 @@ class UsuarioPreferenciaSerializer(serializers.ModelSerializer):
         extra_kwargs = {"nivel_interes": {"min_value": 0, "max_value": 1}}
 
 
+class MiPreferenciaSerializer(UsuarioPreferenciaSerializer):
+    """Preferencias del usuario autenticado (issue #22).
+
+    El usuario se asigna desde el JWT y no es escribible: cada turista
+    gestiona solo sus propias preferencias y restricciones.
+    """
+
+    class Meta(UsuarioPreferenciaSerializer.Meta):
+        read_only_fields = ["id", "fecha_registro", "usuario"]
+
+
+# Área metropolitana de La Paz (El Alto–Mallasa): las consultas fuera
+# de este bbox se rechazan (DoD issue #22).
+LA_PAZ_LON_MIN, LA_PAZ_LON_MAX = -68.30, -67.90
+LA_PAZ_LAT_MIN, LA_PAZ_LAT_MAX = -16.75, -16.30
+
+
 @extend_schema_field(
     {
         "type": "object",
@@ -50,11 +67,19 @@ class PuntoPartidaField(serializers.Field):
     def to_internal_value(self, data):
         try:
             lon, lat = data["coordinates"]
-            return {"coordinates": [float(lon), float(lat)]}
+            lon, lat = float(lon), float(lat)
         except (KeyError, TypeError, ValueError) as exc:
             raise serializers.ValidationError(
                 "punto_partida debe ser {coordinates: [lon, lat]}."
             ) from exc
+        if not (
+            LA_PAZ_LON_MIN <= lon <= LA_PAZ_LON_MAX
+            and LA_PAZ_LAT_MIN <= lat <= LA_PAZ_LAT_MAX
+        ):
+            raise serializers.ValidationError(
+                "punto_partida debe estar dentro del área de La Paz."
+            )
+        return {"coordinates": [lon, lat]}
 
 
 class ConsultaRecomendacionSerializer(serializers.ModelSerializer):

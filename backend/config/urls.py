@@ -7,6 +7,8 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+from recomendaciones.urls import urlpatterns_propias as preferences_urls
+
 
 def health(request):
     return JsonResponse(
@@ -24,6 +26,7 @@ def root(request):
         "/api/turismo/",
         "/api/conocimiento/",
         "/api/recomendaciones/",
+        "/api/preferences/",
     ]
     if settings.SERVE_DOCS:
         endpoints += ["/api/schema/", "/api/docs/", "/api/redoc/"]
@@ -44,6 +47,10 @@ urlpatterns = [
     path("api/turismo/", include("turismo.urls")),
     path("api/conocimiento/", include("conocimiento.urls")),
     path("api/recomendaciones/", include("recomendaciones.urls")),
+    path(
+        "api/preferences/",
+        include((preferences_urls, "preferencias")),
+    ),
 ]
 
 if settings.SERVE_DOCS:
