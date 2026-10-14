@@ -11,6 +11,7 @@ import { AdminDestinoFormPage } from "../features/turismo/admin/pages/AdminDesti
 import { AdminDestinosPage } from "../features/turismo/admin/pages/AdminDestinosPage";
 import { CatalogoPage } from "../features/turismo/pages/CatalogoPage";
 import { DestinoDetailPage } from "../features/turismo/pages/DestinoDetailPage";
+import { PreferenciasPage } from "../features/preferencias/pages/PreferenciasPage";
 import { HomePage } from "../pages/HomePage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 
@@ -51,6 +52,11 @@ export const router = createBrowserRouter([
             // Perfil: disponible para cualquier rol autenticado.
             path: "mi-cuenta",
             element: <PerfilPage />,
+          },
+          {
+            // Preferencias y restricciones de viaje: cualquier autenticado.
+            path: "mi-cuenta/preferencias",
+            element: <PreferenciasPage />,
           },
           {
             // Panel de administración: exige rol ADMIN.

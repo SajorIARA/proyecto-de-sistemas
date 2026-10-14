@@ -119,9 +119,18 @@ export function PerfilPage() {
               </p>
             </div>
 
+            {/* Preferencias de viaje (cualquier rol) */}
+            <div className="mt-7">
+              <AtajoAdmin
+                to="/mi-cuenta/preferencias"
+                titulo="Preferencias de viaje"
+                descripcion="Categorías de interés, presupuesto, duración y punto de partida"
+              />
+            </div>
+
             {/* Atajos al panel (solo ADMIN) */}
             {esAdmin && (
-              <div className="mt-7 space-y-3">
+              <div className="mt-3 space-y-3">
                 <AtajoAdmin
                   to="/mi-cuenta/destinos"
                   titulo="Gestión de destinos"
