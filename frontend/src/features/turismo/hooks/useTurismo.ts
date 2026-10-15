@@ -11,25 +11,27 @@
  * - `staleTime` alto + `retry` acotado evitan ráfagas de peticiones.
  */
 
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
   listarAtractivos,
   listarCategorias,
+  listarFacetas,
   listarHorariosDe,
   listarTarifasDe,
   obtenerAtractivo,
   TurismoApiError,
 } from "../api/turismoApi";
-import type { Atractivo } from "../../../types/turismo";
+import type { Atractivo, FiltrosCatalogo } from "../../../types/turismo";
 
 /** Claves centralizadas para invalidar sin repetir strings. */
 export const KeysTurismo = {
-  catalogo: (categoria: string | null, q: string) =>
-    ["turismo", "atractivos", { categoria, q }] as const,
+  catalogo: (filtros: FiltrosCatalogo) =>
+    ["turismo", "atractivos", filtros] as const,
   atractivo: (id: string) => ["turismo", "atractivo", id] as const,
   horarios: (id: string) => ["turismo", "horarios", id] as const,
   tarifas: (id: string) => ["turismo", "tarifas", id] as const,
   categorias: () => ["turismo", "categorias"] as const,
+  facetas: () => ["turismo", "facetas"] as const,
 };
 
 const CATALOGO_STALE_MS = 2 * 60 * 1000;
@@ -51,27 +53,43 @@ function paginaDesdeNext(next: string | null): number | undefined {
   }
 }
 
-export interface UseCatalogoParams {
-  /** `null` = chip "Todos" (sin filtro). */
-  categoria?: string | null;
-  /** Búsqueda de texto libre (el backend la soporta con `q`). */
-  q?: string;
-}
+export interface UseCatalogoParams extends Partial<FiltrosCatalogo> {}
 
 /**
  * Catálogo paginado con scroll infinito.
  *
+ * Recibe los filtros combinados del panel (categoría, texto, zona y rango de
+ * precio en BOB) y los pasa tal cual al cliente HTTP, que los traduce a los
+ * query params de Django REST. `placeholderData: keepPreviousData` mantiene la
+ * cuadrícula anterior visible mientras llega el nuevo resultado, en vez de
+ * parpadear a esqueletos en cada cambio de filtro.
+ *
  * Devuelve las páginas aplanadas más el estado de paginación, para que la
  * página controle el IntersectionObserver y el botón "Cargar más".
  */
-export function useCatalogo({ categoria = null, q = "" }: UseCatalogoParams = {}) {
+export function useCatalogo({
+  categoria = null,
+  q = "",
+  zona = null,
+  precioMin = null,
+  precioMax = null,
+}: UseCatalogoParams = {}) {
+  const filtros: FiltrosCatalogo = {
+    categoria,
+    q,
+    zona,
+    precioMin,
+    precioMax,
+  };
+
   const consulta = useInfiniteQuery({
-    queryKey: KeysTurismo.catalogo(categoria, q),
+    queryKey: KeysTurismo.catalogo(filtros),
     queryFn: ({ pageParam }) =>
-      listarAtractivos({ page: pageParam, categoria, q }),
+      listarAtractivos({ page: pageParam, ...filtros }),
     initialPageParam: 1,
     getNextPageParam: (ultima) => paginaDesdeNext(ultima.next),
     staleTime: CATALOGO_STALE_MS,
+    placeholderData: keepPreviousData,
   });
 
   const destinos: Atractivo[] =
@@ -140,6 +158,20 @@ export function useCategorias() {
   return useQuery({
     queryKey: KeysTurismo.categorias(),
     queryFn: listarCategorias,
+    staleTime: RELACIONADO_STALE_MS,
+  });
+}
+
+/**
+ * Facetas del panel de filtros (`/atractivos/facetas/`): conteo por categoría y
+ * rango de precios BOB del catálogo. Alimenta los contadores de los chips y la
+ * pista de precios, no la consulta del catálogo en sí. Si el endpoint falla,
+ * `listarFacetas` devuelve `null` y el panel sigue funcionando sin facetas.
+ */
+export function useFacetas() {
+  return useQuery({
+    queryKey: KeysTurismo.facetas(),
+    queryFn: listarFacetas,
     staleTime: RELACIONADO_STALE_MS,
   });
 }

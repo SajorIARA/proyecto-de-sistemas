@@ -4,29 +4,27 @@
  * Alcance definido por el Product Owner:
  *  - cuadrícula responsiva de cards (imagen, categoría, nombre,
  *    ubicación, descripción corta, botón "Ver detalle");
- *  - filtros tipo chip: Todos + 6 categorías oficiales, con "Todos"
- *    seleccionado al entrar;
+ *  - buscador en tiempo real por texto con debounce (nombre, palabra
+ *    clave o dirección);
+ *  - panel de filtros combinables: categorías (chips), zona geográfica y
+ *    rango de precio en BOB, todos conectados a los query params del
+ *    backend (`q`, `categoria`, `zona`, `precio_min`, `precio_max`);
  *  - paginación por scroll infinito consumiendo la API de Django sin
  *    recargas del navegador;
- *  - esqueletos de carga, estado vacío por categoría y estado de error
- *    con reintento.
+ *  - esqueletos de carga, estado vacío y estado de error con reintento.
  *
- * La categoría se mantiene en la URL (`?categoria=...`) para que el
- * filtro sea compartible y el botón "volver al catálogo" del detalle
- * pueda restaurarlo.
+ * Todo el estado de los filtros vive en la URL, así que una búsqueda es
+ * compartible y el botón "volver al catálogo" del detalle la restaura.
  */
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
-import {
-  CATEGORIA_TODOS,
-  CATALOGO_PAGE_SIZE,
-  esCategoriaOficial,
-} from "../../../config/turismo";
-import { useCatalogo } from "../hooks/useTurismo";
+import { CATALOGO_PAGE_SIZE } from "../../../config/turismo";
+import { useCatalogo, useFacetas } from "../hooks/useTurismo";
+import { useFiltrosCatalogo } from "../hooks/useFiltrosCatalogo";
+import { CatalogoFiltros } from "../components/CatalogoFiltros";
 import { CatalogoVacio } from "../components/CatalogoVacio";
-import { CategoriaFiltros } from "../components/CategoriaFiltros";
 import { DestinoCard } from "../components/DestinoCard";
 import { DestinoCardSkeleton } from "../components/Skeletons";
 import { CatalogoError } from "../components/CatalogoError";
@@ -41,15 +39,21 @@ const SKELETONS = CATALOGO_PAGE_SIZE;
 
 export function CatalogoPage() {
   const { isAuthenticated } = useAuth();
-  const [parametros, setParametros] = useSearchParams();
+  const [parametros] = useSearchParams();
 
-  const categoriaUrl = parametros.get("categoria");
-  // Solo se aceptan las 6 categorías oficiales: si la URL trae otra cosa,
-  // se cae en "Todos" en lugar de pedir un filtro inválido al backend.
-  const categoria = useMemo(
-    () => (esCategoriaOficial(categoriaUrl) ? categoriaUrl : null),
-    [categoriaUrl],
-  );
+  const {
+    filtros,
+    activos,
+    borrador,
+    setBorrador,
+    setCategoria,
+    setZona,
+    setRangoPrecio,
+    limpiarTexto,
+    limpiar,
+  } = useFiltrosCatalogo();
+
+  const { data: facetas } = useFacetas();
 
   const {
     destinos,
@@ -57,22 +61,13 @@ export function CatalogoPage() {
     hayMas,
     cargandoMas,
     isPending,
+    isFetching,
     isError,
     recargar,
     fetchNextPage,
-  } = useCatalogo({ categoria });
+  } = useCatalogo(filtros);
 
   const centinela = useRef<HTMLDivElement | null>(null);
-
-  const cambiarCategoria = (nueva: string | null) => {
-    if (nueva === null) {
-      parametros.delete("categoria");
-    } else {
-      parametros.set("categoria", nueva);
-    }
-
-    setParametros(parametros, { replace: true });
-  };
 
   // Scroll infinito: dispara la siguiente página cuando el centinela entra
   // en pantalla. Se deja un margen de 400px para empezar a cargar antes de
@@ -102,9 +97,13 @@ export function CatalogoPage() {
     return () => observador.disconnect();
   }, [hayMas, isPending, cargandoMas, fetchNextPage]);
 
-  const titulo = categoria
-    ? `Atractivos de ${categoria}`
+  const titulo = filtros.categoria
+    ? `Atractivos de ${filtros.categoria}`
     : "Todos los destinos de La Paz";
+
+  // Hay una recarga en curso sobre datos ya visibles (cambio de filtro).
+  const actualizando = isFetching && !isPending;
+  const queryActiva = parametros.toString();
 
   return (
     <main className="min-h-screen bg-[#F3EBDD] text-[#263029]">
@@ -179,8 +178,9 @@ export function CatalogoPage() {
               </h1>
 
               <p className="mt-5 max-w-xl text-sm leading-7 text-[#F5EFE4]/70 sm:text-base">
-                Historia, cultura, miradores y sabores paceños. Elige una
-                categoría y empieza a planificar tu próxima visita.
+                Historia, cultura, miradores y sabores paceños. Busca por
+                nombre o combina categoría, zona y precio para planificar tu
+                próxima visita.
               </p>
             </div>
 
@@ -197,20 +197,42 @@ export function CatalogoPage() {
       ========================================================== */}
       <div className="sticky top-0 z-30 border-b border-[#5B3A29]/[0.08] bg-[#F3EBDD]/92 backdrop-blur-xl">
         <div className="contenedor-amplio px-6 py-4 sm:px-8 lg:px-10">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <CategoriaFiltros
-              seleccionada={categoria}
-              onChange={cambiarCategoria}
-              disabled={isPending}
-            />
+          <CatalogoFiltros
+            filtros={filtros}
+            borrador={borrador}
+            facetas={facetas ?? null}
+            disabled={isPending}
+            onBuscar={setBorrador}
+            onLimpiarTexto={limpiarTexto}
+            onCategoria={setCategoria}
+            onZona={setZona}
+            onPrecio={setRangoPrecio}
+            onLimpiar={limpiar}
+          />
 
-            {!isPending && !isError && total > 0 && (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+            {!isError && (
               <p
-                className="shrink-0 text-xs font-bold text-[#746D63]"
+                className="text-xs font-bold text-[#746D63]"
                 aria-live="polite"
               >
                 {total} {total === 1 ? "destino" : "destinos"}
-                {categoria ? ` en ${categoria}` : ""}
+                {activos > 0
+                  ? ` · ${activos} ${activos === 1 ? "filtro activo" : "filtros activos"}`
+                  : ""}
+              </p>
+            )}
+
+            {actualizando && (
+              <p
+                className="inline-flex items-center gap-2 text-xs font-bold text-[#8D4F32]"
+                role="status"
+              >
+                <span
+                  className="h-2 w-2 animate-pulse rounded-full bg-[#9A5B3C]"
+                  aria-hidden="true"
+                />
+                Actualizando resultados…
               </p>
             )}
           </div>
@@ -248,18 +270,24 @@ export function CatalogoPage() {
         {/* Sin resultados */}
         {!isPending && !isError && destinos.length === 0 && (
           <CatalogoVacio
-            categoria={categoria}
-            onLimpiar={() => cambiarCategoria(null)}
+            categoria={filtros.categoria}
+            filtrosActivos={activos}
+            onLimpiar={limpiar}
           />
         )}
 
         {/* Tarjetas */}
         {!isPending && !isError && destinos.length > 0 && (
           <>
-            <ul className="grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+            <ul
+              className={[
+                "grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4",
+                actualizando ? "opacity-70 transition-opacity" : "",
+              ].join(" ")}
+            >
               {destinos.map((atractivo) => (
                 <li key={atractivo.id} className="h-full">
-                  <DestinoCard atractivo={atractivo} />
+                  <DestinoCard atractivo={atractivo} busqueda={queryActiva} />
                 </li>
               ))}
             </ul>
@@ -285,16 +313,6 @@ export function CatalogoPage() {
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8A8177]">
                   Fin del catálogo · {destinos.length} de {total}
                 </p>
-              )}
-
-              {categoria && (
-                <button
-                  type="button"
-                  onClick={() => cambiarCategoria(null)}
-                  className="text-xs font-bold text-[#8D4F32] underline-offset-4 hover:underline"
-                >
-                  Quitar filtro y ver {CATEGORIA_TODOS.toLowerCase()}
-                </button>
               )}
             </div>
           </>
