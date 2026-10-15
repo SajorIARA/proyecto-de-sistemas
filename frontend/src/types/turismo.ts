@@ -95,6 +95,26 @@ export interface Facetas {
   precios_bob: { min: number | null; max: number | null; promedio: number | null };
 }
 
+/**
+ * Filtros combinados del catálogo público.
+ *
+ * Espeja los query params que ya soporta `AtractivoViewSet` para que el mismo
+ * objeto sirva como estado del panel, como clave de caché y como payload del
+ * cliente HTTP. `null`/vacío significa "sin filtro".
+ */
+export interface FiltrosCatalogo {
+  /** Nombre de categoría, o `null` para "Todos". */
+  categoria: string | null;
+  /** Texto libre en nombre, descripción o dirección. Cadena vacía = sin filtro. */
+  q: string;
+  /** Fragmento de zona geográfica sobre la dirección, o `null` para todas. */
+  zona: string | null;
+  /** Tarifa mínima en BOB, o `null` sin límite inferior. */
+  precioMin: number | null;
+  /** Tarifa máxima en BOB, o `null` sin límite superior. */
+  precioMax: number | null;
+}
+
 /** Envoltura de DRF PageNumberPagination. */
 export interface Paginado<T> {
   count: number;

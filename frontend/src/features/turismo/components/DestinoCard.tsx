@@ -23,14 +23,20 @@ import { DestinoImagen } from "./DestinoImagen";
 
 interface DestinoCardProps {
   atractivo: Atractivo;
+  /**
+   * Query string de los filtros activos (sin `?`). Se añade al enlace del
+   * detalle para que "volver al catálogo" restaure la misma combinación de
+   * filtros. Opcional: sin él, el enlace apunta al catálogo limpio.
+   */
+  busqueda?: string;
 }
 
-export function DestinoCard({ atractivo }: DestinoCardProps) {
+export function DestinoCard({ atractivo, busqueda = "" }: DestinoCardProps) {
   const categoria = atractivo.categorias[0] ?? null;
   const ubicacion = atractivo.direccion?.trim();
   const descripcion = recortar(atractivo.descripcion);
   const duracion = formatearDuracion(atractivo.duracion_minutos);
-  const detalle = `/destinos/${atractivo.id}`;
+  const detalle = `/destinos/${atractivo.id}${busqueda ? `?${busqueda}` : ""}`;
   const imagenes = useMemo(() => imagenesDe(atractivo), [atractivo]);
 
   return (
