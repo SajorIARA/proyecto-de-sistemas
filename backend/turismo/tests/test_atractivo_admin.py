@@ -223,3 +223,24 @@ class AtractivoAdminCRUDTests(TestCase):
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         nombres = [item["nombre"] for item in resp.data["results"]]
         self.assertIn("Plaza Murillo", nombres)
+
+    def test_crear_destino_con_url(self) -> None:
+        resp = self.cliente.post(
+            ADMIN_URL,
+            _payload(url="https://www.ejemplo.bo/murillo"),
+            format="json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(resp.data["url"], "https://www.ejemplo.bo/murillo")
+        anonimo = APIClient()
+        detalle = anonimo.get(f"{PUBLIC_URL}{resp.data['id_atractivo']}/")
+        self.assertEqual(detalle.data["url"], "https://www.ejemplo.bo/murillo")
+
+    def test_crear_destino_url_invalida_400(self) -> None:
+        resp = self.cliente.post(ADMIN_URL, _payload(url="no-es-url"), format="json")
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_crear_destino_sin_url_ok(self) -> None:
+        resp = self.cliente.post(ADMIN_URL, _payload(), format="json")
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertIn(resp.data["url"], (None, ""))
