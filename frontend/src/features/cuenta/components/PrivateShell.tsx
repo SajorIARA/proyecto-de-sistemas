@@ -21,6 +21,7 @@ function useNavegacionPrivada() {
 
   const enlaces = [
     { to: "/mi-cuenta", label: "Mi perfil" },
+    { to: "/mi-cuenta/preferencias", label: "Preferencias" },
     { to: "/destinos", label: "Catálogo" },
   ];
 
