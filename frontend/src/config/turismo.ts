@@ -128,6 +128,55 @@ export function esCategoriaOficial(valor: string | null): valor is CategoriaOfic
 }
 
 /**
+ * Zonas geográficas que ofrece el panel de filtros del catálogo.
+ *
+ * El backend resuelve `?zona=` como un `icontains` sobre `direccion`, así que
+ * cada valor debe ser un fragmento tal como aparece en la dirección (no un id).
+ * Se mantiene una lista corta para no prometer zonas que el callejero actual
+ * del catálogo no registra.
+ */
+export const ZONAS_LA_PAZ = [
+  "Centro",
+  "San Francisco",
+  "Sopocachi",
+  "Miraflores",
+  "Mallasa",
+  "Zona Sur",
+] as const;
+
+export type ZonaLaPaz = (typeof ZONAS_LA_PAZ)[number];
+
+/** Rango de precio (BOB) del panel de filtros. `null` = sin límite. */
+export interface RangoPrecioBob {
+  id: string;
+  etiqueta: string;
+  min: number | null;
+  max: number | null;
+}
+
+/**
+ * Presets de precio en bolivianos. Se traducen a los query params
+ * `precio_min` / `precio_max` que ya entiende `AtractivoViewSet` (filtra sobre
+ * las tarifas del destino). "Todos" no envía ningún parámetro.
+ */
+export const RANGOS_PRECIO_BOB: readonly RangoPrecioBob[] = [
+  { id: "todos", etiqueta: "Todos", min: null, max: null },
+  { id: "gratis", etiqueta: "Gratuito", min: 0, max: 0 },
+  { id: "hasta-20", etiqueta: "Hasta Bs 20", min: 0, max: 20 },
+  { id: "20-50", etiqueta: "Bs 20 – 50", min: 20, max: 50 },
+  { id: "mas-50", etiqueta: "Bs 50 o más", min: 50, max: null },
+] as const;
+
+/**
+ * Retraso del debounce del buscador de texto.
+ *
+ * Suficientemente bajo para sentirse inmediato y suficientemente alto para no
+ * disparar una petición por pulsación (el backend limita a 100 req/hora para
+ * visitantes anónimos vía `AnonRateThrottle`).
+ */
+export const BUSQUEDA_DEBOUNCE_MS = 350;
+
+/**
  * Cloudinary: nombre del cloud usado para armar URLs de entrega cuando el
  * backend manda un public_id suelto. Si el backend manda una URL absoluta
  * (ya firmada o con transformaciones) se respeta tal cual y esto no se usa.
