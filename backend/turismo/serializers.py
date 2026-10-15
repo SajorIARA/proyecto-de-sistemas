@@ -70,8 +70,9 @@ class AtractivoSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="id_atractivo", read_only=True)
     categorias = serializers.SerializerMethodField()
     ubicacion = serializers.SerializerMethodField()
-    area = serializers.SerializerMethodField()
     imagenes = serializers.SerializerMethodField()
+
+    area = serializers.SerializerMethodField()
 
     class Meta:
         model = Atractivo
@@ -105,6 +106,7 @@ class AtractivoSerializer(serializers.ModelSerializer):
         point: Point = obj.ubicacion
         return {"longitud": point.x, "latitud": point.y}
 
+    @extend_schema_field({"type": "array", "items": {}, "nullable": True})
     @extend_schema_field({"type": "array", "items": {}, "nullable": True})
     def get_area(self, obj: Atractivo) -> object | None:
         if obj.area is None:
@@ -189,6 +191,7 @@ class AtractivoAdminSerializer(serializers.ModelSerializer):
         many=True, queryset=Categoria.objects.all(), required=False
     )
     fotos = FotoSerializer(many=True, read_only=True)
+    area = serializers.SerializerMethodField()
 
     class Meta:
         model = Atractivo
@@ -227,3 +230,9 @@ class AtractivoAdminSerializer(serializers.ModelSerializer):
         if categorias is not None:
             atractivo.categorias.set(categorias)
         return atractivo
+
+    @extend_schema_field({"type": "array", "items": {}, "nullable": True})
+    def get_area(self, obj: Atractivo) -> object | None:
+        if obj.area is None:
+            return None
+        return obj.area.coords
