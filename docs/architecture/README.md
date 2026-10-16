@@ -21,7 +21,9 @@
 
 | Archivo | Tipo | Descripción |
 |---------|------|-------------|
-| [interactiva/peticion-recomendaciones.sequence.html](interactiva/peticion-recomendaciones.sequence.html) | Sequence | Secuencia de solicitud de recomendación |
+| [interactiva/catalogo-filtros.sequence.html](interactiva/catalogo-filtros.sequence.html) | Sequence | Catálogo: facetas, filtros y cercanos |
+| [interactiva/subida-medios.sequence.html](interactiva/subida-medios.sequence.html) | Sequence | Medios: firma directa y subida async con Celery |
+| [interactiva/peticion-recomendaciones.sequence.html](interactiva/peticion-recomendaciones.sequence.html) | Sequence | Recomendaciones (diseño Sprint 3) |
 | [interactiva/flujo-ci-cd.workflow.html](interactiva/flujo-ci-cd.workflow.html) | Workflow | Flujo de CI/CD del commit al despliegue |
 
 > **Nota:** Para regenerar los diagramas interactivos con Archify se requiere Node.js.

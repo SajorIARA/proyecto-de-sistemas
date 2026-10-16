@@ -1,5 +1,9 @@
 # Diagrama de Clases — Sistema Turístico La Paz
 
+> Refleja los modelos Django reales (`db_table` legado en español).
+> `Foto` solo guarda referencias Cloudinary (sin binarios en PG) con
+> máquina de estados `pending → processing → completed/failed`.
+
 ```mermaid
 classDiagram
     class Usuario {
@@ -12,6 +16,7 @@ classDiagram
         +DateTime fecha_actualizacion
         +check_password(password) Boolean
         +set_password(password) void
+        +has_perm() Boolean
     }
 
     class Rol {
@@ -29,7 +34,9 @@ classDiagram
     class Atractivo {
         +UUID id_atractivo
         +String nombre
+        +String slug
         +String descripcion
+        +String url
         +String direccion
         +Integer duracion_minutos
         +PointField ubicacion
@@ -38,6 +45,18 @@ classDiagram
         +Boolean activo
         +DateTime fecha_creacion
         +DateTime fecha_actualizacion
+    }
+
+    class Foto {
+        +BigAutoField id_foto
+        +String public_id
+        +String url
+        +String tipo
+        +String estado
+        +Integer ancho
+        +Integer alto
+        +Integer orden
+        +DateTime fecha_creacion
     }
 
     class Categoria {
@@ -115,8 +134,73 @@ classDiagram
     Atractivo "N" --> "*" Categoria : clasificado_en
     Atractivo "1" --> "*" Horario : tiene
     Atractivo "1" --> "*" Tarifa : tiene
-    Atractivo "1" --> "*" FuenteDocumental : documentado_por
+    Atractivo "1" --> "*" Foto : muestra
+    Atractivo "1" --> "0..*" FuenteDocumental : documentado_por
     TipoTarifa "1" --> "*" Tarifa : define
     FuenteDocumental "1" --> "*" FragmentoDocumental : contiene
     Categoria "1" --> "*" UsuarioPreferencia : preferida_en
+```
+
+## Capa API — políticas y vistas
+
+```mermaid
+classDiagram
+    class HasRole {
+        +allowed_codes
+        +has_permission() Boolean
+    }
+
+    class IsAdmin {
+        +has_permission() Boolean
+    }
+
+    class IsTurista {
+        +has_permission() Boolean
+    }
+
+    class IsAdminOrReadOnly {
+        +has_permission() Boolean
+    }
+
+    class IsAuthenticatedOwnerOrAdmin {
+        +has_permission() Boolean
+    }
+
+    class AtractivoViewSet {
+        +list() filtros q categoria zona precio
+        +cercanos() lat lon radio
+        +facetas() categorias + precios
+    }
+
+    class AtractivoAdminViewSet {
+        +perform_destroy() baja lógica
+    }
+
+    class FirmaFotoView {
+        +post() firma Cloudinary
+    }
+
+    class SubirFotoView {
+        +post() 202 + encola
+    }
+
+    class EstadoFotoView {
+        +get() pending processing completed failed
+    }
+
+    class SubirFotoTask {
+        +subir_foto_task() upload Cloudinary
+        +purgar_staging() beat cada hora
+    }
+
+    HasRole <|-- IsAdmin
+    HasRole <|-- IsTurista
+    IsAdmin --> AtractivoAdminViewSet : protege
+    IsAdmin --> FirmaFotoView : protege
+    IsAdmin --> SubirFotoView : protege
+    IsAdmin --> EstadoFotoView : protege
+    IsAdminOrReadOnly --> Categoria : protege escritura
+    IsAuthenticatedOwnerOrAdmin --> UsuarioPreferencia : protege
+    SubirFotoView --> SubirFotoTask : delay
+    SubirFotoTask --> Foto : completa
 ```
