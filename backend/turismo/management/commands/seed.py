@@ -26,8 +26,8 @@ from turismo.models import (
 from usuarios.models import Rol, Usuario
 
 USUARIOS = [
-    ("siar.admin@turismo.bo", "Siar Admin", "TurismoLP.2026*", "ADMIN"),
-    ("demo.turista@example.com", "Turista Demo", "demo1234!", "TOURIST"),
+    ("siar.admin@turismo.bo", "Siar Admin", "TurismoLP.2026*", Rol.Codes.ADMIN),
+    ("demo.turista@example.com", "Turista Demo", "demo1234!", Rol.Codes.TOURIST),
 ]
 
 
@@ -460,8 +460,11 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"Seed completado: {n} atractivos."))
 
     def _roles(self):
-        for codigo, nombre in (("ADMIN", "Administrador"), ("TOURIST", "Turista")):
-            Rol.objects.update_or_create(codigo=codigo, defaults={"nombre": nombre})
+        for codigo in (Rol.Codes.ADMIN, Rol.Codes.TOURIST):
+            Rol.objects.update_or_create(
+                codigo=codigo,
+                defaults={"nombre": Rol.Codes(codigo).label},
+            )
 
     def _usuarios(self):
         for email, nombre, password, rol in USUARIOS:

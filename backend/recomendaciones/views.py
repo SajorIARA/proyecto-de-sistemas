@@ -2,6 +2,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from recomendaciones.permissions import IsAuthenticatedOwnerOrAdmin
+from usuarios.permissions import es_admin
 
 from .models import ConsultaRecomendacion, UsuarioPreferencia
 from .serializers import (
@@ -9,10 +10,6 @@ from .serializers import (
     MiPreferenciaSerializer,
     UsuarioPreferenciaSerializer,
 )
-
-
-def _es_admin(usuario) -> bool:
-    return usuario.roles.filter(codigo="ADMIN").exists()
 
 
 class UsuarioPreferenciaViewSet(ModelViewSet):
@@ -23,7 +20,7 @@ class UsuarioPreferenciaViewSet(ModelViewSet):
 
     def get_queryset(self):
         base = UsuarioPreferencia.objects.select_related("usuario", "categoria").all()
-        if _es_admin(self.request.user):
+        if es_admin(self.request.user):
             return base
         return base.filter(usuario=self.request.user)
 
@@ -36,7 +33,7 @@ class ConsultaRecomendacionViewSet(ModelViewSet):
 
     def get_queryset(self):
         base = ConsultaRecomendacion.objects.select_related("usuario").all()
-        if _es_admin(self.request.user):
+        if es_admin(self.request.user):
             return base
         return base.filter(usuario=self.request.user)
 
