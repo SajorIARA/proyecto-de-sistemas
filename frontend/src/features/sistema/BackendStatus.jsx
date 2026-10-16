@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "../../api/client";
+import { api } from "../../api/http";
 
 const ESTADOS = {
   checking: "Comprobando...",
@@ -12,7 +12,7 @@ export default function BackendStatus() {
 
   useEffect(() => {
     api
-      .health()
+      .get("/health/")
       .then(() => setStatus("online"))
       .catch(() => setStatus("offline"));
   }, []);

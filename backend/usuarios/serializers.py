@@ -93,7 +93,7 @@ class RegisterSerializer(serializers.Serializer):
                     nombre=validated_data["nombre"],
                 )
                 rol_turista, _ = Rol.objects.get_or_create(
-                    codigo="TOURIST",
+                    codigo=Rol.Codes.TOURIST,
                     defaults={
                         "nombre": "Turista",
                         "descripcion": "Usuario visitante de la plataforma",
