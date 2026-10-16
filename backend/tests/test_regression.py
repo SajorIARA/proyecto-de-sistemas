@@ -662,3 +662,36 @@ class RegressionConfigTests(TestCase):
 
         self.assertTrue(hasattr(settings, "CORS_ALLOWED_ORIGINS"))
         self.assertIsInstance(settings.CORS_ALLOWED_ORIGINS, list)
+
+
+class UsuarioListMassAssignmentTests(TestCase):
+    """UsuarioListSerializer es de solo lectura total."""
+
+    def test_post_rechazado_405(self) -> None:
+        admin = Usuario.objects.create_user(
+            email="mass_admin@test.com", password="Clave99!", nombre="MA"
+        )
+        rol, _ = Rol.objects.get_or_create(
+            codigo="ADMIN", defaults={"nombre": "Administrador"}
+        )
+        admin.roles.add(rol)
+        c = APIClient()
+        login = c.post(
+            "/api/auth/login/",
+            {"email": "mass_admin@test.com", "password": "Clave99!"},
+            format="json",
+        )
+        c.credentials(HTTP_AUTHORIZATION=f"Bearer {login.data['access']}")
+        resp = c.post(
+            "/api/auth/usuarios/",
+            {
+                "id": "nuevo-id",
+                "email": "nuevo@test.com",
+                "password": "hash-xyz",
+                "nombre": "X",
+            },
+            format="json",
+        )
+        # IsAdmin deja pasar la permiso; el serializer 100% read-only
+        # rechaza la escritura con 405 (sin effecto en BD).
+        self.assertEqual(resp.status_code, 405)
