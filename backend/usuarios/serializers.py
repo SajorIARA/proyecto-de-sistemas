@@ -56,6 +56,10 @@ class UsuarioListSerializer(serializers.ModelSerializer):
             "fecha_creacion",
             "roles",
         ]
+        # Todo el registro es de solo lectura (endpoint de lista admin):
+        # sin read_only_fields, un POST a /api/auth/usuarios/ intentaría
+        # escribir cada campo (password incluso).
+        read_only_fields = fields
         read_only_fields = fields
 
 
