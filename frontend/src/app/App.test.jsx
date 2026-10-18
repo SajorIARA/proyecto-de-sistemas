@@ -1,10 +1,22 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
+
+const mocks = vi.hoisted(() => ({
+  get: vi.fn().mockResolvedValue({ data: { status: "ok" } }),
+}));
+
+vi.mock("../api/http", () => ({
+  api: {
+    get: (...args) => mocks.get(...args),
+  },
+}));
+
 import App from "./App";
 
 describe("App", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   it("muestra el título del sistema", () => {
@@ -13,14 +25,7 @@ describe("App", () => {
   });
 
   it("renderiza el componente de estado del backend", async () => {
-    global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        statusText: "OK",
-        text: () => Promise.resolve(JSON.stringify({ status: "ok" })),
-      })
-    );
+    mocks.get.mockResolvedValue({ data: { status: "ok" } });
 
     render(<App />);
     await waitFor(() => {

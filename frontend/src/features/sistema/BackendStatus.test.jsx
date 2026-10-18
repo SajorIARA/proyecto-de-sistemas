@@ -1,30 +1,36 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
+
+const mocks = vi.hoisted(() => ({
+  get: vi.fn().mockResolvedValue({ data: { status: "ok" } }),
+}));
+
+vi.mock("../../api/http", () => ({
+  api: {
+    get: (...args) => mocks.get(...args),
+  },
+}));
+
 import BackendStatus from "./BackendStatus";
 
 describe("BackendStatus", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   it("muestra online cuando el health check responde", async () => {
-    global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        statusText: "OK",
-        text: () => Promise.resolve(JSON.stringify({ status: "ok" })),
-      })
-    );
+    mocks.get.mockResolvedValue({ data: { status: "ok" } });
 
     render(<BackendStatus />);
     await waitFor(() => {
       expect(screen.getByRole("status")).toHaveTextContent("Backend conectado");
     });
+    expect(mocks.get).toHaveBeenCalledWith("/health/");
   });
 
   it("muestra offline cuando el health check falla", async () => {
-    global.fetch = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
+    mocks.get.mockRejectedValue(new Error("Failed to fetch"));
 
     render(<BackendStatus />);
     await waitFor(() => {
