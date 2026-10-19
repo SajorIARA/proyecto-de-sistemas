@@ -1,3 +1,4 @@
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -8,8 +9,16 @@ import { authApi } from "../../auth/api/authApi";
 import { cuentaApi, CuentaApiError } from "../api/cuentaApi";
 import { PerfilPage } from "./PerfilPage";
 
+// ============================================================
+// MOCKS DE LAS APIS
+// ============================================================
+
 vi.mock("../../auth/api/authApi", () => ({
-  authApi: { login: vi.fn(), register: vi.fn(), logout: vi.fn() },
+  authApi: {
+    login: vi.fn(),
+    register: vi.fn(),
+    logout: vi.fn(),
+  },
 }));
 
 vi.mock("../api/cuentaApi", async () => {
@@ -19,9 +28,6 @@ vi.mock("../api/cuentaApi", async () => {
 
   return {
     ...real,
-    // `cuentaApi` es un objeto: hay que sustituir sus métodos DENTRO del
-    // objeto. Sobrescribir `cambiarPassword` en el nivel superior no tendría
-    // efecto sobre `cuentaApi.cambiarPassword`.
     cuentaApi: {
       ...real.cuentaApi,
       cambiarPassword: vi.fn(),
@@ -30,15 +36,26 @@ vi.mock("../api/cuentaApi", async () => {
   };
 });
 
+// ============================================================
+// CONFIGURACIÓN DE PRUEBAS
+// ============================================================
+
 function cliente() {
   return new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0, retryDelay: 0 } },
+    defaultOptions: {
+      queries: {
+        retry: false,
+        gcTime: 0,
+        retryDelay: 0,
+      },
+    },
   });
 }
 
 function sesion(roles: string[] = ["TOURIST"]) {
   localStorage.setItem("turismo_access_token", "access-test");
   localStorage.setItem("turismo_refresh_token", "refresh-test");
+
   localStorage.setItem(
     "turismo_auth_user",
     JSON.stringify({
@@ -56,11 +73,16 @@ function renderPerfil() {
         <AuthProvider>
           <Routes>
             <Route path="/mi-cuenta" element={<PerfilPage />} />
+
             <Route
               path="/mi-cuenta/usuarios"
               element={<h1>Panel de usuarios</h1>}
             />
-            <Route path="/" element={<h1>Página principal</h1>} />
+
+            <Route
+              path="/"
+              element={<h1>Página principal</h1>}
+            />
           </Routes>
         </AuthProvider>
       </MemoryRouter>
@@ -68,11 +90,19 @@ function renderPerfil() {
   );
 }
 
+// ============================================================
+// PRUEBAS DEL PERFIL
+// ============================================================
+
 describe("PerfilPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
   });
+
+  // ----------------------------------------------------------
+  // TEST 1: DATOS DEL USUARIO
+  // ----------------------------------------------------------
 
   it("muestra los datos reales del usuario en sesión", () => {
     sesion();
@@ -80,66 +110,120 @@ describe("PerfilPage", () => {
     renderPerfil();
 
     expect(
-      screen.getByRole("heading", { name: /hola, jordan arispe/i }),
+      screen.getByRole("heading", {
+        name: /hola, jordan arispe/i,
+      }),
     ).toBeInTheDocument();
 
-    expect(screen.getAllByText("jordan@example.com").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("jordan@example.com").length,
+    ).toBeGreaterThan(0);
 
-    // El placeholder decía "listo para conectarse con Django": ya no debe
-    // aparecer ese texto.
     expect(
       screen.queryByText(/listo para conectarse con django/i),
     ).not.toBeInTheDocument();
   });
+
+  // ----------------------------------------------------------
+  // TEST 2: PERMISOS DEL ADMINISTRADOR
+  // ----------------------------------------------------------
 
   it("etiqueta el rol del usuario y ofrece el panel solo a ADMIN", () => {
     sesion(["ADMIN"]);
 
     renderPerfil();
 
-    expect(screen.getAllByText("Administrador").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Administrador").length,
+    ).toBeGreaterThan(0);
 
     expect(
-      screen.getByRole("link", { name: /panel de usuarios/i }),
+      screen.getByRole("link", {
+        name: /panel de usuarios/i,
+      }),
     ).toHaveAttribute("href", "/mi-cuenta/usuarios");
   });
+
+  // ----------------------------------------------------------
+  // TEST 3: PERMISOS DEL TURISTA
+  // ----------------------------------------------------------
 
   it("no muestra el panel de usuarios a un turista", () => {
     sesion(["TOURIST"]);
 
     renderPerfil();
 
-    expect(screen.getAllByText("Turista").length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("Turista").length,
+    ).toBeGreaterThan(0);
 
     expect(
-      screen.queryByRole("link", { name: /panel de usuarios/i }),
+      screen.queryByRole("link", {
+        name: /panel de usuarios/i,
+      }),
     ).not.toBeInTheDocument();
   });
 
+  // ----------------------------------------------------------
+  // TEST 4: CAMBIO DE CONTRASEÑA EXITOSO
+  // ----------------------------------------------------------
+
   it("envía el cambio de contraseña y confirma con un mensaje", async () => {
     sesion();
+
     vi.mocked(cuentaApi.cambiarPassword).mockResolvedValue(undefined);
 
     renderPerfil();
 
-    fireEvent.change(screen.getByLabelText(/contraseña actual/i), {
-      target: { value: "vieja12345" },
-    });
-    fireEvent.change(screen.getByLabelText(/^nueva contraseña$/i), {
-      target: { value: "Nueva12345!" },
-    });
-    fireEvent.change(screen.getByLabelText(/repetir nueva contraseña/i), {
-      target: { value: "Nueva12345!" },
-    });
-
+    // Primero abrimos el modal.
     fireEvent.click(
-      screen.getByRole("button", { name: /actualizar contraseña/i }),
+      screen.getByRole("button", {
+        name: /cambiar contraseña/i,
+      }),
     );
 
+    // Verificamos que el modal esté visible.
+    expect(
+      screen.getByRole("dialog", {
+        name: /cambiar contraseña/i,
+      }),
+    ).toBeInTheDocument();
+
+    // Completamos los tres campos.
+    fireEvent.change(
+      screen.getByLabelText(/contraseña actual/i),
+      {
+        target: { value: "vieja12345" },
+      },
+    );
+
+    fireEvent.change(
+      screen.getByLabelText(/^nueva contraseña$/i),
+      {
+        target: { value: "Nueva12345!" },
+      },
+    );
+
+    fireEvent.change(
+      screen.getByLabelText(/repetir nueva contraseña/i),
+      {
+        target: { value: "Nueva12345!" },
+      },
+    );
+
+    // Enviamos el formulario.
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /actualizar contraseña/i,
+      }),
+    );
+
+    // Comprobamos el mensaje de confirmación.
     expect(
       await screen.findByText(/contraseña actualizada/i),
     ).toBeInTheDocument();
 
+    // Verificamos los datos enviados a la API.
     expect(cuentaApi.cambiarPassword).toHaveBeenCalledWith({
       current_password: "vieja12345",
       new_password: "Nueva12345!",
@@ -147,62 +231,176 @@ describe("PerfilPage", () => {
     });
   });
 
+  // ----------------------------------------------------------
+  // TEST 5: ERROR DEL BACKEND
+  // ----------------------------------------------------------
+
   it("muestra bajo el campo el error que devuelve el backend", async () => {
     sesion();
+
     vi.mocked(cuentaApi.cambiarPassword).mockRejectedValue(
-      new CuentaApiError("La contraseña actual es incorrecta.", 400, {
-        current_password: ["La contraseña actual es incorrecta."],
-      }),
+      new CuentaApiError(
+        "La contraseña actual es incorrecta.",
+        400,
+        {
+          current_password: [
+            "La contraseña actual es incorrecta.",
+          ],
+        },
+      ),
     );
 
     renderPerfil();
 
-    fireEvent.change(screen.getByLabelText(/contraseña actual/i), {
-      target: { value: "mala" },
-    });
-    fireEvent.change(screen.getByLabelText(/^nueva contraseña$/i), {
-      target: { value: "Nueva12345!" },
-    });
-    fireEvent.change(screen.getByLabelText(/repetir nueva contraseña/i), {
-      target: { value: "Nueva12345!" },
-    });
-
+    // Abrimos el modal antes de buscar los campos.
     fireEvent.click(
-      screen.getByRole("button", { name: /actualizar contraseña/i }),
+      screen.getByRole("button", {
+        name: /cambiar contraseña/i,
+      }),
     );
 
+    expect(
+      screen.getByRole("dialog", {
+        name: /cambiar contraseña/i,
+      }),
+    ).toBeInTheDocument();
+
+    // Simulamos una contraseña actual incorrecta.
+    fireEvent.change(
+      screen.getByLabelText(/contraseña actual/i),
+      {
+        target: { value: "mala" },
+      },
+    );
+
+    fireEvent.change(
+      screen.getByLabelText(/^nueva contraseña$/i),
+      {
+        target: { value: "Nueva12345!" },
+      },
+    );
+
+    fireEvent.change(
+      screen.getByLabelText(/repetir nueva contraseña/i),
+      {
+        target: { value: "Nueva12345!" },
+      },
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /actualizar contraseña/i,
+      }),
+    );
+
+    // Comprobamos el error devuelto por Django.
     const aviso = await screen.findAllByText(
       /la contraseña actual es incorrecta/i,
     );
 
     expect(aviso.length).toBeGreaterThan(0);
 
-    // El input queda marcado como inválido para lectores de pantalla.
-    expect(screen.getByLabelText(/contraseña actual/i)).toHaveAttribute(
-      "aria-invalid",
-      "true",
-    );
+    // El campo debe marcarse como inválido.
+    expect(
+      screen.getByLabelText(/contraseña actual/i),
+    ).toHaveAttribute("aria-invalid", "true");
   });
+
+  // ----------------------------------------------------------
+  // TEST 6: ABRIR Y CERRAR EL MODAL
+  // ----------------------------------------------------------
+
+  it("abre y cierra correctamente el modal de contraseña", () => {
+    sesion(["ADMIN"]);
+
+    renderPerfil();
+
+    // Inicialmente el modal está cerrado.
+    expect(
+      screen.queryByRole("dialog", {
+        name: /cambiar contraseña/i,
+      }),
+    ).not.toBeInTheDocument();
+
+    // Abrimos la ventana.
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /cambiar contraseña/i,
+      }),
+    );
+
+    // El modal debe mostrarse.
+    expect(
+      screen.getByRole("dialog", {
+        name: /cambiar contraseña/i,
+      }),
+    ).toBeInTheDocument();
+
+    // Verificamos que exista el formulario.
+    expect(
+      screen.getByLabelText(/contraseña actual/i),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByLabelText(/^nueva contraseña$/i),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByLabelText(/repetir nueva contraseña/i),
+    ).toBeInTheDocument();
+
+    // Cerramos la ventana con la X.
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /cerrar ventana/i,
+      }),
+    );
+
+    // Comprobamos que desaparezca.
+    expect(
+      screen.queryByRole("dialog", {
+        name: /cambiar contraseña/i,
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  // ----------------------------------------------------------
+  // TEST 7: CERRAR SESIÓN
+  // ----------------------------------------------------------
 
   it("cierra sesión, borra los tokens y vuelve al inicio", async () => {
     sesion();
+
     vi.mocked(authApi.logout).mockResolvedValue(undefined);
 
     renderPerfil();
 
     fireEvent.click(
-      screen.getByRole("button", { name: /cerrar sesión/i }),
+      screen.getByRole("button", {
+        name: /cerrar sesión/i,
+      }),
     );
 
     await waitFor(() => {
       expect(
-        screen.getByRole("heading", { name: /página principal/i }),
+        screen.getByRole("heading", {
+          name: /página principal/i,
+        }),
       ).toBeInTheDocument();
     });
 
     expect(authApi.logout).toHaveBeenCalledWith("refresh-test");
-    expect(localStorage.getItem("turismo_access_token")).toBeNull();
-    expect(localStorage.getItem("turismo_refresh_token")).toBeNull();
-    expect(localStorage.getItem("turismo_auth_user")).toBeNull();
+
+    expect(
+      localStorage.getItem("turismo_access_token"),
+    ).toBeNull();
+
+    expect(
+      localStorage.getItem("turismo_refresh_token"),
+    ).toBeNull();
+
+    expect(
+      localStorage.getItem("turismo_auth_user"),
+    ).toBeNull();
   });
 });
