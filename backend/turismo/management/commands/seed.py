@@ -6,6 +6,8 @@ Los únicos usuarios son un ADMIN y un TOURIST demo.
 
 from __future__ import annotations
 
+import os
+import secrets
 from datetime import time
 from decimal import Decimal
 
@@ -26,7 +28,11 @@ from turismo.models import (
 from usuarios.models import Rol, Usuario
 
 USUARIOS = [
-    ("siar.admin@turismo.bo", "Siar Admin", "TurismoLP.2026*", Rol.Codes.ADMIN),
+    # (email, nombre, password|None, rol). None = admin: la contraseña viene
+    # de SEED_ADMIN_PASSWORD; si no está definida se genera una aleatoria
+    # (solo al crear) o se conserva la existente. Nunca se resetea a un valor
+    # publicado en el repo.
+    ("siar.admin@turismo.bo", "Siar Admin", None, Rol.Codes.ADMIN),
     ("demo.turista@example.com", "Turista Demo", "demo1234!", Rol.Codes.TOURIST),
 ]
 
@@ -468,11 +474,29 @@ class Command(BaseCommand):
 
     def _usuarios(self):
         for email, nombre, password, rol in USUARIOS:
+            if password is None:
+                password = os.getenv("SEED_ADMIN_PASSWORD")
+            creado = not Usuario.objects.filter(email=email).exists()
             usuario, _ = Usuario.objects.get_or_create(
                 email=email, defaults={"nombre": nombre}
             )
-            if not usuario.check_password(password):
+            if password:
+                if not usuario.check_password(password):
+                    usuario.set_password(password)
+            elif creado:
+                # Sin SEED_ADMIN_PASSWORD: contraseña aleatoria, mostrada
+                # una sola vez. No hay credencial publicable en el repo.
+                password = secrets.token_urlsafe(18)
                 usuario.set_password(password)
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"Creado admin {email} con contraseña aleatoria: "
+                        f"{password}\n(Define SEED_ADMIN_PASSWORD para elegirla "
+                        "tú mismo; no vuelve a mostrarse.)"
+                    )
+                )
+            # Caso restante: usuario existente y sin SEED_ADMIN_PASSWORD ->
+            # NO se resetea la contraseña a ningún valor publicado en el repo.
             usuario.nombre = nombre
             usuario.activo = True
             usuario.save()
