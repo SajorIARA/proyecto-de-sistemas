@@ -83,6 +83,25 @@ export const LA_PAZ_BBOX = {
   latitud: { min: -16.75, max: -16.3 },
 } as const;
 
+/**
+ * Macrodistritos de La Paz ofrecidos como selección manual de punto de
+ * partida (issue #24), con un centroide representativo usado como
+ * `punto_partida` cuando el turista no comparte su GPS.
+ */
+export interface MacrodistritoLaPaz {
+  nombre: string;
+  latitud: number;
+  longitud: number;
+}
+
+export const MACRODISTRITOS_LA_PAZ: readonly MacrodistritoLaPaz[] = [
+  { nombre: "Centro", latitud: -16.495, longitud: -68.134 },
+  { nombre: "Sopocachi", latitud: -16.507, longitud: -68.131 },
+  { nombre: "Sur", latitud: -16.54, longitud: -68.09 },
+  { nombre: "Miraflores", latitud: -16.5, longitud: -68.125 },
+  { nombre: "Mallasa", latitud: -16.56, longitud: -68.09 },
+];
+
 /** Estado inicial del formulario (antes de cualquier interacción). */
 export const BORRADOR_INICIAL: PreferenciasFormValues = {
   categorias: [],
@@ -91,6 +110,7 @@ export const BORRADOR_INICIAL: PreferenciasFormValues = {
   duracionUnidad: DURACION.porDefecto.unidad,
   latitud: "",
   longitud: "",
+  macrodistrito: "",
 };
 
 /** Configuración del slider según la unidad activa. */
