@@ -60,7 +60,6 @@ class UsuarioListSerializer(serializers.ModelSerializer):
         # sin read_only_fields, un POST a /api/auth/usuarios/ intentaría
         # escribir cada campo (password incluso).
         read_only_fields = fields
-        read_only_fields = fields
 
 
 class RegisterSerializer(serializers.Serializer):
