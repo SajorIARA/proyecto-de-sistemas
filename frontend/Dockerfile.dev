@@ -16,6 +16,8 @@ RUN wget -qO /usr/local/bin/pnpm "https://github.com/pnpm/pnpm/releases/download
 
 COPY . .
 
+RUN chown -R node:node /app
+
 USER node
 
 EXPOSE 3000
