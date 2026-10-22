@@ -91,4 +91,6 @@ export interface PreferenciasFormValues {
   /** Latitud / longitud de partida en texto (pueden estar vacías). */
   latitud: string;
   longitud: string;
+  /** Macrodistrito seleccionado manualmente (opcional). */
+  macrodistrito: string;
 }

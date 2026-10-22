@@ -70,6 +70,7 @@ export function sanearBorrador(valor: unknown): PreferenciasFormValues | null {
     duracionUnidad: unidad,
     latitud: texto(bruto.latitud),
     longitud: texto(bruto.longitud),
+    macrodistrito: texto(bruto.macrodistrito),
   };
 }
 
