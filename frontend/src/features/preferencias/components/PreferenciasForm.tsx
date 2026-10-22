@@ -182,12 +182,6 @@ export function PreferenciasForm() {
     actualizar({ longitud: valor });
   }
 
-  function cambiarMacrodistrito(valor: string) {
-    marcarTocado("puntoPartida");
-    reiniciarResultado();
-    actualizar({ macrodistrito: valor });
-  }
-
   function descartarTodo() {
     descartar();
     setTocados(new Set());
@@ -210,7 +204,6 @@ export function PreferenciasForm() {
       presupuesto_bob: borrador.presupuestoBob,
       tiempo_horas: Number(horas.toFixed(2)),
       punto_partida: { coordinates: [longitud, latitud] },
-      macrodistrito: borrador.macrodistrito || undefined,
     };
   }
 
@@ -336,10 +329,8 @@ export function PreferenciasForm() {
           <PuntoPartida
             latitud={borrador.latitud}
             longitud={borrador.longitud}
-            macrodistrito={borrador.macrodistrito}
             onLatitud={cambiarLatitud}
             onLongitud={cambiarLongitud}
-            onMacrodistrito={cambiarMacrodistrito}
             error={errorPunto}
             disabled={pendiente}
           />
