@@ -13,3 +13,5 @@ RUN apt-get update \
 
 # El esquema (extensiones, tablas, índices) lo crean las migraciones de
 # Django con `manage.py migrate` en el primer arranque del backend.
+
+USER postgres
