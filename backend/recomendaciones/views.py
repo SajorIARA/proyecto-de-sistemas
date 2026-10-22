@@ -18,9 +18,7 @@ from .serializers import (
 @extend_schema(
     # El lookup del router es `pk` sin tipar: sin esto spectacular no
     # infiere el tipo del path parameter y publica "string".
-    parameters=[
-        OpenApiParameter("id", int, OpenApiParameter.PATH, description="PK.")
-    ]
+    parameters=[OpenApiParameter("id", int, OpenApiParameter.PATH, description="PK.")]
 )
 class UsuarioPreferenciaViewSet(ModelViewSet):
     """CRUD preferencias. Autenticados ven lo propio; ADMIN todo y escribe."""
@@ -38,9 +36,7 @@ class UsuarioPreferenciaViewSet(ModelViewSet):
 @extend_schema(
     # PK del modelo: UUID (id_consulta), sin tipar en la ruta.
     parameters=[
-        OpenApiParameter(
-            "id", uuid.UUID, OpenApiParameter.PATH, description="UUID."
-        )
+        OpenApiParameter("id", uuid.UUID, OpenApiParameter.PATH, description="UUID.")
     ]
 )
 class ConsultaRecomendacionViewSet(ModelViewSet):
@@ -58,9 +54,7 @@ class ConsultaRecomendacionViewSet(ModelViewSet):
 
 @extend_schema(
     # Mismo PK que UsuarioPreferencia (BigAutoField) sin tipar en la ruta.
-    parameters=[
-        OpenApiParameter("id", int, OpenApiParameter.PATH, description="PK.")
-    ]
+    parameters=[OpenApiParameter("id", int, OpenApiParameter.PATH, description="PK.")]
 )
 class MisPreferenciasViewSet(ModelViewSet):
     """Preferencias del usuario autenticado (issue #22).

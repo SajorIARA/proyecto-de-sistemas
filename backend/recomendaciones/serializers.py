@@ -31,9 +31,7 @@ class UsuarioPreferenciaSerializer(serializers.ModelSerializer):
         aplica después de ``is_valid()``.
         """
         instance = self.instance
-        categoria = attrs.get(
-            "categoria", getattr(instance, "categoria", None)
-        )
+        categoria = attrs.get("categoria", getattr(instance, "categoria", None))
         usuario = attrs.get("usuario")
         if usuario is None:
             usuario = getattr(instance, "usuario", None)
@@ -48,11 +46,7 @@ class UsuarioPreferenciaSerializer(serializers.ModelSerializer):
                 duplicada = duplicada.exclude(pk=instance.pk)
             if duplicada.exists():
                 raise serializers.ValidationError(
-                    {
-                        "categoria": (
-                            "Ya existe una preferencia para esta categoría."
-                        )
-                    }
+                    {"categoria": ("Ya existe una preferencia para esta categoría.")}
                 )
         return attrs
 

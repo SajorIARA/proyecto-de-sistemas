@@ -52,9 +52,7 @@ class HorarioSerializer(serializers.ModelSerializer):
         """
         actual = self.instance
         cerrado = attrs.get("cerrado", getattr(actual, "cerrado", False))
-        apertura = attrs.get(
-            "hora_apertura", getattr(actual, "hora_apertura", None)
-        )
+        apertura = attrs.get("hora_apertura", getattr(actual, "hora_apertura", None))
         cierre = attrs.get("hora_cierre", getattr(actual, "hora_cierre", None))
         if not cerrado:
             if not apertura or not cierre:
@@ -68,9 +66,7 @@ class HorarioSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"hora_cierre": "Debe ser posterior a la hora de apertura."}
                 )
-        desde = attrs.get(
-            "vigente_desde", getattr(actual, "vigente_desde", None)
-        )
+        desde = attrs.get("vigente_desde", getattr(actual, "vigente_desde", None))
         hasta = attrs.get("vigente_hasta", getattr(actual, "vigente_hasta", None))
         if desde and hasta and hasta < desde:
             raise serializers.ValidationError(
@@ -105,9 +101,7 @@ class TarifaSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         """Replica ck_tarifa_vigencia: hasta >= desde (si ambas vienen)."""
         actual = self.instance
-        desde = attrs.get(
-            "vigente_desde", getattr(actual, "vigente_desde", None)
-        )
+        desde = attrs.get("vigente_desde", getattr(actual, "vigente_desde", None))
         hasta = attrs.get("vigente_hasta", getattr(actual, "vigente_hasta", None))
         if desde and hasta and hasta < desde:
             raise serializers.ValidationError(
