@@ -59,6 +59,15 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as RetryConfig | undefined;
 
+    // Peticiones abortadas (AbortController/signal): no refrescar ni
+    // reintentar, propagar la cancelación tal cual.
+    if (
+      error.code === "ERR_CANCELED" ||
+      originalRequest?.signal?.aborted
+    ) {
+      return Promise.reject(error);
+    }
+
     if (
       error.response?.status !== 401 ||
       !originalRequest ||
@@ -93,3 +102,12 @@ api.interceptors.response.use(
     }
   },
 );
+
+/**
+ * Crea un `AbortController` para cancelar peticiones en vuelo (p. ej.
+ * al desmontar un componente o abortar el polling de video). El `signal`
+ * resultante se puede pasar en `config.signal` de cualquier llamada a `api`.
+ */
+export function crearAbortController(): AbortController {
+  return new AbortController();
+}
