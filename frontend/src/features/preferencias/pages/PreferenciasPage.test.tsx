@@ -15,7 +15,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PREFERENCIAS_DRAFT_KEY } from "../../../config/preferencias";
 import type { Categoria } from "../../../types/turismo";
-import { authApi } from "../../auth/api/authApi";
 import { AuthProvider } from "../../auth/context/AuthContext";
 import { listarCategorias } from "../../turismo/api/turismoApi";
 import { guardarPerfil, listarMisPreferencias } from "../api/preferenciasApi";
