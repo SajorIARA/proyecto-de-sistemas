@@ -28,7 +28,8 @@ ENV VITE_API_URL=$VITE_API_URL
 ARG VITE_CLOUDINARY_CLOUD_NAME=
 ENV VITE_CLOUDINARY_CLOUD_NAME=$VITE_CLOUDINARY_CLOUD_NAME
 
-RUN ./node_modules/.bin/vite build
+# type-check antes de horneear: un error de tipos no debe llegar a prod
+RUN ./node_modules/.bin/tsc --noEmit && ./node_modules/.bin/vite build
 
 # ============================================================
 # STAGE 2: runtime (Nginx sirve el SPA)
@@ -40,6 +41,7 @@ RUN apk upgrade --no-cache
 COPY --from=build /app/dist /usr/share/nginx/html
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY security-headers.conf /etc/nginx/security-headers.conf
 
 EXPOSE 80
 

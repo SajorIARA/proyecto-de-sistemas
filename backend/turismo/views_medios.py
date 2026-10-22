@@ -5,7 +5,7 @@ import uuid
 from django.conf import settings
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -26,6 +26,19 @@ EXTENSIONES_IMAGEN = ("jpg", "jpeg", "png", "webp")
 EXTENSIONES_VIDEO = ("mp4", "mov", "webm")
 
 
+class FirmaFotoSerializer(serializers.Serializer):
+    """Cuerpo documentado de POST /admin/fotos/firma/ (drf-spectacular).
+
+    Solo alimenta el esquema OpenAPI: la vista valida a mano porque el
+    flujo es una firma de Cloudinary con respuestas propias (400/503).
+    Debe mantenerse en paralelo con las validaciones de FirmaFotoView.post.
+    """
+
+    atractivo = serializers.UUIDField()
+    formato = serializers.ChoiceField(choices=FORMATOS_FOTO)
+    bytes = serializers.IntegerField(min_value=1, max_value=MAX_BYTES_FOTO)
+
+
 class FirmaFotoView(APIView):
     """POST /api/turismo/admin/fotos/firma/ — firma subida directa.
 
@@ -37,15 +50,7 @@ class FirmaFotoView(APIView):
     permission_classes = [IsAdmin]
 
     @extend_schema(
-        request={
-            "type": "object",
-            "properties": {
-                "atractivo": {"type": "string", "format": "uuid"},
-                "formato": {"type": "string", "enum": list(FORMATOS_FOTO)},
-                "bytes": {"type": "integer", "minimum": 1},
-            },
-            "required": ["atractivo", "formato", "bytes"],
-        },
+        request=FirmaFotoSerializer,
         responses={200: OpenApiTypes.OBJECT},
         description="Firma una subida directa a Cloudinary.",
     )
@@ -56,6 +61,15 @@ class FirmaFotoView(APIView):
             peso = int(request.data.get("bytes", 0))
         except (TypeError, ValueError):
             peso = 0
+        # Valida el formato antes de consultar: sin esto, un UUID malformado
+        # llega a .filter(pk=...) y escala a ValidationError (500 originalmente).
+        try:
+            uuid.UUID(str(atractivo_id))
+        except (ValueError, TypeError, AttributeError):
+            return Response(
+                {"detail": "atractivo debe ser un UUID válido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if not Atractivo.objects.filter(pk=atractivo_id).exists():
             return Response(
                 {"detail": "Atractivo inexistente."},

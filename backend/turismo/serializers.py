@@ -40,6 +40,39 @@ class HorarioSerializer(serializers.ModelSerializer):
             "vigente_hasta",
         ]
         read_only_fields = ["id_horario"]
+        # Replica el CHECK ck_horario_dia (1–7) de models.py.
+        extra_kwargs = {"dia_semana": {"min_value": 1, "max_value": 7}}
+
+    def validate(self, attrs):
+        """Replica ck_horario_horas y ck_horario_vigencia (models.py).
+
+        Sin esto, la violación llega a la BD y escala a IntegrityError (500
+        antes del handler central; 409 genérico con él). Aquí responde 400
+        con el campo exacto que falla. En PATCH mira también la instancia.
+        """
+        actual = self.instance
+        cerrado = attrs.get("cerrado", getattr(actual, "cerrado", False))
+        apertura = attrs.get("hora_apertura", getattr(actual, "hora_apertura", None))
+        cierre = attrs.get("hora_cierre", getattr(actual, "hora_cierre", None))
+        if not cerrado:
+            if not apertura or not cierre:
+                raise serializers.ValidationError(
+                    {
+                        "hora_apertura": "Obligatoria si el día no está cerrado.",
+                        "hora_cierre": "Obligatoria si el día no está cerrado.",
+                    }
+                )
+            if apertura >= cierre:
+                raise serializers.ValidationError(
+                    {"hora_cierre": "Debe ser posterior a la hora de apertura."}
+                )
+        desde = attrs.get("vigente_desde", getattr(actual, "vigente_desde", None))
+        hasta = attrs.get("vigente_hasta", getattr(actual, "vigente_hasta", None))
+        if desde and hasta and hasta < desde:
+            raise serializers.ValidationError(
+                {"vigente_hasta": "No puede ser anterior a vigente_desde."}
+            )
+        return attrs
 
 
 class TarifaSerializer(serializers.ModelSerializer):
@@ -64,6 +97,17 @@ class TarifaSerializer(serializers.ModelSerializer):
         # Replica el CHECK ck_tarifa_monto (>= 0) para responder
         # 400 en vez de escalar a 500 por IntegrityError.
         extra_kwargs = {"monto": {"min_value": 0}}
+
+    def validate(self, attrs):
+        """Replica ck_tarifa_vigencia: hasta >= desde (si ambas vienen)."""
+        actual = self.instance
+        desde = attrs.get("vigente_desde", getattr(actual, "vigente_desde", None))
+        hasta = attrs.get("vigente_hasta", getattr(actual, "vigente_hasta", None))
+        if desde and hasta and hasta < desde:
+            raise serializers.ValidationError(
+                {"vigente_hasta": "No puede ser anterior a vigente_desde."}
+            )
+        return attrs
 
 
 class AtractivoSerializer(serializers.ModelSerializer):
@@ -93,6 +137,8 @@ class AtractivoSerializer(serializers.ModelSerializer):
             "fecha_actualizacion",
         ]
         read_only_fields = ["id", "fecha_creacion", "fecha_actualizacion"]
+        # Replica el CHECK ck_atractivo_duracion (> 0).
+        extra_kwargs = {"duracion_minutos": {"min_value": 1}}
 
     def get_categorias(self, obj: Atractivo) -> list[str]:
         return [
@@ -155,21 +201,24 @@ class FotoSerializer(serializers.ModelSerializer):
             "fecha_creacion",
         ]
         read_only_fields = ["id_foto", "fecha_creacion"]
+        # Replica el CHECK ck_foto_orden (>= 0). SubirFotoSerializer ya lo
+        # validaba; FotoSerializer (escritura admin) no.
+        extra_kwargs = {"orden": {"min_value": 0}}
 
 
+@extend_schema_field(
+    {
+        "type": "object",
+        "properties": {
+            "longitud": {"type": "number", "minimum": -180, "maximum": 180},
+            "latitud": {"type": "number", "minimum": -90, "maximum": 90},
+        },
+        "required": ["longitud", "latitud"],
+    }
+)
 class UbicacionField(serializers.Field):
     """Campo {longitud, latitud} <-> Point SRID 4326."""
 
-    @extend_schema_field(
-        {
-            "type": "object",
-            "properties": {
-                "longitud": {"type": "number", "minimum": -180, "maximum": 180},
-                "latitud": {"type": "number", "minimum": -90, "maximum": 90},
-            },
-            "required": ["longitud", "latitud"],
-        }
-    )
     def to_representation(self, value: Point) -> dict[str, float]:
         return {"longitud": value.x, "latitud": value.y}
 
@@ -226,6 +275,8 @@ class AtractivoAdminSerializer(serializers.ModelSerializer):
             "fecha_creacion",
             "fecha_actualizacion",
         ]
+        # Replica el CHECK ck_atractivo_duracion (> 0).
+        extra_kwargs = {"duracion_minutos": {"min_value": 1}}
 
     def create(self, validated_data):
         categorias = validated_data.pop("categorias", [])

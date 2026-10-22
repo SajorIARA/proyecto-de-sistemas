@@ -135,6 +135,9 @@ REST_FRAMEWORK = {
     },
     "NUM_PROXIES": 1,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # ValidationError/IntegrityError/ProtectedError de Django -> 400/409
+    # en vez de 500 (ver config/exceptions.py).
+    "EXCEPTION_HANDLER": "config.exceptions.api_exception_handler",
 }
 
 SPECTACULAR_SETTINGS = {
