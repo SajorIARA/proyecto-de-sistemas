@@ -212,19 +212,19 @@ class FotoSerializer(serializers.ModelSerializer):
         extra_kwargs = {"orden": {"min_value": 0}}
 
 
+@extend_schema_field(
+    {
+        "type": "object",
+        "properties": {
+            "longitud": {"type": "number", "minimum": -180, "maximum": 180},
+            "latitud": {"type": "number", "minimum": -90, "maximum": 90},
+        },
+        "required": ["longitud", "latitud"],
+    }
+)
 class UbicacionField(serializers.Field):
     """Campo {longitud, latitud} <-> Point SRID 4326."""
 
-    @extend_schema_field(
-        {
-            "type": "object",
-            "properties": {
-                "longitud": {"type": "number", "minimum": -180, "maximum": 180},
-                "latitud": {"type": "number", "minimum": -90, "maximum": 90},
-            },
-            "required": ["longitud", "latitud"],
-        }
-    )
     def to_representation(self, value: Point) -> dict[str, float]:
         return {"longitud": value.x, "latitud": value.y}
 

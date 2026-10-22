@@ -1,6 +1,8 @@
 """Catálogo público de turismo (lectura): categorías, tarifas, horarios,
 atractivos con filtros (issue #18), búsqueda geoespacial y facetas."""
 
+import uuid
+
 from django.contrib.gis.db.models.functions import Distance, Transform
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
@@ -83,6 +85,18 @@ class AtractivoViewSet(ReadOnlyModelViewSet):
     serializer_class = AtractivoSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = AtractivoFilter
+
+    @extend_schema(
+        # El lookup del router es `pk`, pero el campo del modelo se llama
+        # id_atractivo (UUID): sin esto, spectacular no infiere el tipo.
+        parameters=[
+            OpenApiParameter(
+                "id", uuid.UUID, OpenApiParameter.PATH, description="UUID."
+            )
+        ]
+    )
+    def retrieve(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
 
     def get_queryset(self):
         return (

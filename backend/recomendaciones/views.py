@@ -1,3 +1,6 @@
+import uuid
+
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
@@ -12,6 +15,13 @@ from .serializers import (
 )
 
 
+@extend_schema(
+    # El lookup del router es `pk` sin tipar: sin esto spectacular no
+    # infiere el tipo del path parameter y publica "string".
+    parameters=[
+        OpenApiParameter("id", int, OpenApiParameter.PATH, description="PK.")
+    ]
+)
 class UsuarioPreferenciaViewSet(ModelViewSet):
     """CRUD preferencias. Autenticados ven lo propio; ADMIN todo y escribe."""
 
@@ -25,6 +35,14 @@ class UsuarioPreferenciaViewSet(ModelViewSet):
         return base.filter(usuario=self.request.user)
 
 
+@extend_schema(
+    # PK del modelo: UUID (id_consulta), sin tipar en la ruta.
+    parameters=[
+        OpenApiParameter(
+            "id", uuid.UUID, OpenApiParameter.PATH, description="UUID."
+        )
+    ]
+)
 class ConsultaRecomendacionViewSet(ModelViewSet):
     """CRUD consultas. Autenticados ven lo propio; ADMIN todo y escribe."""
 
@@ -38,6 +56,12 @@ class ConsultaRecomendacionViewSet(ModelViewSet):
         return base.filter(usuario=self.request.user)
 
 
+@extend_schema(
+    # Mismo PK que UsuarioPreferencia (BigAutoField) sin tipar en la ruta.
+    parameters=[
+        OpenApiParameter("id", int, OpenApiParameter.PATH, description="PK.")
+    ]
+)
 class MisPreferenciasViewSet(ModelViewSet):
     """Preferencias del usuario autenticado (issue #22).
 
