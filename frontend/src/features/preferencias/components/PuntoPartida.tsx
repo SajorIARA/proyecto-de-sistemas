@@ -10,13 +10,18 @@
  */
 
 import { useState } from "react";
-import { LA_PAZ_BBOX } from "../../../config/preferencias";
+import {
+  LA_PAZ_BBOX,
+  MACRODISTRITOS_LA_PAZ,
+} from "../../../config/preferencias";
 
 interface PuntoPartidaProps {
   latitud: string;
   longitud: string;
+  macrodistrito: string;
   onLatitud: (valor: string) => void;
   onLongitud: (valor: string) => void;
+  onMacrodistrito: (valor: string) => void;
   error?: string | null;
   disabled?: boolean;
 }
@@ -26,8 +31,10 @@ const BBOX_TEXTO = `${LA_PAZ_BBOX.latitud.min}…${LA_PAZ_BBOX.latitud.max} lat 
 export function PuntoPartida({
   latitud,
   longitud,
+  macrodistrito,
   onLatitud,
   onLongitud,
+  onMacrodistrito,
   error = null,
   disabled = false,
 }: PuntoPartidaProps) {
@@ -49,6 +56,7 @@ export function PuntoPartida({
       (posicion) => {
         onLatitud(posicion.coords.latitude.toFixed(6));
         onLongitud(posicion.coords.longitude.toFixed(6));
+        onMacrodistrito("");
         setAvisoUbicacion(null);
         setBuscando(false);
       },
@@ -65,7 +73,26 @@ export function PuntoPartida({
   function limpiar() {
     onLatitud("");
     onLongitud("");
+    onMacrodistrito("");
     setAvisoUbicacion(null);
+  }
+
+  function elegirMacrodistrito(nombre: string) {
+    onMacrodistrito(nombre);
+
+    if (nombre === "") {
+      return;
+    }
+
+    const elegido = MACRODISTRITOS_LA_PAZ.find(
+      (macrodistrito) => macrodistrito.nombre === nombre,
+    );
+
+    if (elegido) {
+      onLatitud(elegido.latitud.toFixed(6));
+      onLongitud(elegido.longitud.toFixed(6));
+      setAvisoUbicacion(null);
+    }
   }
 
   return (
@@ -150,6 +177,60 @@ export function PuntoPartida({
           />
         </label>
       </div>
+
+      <div className="mt-4">
+        <label className="block">
+          <span className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[#8A8177]">
+            Macrodistrito (selección manual)
+          </span>
+
+          <select
+            value={macrodistrito}
+            onChange={(evento) => elegirMacrodistrito(evento.target.value)}
+            disabled={disabled}
+            data-testid="select-macrodistrito"
+            className="mt-2 w-full rounded-2xl border border-[#5B3A29]/15 bg-[#F3EBDD]/60 px-4 py-3 text-sm text-[#263029] transition focus:border-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-55"
+          >
+            <option value="">— Elegir un macrodistrito —</option>
+            {MACRODISTRITOS_LA_PAZ.map((macro) => (
+              <option key={macro.nombre} value={macro.nombre}>
+                {macro.nombre}
+              </option>
+            ))}
+          </select>
+
+          <p className="mt-1 text-xs text-[#746D63]">
+            Para quien no comparte su GPS: se usa el centroide del macrodistrito
+            como punto de partida.
+          </p>
+        </label>
+      </div>
+
+      {(latitud !== "" || longitud !== "") && (
+        <div
+          role="status"
+          data-testid="confirmacion-punto"
+          className="mt-3 flex items-center gap-3 rounded-2xl border border-[#2F4B3B]/20 bg-[#2F4B3B]/[0.06] px-4 py-3 text-sm text-[#233128]"
+        >
+          <span
+            aria-hidden="true"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2F4B3B] text-xs font-black text-[#F3EBDD]"
+          >
+            ✓
+          </span>
+          <div className="min-w-0">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#2F4B3B]">
+              Punto de partida seleccionado
+            </p>
+            <p className="truncate text-xs text-[#514B43]">
+              {macrodistrito
+                ? `${macrodistrito} · `
+                : ""}
+              {latitud || "—"}, {longitud || "—"}
+            </p>
+          </div>
+        </div>
+      )}
 
       <p className="mt-2 text-xs text-[#746D63]">
         Dentro del área de La Paz: {BBOX_TEXTO}.
