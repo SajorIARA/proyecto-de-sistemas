@@ -23,6 +23,39 @@ class UsuarioPreferenciaSerializer(serializers.ModelSerializer):
         # responder 400 en vez de escalar a 500 por IntegrityError.
         extra_kwargs = {"nivel_interes": {"min_value": 0, "max_value": 1}}
 
+    def validate(self, attrs):
+        """Replica la unicidad usuario+categoria (pk_usuario_preferencia).
+
+        El endpoint de turista (MiPreferenciaSerializer) no trae ``usuario``
+        en la petición: se toma del request porque ``save(usuario=...)`` se
+        aplica después de ``is_valid()``.
+        """
+        instance = self.instance
+        categoria = attrs.get(
+            "categoria", getattr(instance, "categoria", None)
+        )
+        usuario = attrs.get("usuario")
+        if usuario is None:
+            usuario = getattr(instance, "usuario", None)
+        if usuario is None:
+            request = self.context.get("request")
+            usuario = getattr(request, "user", None)
+        if categoria is not None and usuario is not None:
+            duplicada = UsuarioPreferencia.objects.filter(
+                usuario=usuario, categoria=categoria
+            )
+            if instance is not None:
+                duplicada = duplicada.exclude(pk=instance.pk)
+            if duplicada.exists():
+                raise serializers.ValidationError(
+                    {
+                        "categoria": (
+                            "Ya existe una preferencia para esta categoría."
+                        )
+                    }
+                )
+        return attrs
+
 
 class MiPreferenciaSerializer(UsuarioPreferenciaSerializer):
     """Preferencias del usuario autenticado (issue #22).

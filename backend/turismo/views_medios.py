@@ -56,6 +56,15 @@ class FirmaFotoView(APIView):
             peso = int(request.data.get("bytes", 0))
         except (TypeError, ValueError):
             peso = 0
+        # Valida el formato antes de consultar: sin esto, un UUID malformado
+        # llega a .filter(pk=...) y escala a ValidationError (500 originalmente).
+        try:
+            uuid.UUID(str(atractivo_id))
+        except (ValueError, TypeError, AttributeError):
+            return Response(
+                {"detail": "atractivo debe ser un UUID válido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if not Atractivo.objects.filter(pk=atractivo_id).exists():
             return Response(
                 {"detail": "Atractivo inexistente."},
