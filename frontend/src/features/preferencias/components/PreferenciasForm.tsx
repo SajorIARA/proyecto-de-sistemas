@@ -412,6 +412,21 @@ export function PreferenciasForm() {
           </p>
         )}
 
+        {/* Pantalla de carga durante el guardado */}
+        {pendiente && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="flex items-center gap-3 rounded-2xl border border-[#2F4B3B]/20 bg-[#2F4B3B]/[0.06] px-4 py-3 text-sm font-semibold text-[#2F4B3B]"
+          >
+            <span
+              aria-hidden="true"
+              className="h-4 w-4 animate-spin rounded-full border-2 border-[#2F4B3B]/30 border-t-[#2F4B3B]"
+            />
+            Guardando tus preferencias en el servidor…
+          </div>
+        )}
+
         {/* Acciones */}
         <div className="flex flex-wrap items-center gap-4">
           <button
