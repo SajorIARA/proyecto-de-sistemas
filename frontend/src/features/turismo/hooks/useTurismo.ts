@@ -14,6 +14,7 @@
 import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
   listarAtractivos,
+  listarAtractivosCercanos,
   listarCategorias,
   listarFacetas,
   listarHorariosDe,
@@ -27,6 +28,8 @@ import type { Atractivo, FiltrosCatalogo } from "../../../types/turismo";
 export const KeysTurismo = {
   catalogo: (filtros: FiltrosCatalogo) =>
     ["turismo", "atractivos", filtros] as const,
+  cercanos: (lat: number, lon: number, radio: number) =>
+    ["turismo", "atractivos", "cercanos", lat, lon, radio] as const,
   atractivo: (id: string) => ["turismo", "atractivo", id] as const,
   horarios: (id: string) => ["turismo", "horarios", id] as const,
   tarifas: (id: string) => ["turismo", "tarifas", id] as const,
@@ -173,5 +176,27 @@ export function useFacetas() {
     queryKey: KeysTurismo.facetas(),
     queryFn: listarFacetas,
     staleTime: RELACIONADO_STALE_MS,
+  });
+}
+
+/**
+ * Atractivos cercanos a una ubicación geográfica.
+ */
+export function useAtractivosCercanos({
+  lat,
+  lon,
+  radio = 2000,
+  enabled = true,
+}: {
+  lat: number | null;
+  lon: number | null;
+  radio?: number;
+  enabled?: boolean;
+}) {
+  return useQuery({
+    queryKey: KeysTurismo.cercanos(lat ?? 0, lon ?? 0, radio),
+    queryFn: () => listarAtractivosCercanos({ lat: lat!, lon: lon!, radio }),
+    enabled: enabled && lat !== null && lon !== null,
+    staleTime: CATALOGO_STALE_MS,
   });
 }

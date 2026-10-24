@@ -9,6 +9,7 @@
 export const TURISMO_ENDPOINTS = {
   atractivoList: "/turismo/atractivos/",
   atractivoDetalle: (id: string) => `/turismo/atractivos/${id}/`,
+  atractivosCercanos: "/turismo/atractivos/cercanos/",
   facetas: "/turismo/atractivos/facetas/",
   categorias: "/turismo/categorias/",
   horarios: "/turismo/horarios/",
