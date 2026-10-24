@@ -10,7 +10,7 @@ export interface UbicacionSeleccionada {
 }
 
 interface LocationSelectorProps {
-  onUbicacionChange: (ubicacion: UbicacionSeleccionada) => void;
+  onUbicacionChange: (ubicacion: UbicacionSeleccionada | null) => void;
   ubicacionInicial?: UbicacionSeleccionada | null;
   guardarEnLocalStorage?: boolean;
   localStorageKey?: string;
@@ -37,20 +37,55 @@ export function LocationSelector({
       try {
         const guardada = localStorage.getItem(localStorageKey);
         if (guardada) {
-          const parsed = JSON.parse(guardada) as UbicacionSeleccionada;
-          setUbicacionActiva(parsed);
-          if (parsed.tipo === "macrodistrito" && parsed.macrodistrito) {
-            setMacrodistritoSeleccionado(parsed.macrodistrito);
+          try {
+            const parsed = JSON.parse(guardada) as { tipo?: string; id?: string; macrodistrito?: string };
+            if (parsed.tipo === "macrodistrito" && parsed.id) {
+              const macrodistrito = MACRODISTRITOS_LA_PAZ.find(
+                (m: Macrodistrito) => m.id === parsed.id
+              );
+              if (macrodistrito) {
+                const nuevaUbicacion: UbicacionSeleccionada = {
+                  tipo: "macrodistrito",
+                  latitud: macrodistrito.latitud,
+                  longitud: macrodistrito.longitud,
+                  macrodistrito: macrodistrito.nombre,
+                };
+                setUbicacionActiva(nuevaUbicacion);
+                setMacrodistritoSeleccionado(macrodistrito.nombre);
+                onUbicacionChange(nuevaUbicacion);
+                return;
+              }
+            }
+            if (parsed.tipo === "macrodistrito" && parsed.macrodistrito) {
+              const macrodistrito = MACRODISTRITOS_LA_PAZ.find(
+                (m: Macrodistrito) => m.nombre === parsed.macrodistrito
+              );
+              if (macrodistrito) {
+                const nuevaUbicacion: UbicacionSeleccionada = {
+                  tipo: "macrodistrito",
+                  latitud: macrodistrito.latitud,
+                  longitud: macrodistrito.longitud,
+                  macrodistrito: macrodistrito.nombre,
+                };
+                setUbicacionActiva(nuevaUbicacion);
+                setMacrodistritoSeleccionado(macrodistrito.nombre);
+                onUbicacionChange(nuevaUbicacion);
+                return;
+              }
+            }
+            // No restaurar ubicaciones GPS desde localStorage por razones de seguridad
+            localStorage.removeItem(localStorageKey);
+          } catch {
+            localStorage.removeItem(localStorageKey);
           }
-          onUbicacionChange(parsed);
         }
       } catch {
         // Ignorar errores de localStorage
       }
     }
-  }, [guardarEnLocalStorage, ubicacionInicial, localStorageKey, onUbicacionChange]);
+  }, []);
 
-  // Cuando se obtienen coordenadas GPS, actualizar ubicación
+  // Cuando se obtienen coordenadas GPS, actualizar ubicación (no se guarda en localStorage)
   useEffect(() => {
     if (coords) {
       const nuevaUbicacion: UbicacionSeleccionada = {
@@ -60,16 +95,10 @@ export function LocationSelector({
       };
       setUbicacionActiva(nuevaUbicacion);
       setMacrodistritoSeleccionado("");
-      if (guardarEnLocalStorage) {
-        try {
-          localStorage.setItem(localStorageKey, JSON.stringify(nuevaUbicacion));
-        } catch {
-          // Ignorar errores de localStorage
-        }
-      }
+      // No guardar coordenadas GPS en localStorage
       onUbicacionChange(nuevaUbicacion);
     }
-  }, [coords, guardarEnLocalStorage, localStorageKey, onUbicacionChange]);
+  }, [coords]);
 
   const handleUsarUbicacionActual = () => {
     getCurrentPosition();
@@ -87,6 +116,7 @@ export function LocationSelector({
           // Ignorar errores de localStorage
         }
       }
+      onUbicacionChange(null);
       return;
     }
 
@@ -104,7 +134,11 @@ export function LocationSelector({
       setUbicacionActiva(nuevaUbicacion);
       if (guardarEnLocalStorage) {
         try {
-          localStorage.setItem(localStorageKey, JSON.stringify(nuevaUbicacion));
+          // Solo guardar identificador del macrodistrito, no coordenadas
+          localStorage.setItem(
+            localStorageKey,
+            JSON.stringify({ tipo: "macrodistrito", id: macrodistrito.id })
+          );
         } catch {
           // Ignorar errores de localStorage
         }
@@ -113,12 +147,25 @@ export function LocationSelector({
     }
   };
 
+  const handleLimpiarUbicacion = () => {
+    setMacrodistritoSeleccionado("");
+    setUbicacionActiva(null);
+    if (guardarEnLocalStorage) {
+      try {
+        localStorage.removeItem(localStorageKey);
+      } catch {
+        // Ignorar errores de localStorage
+      }
+    }
+    onUbicacionChange(null);
+  };
+
   const obtenerEtiquetaActiva = () => {
     if (!ubicacionActiva) {
       return "Sin ubicación seleccionada";
     }
     if (ubicacionActiva.tipo === "gps") {
-      return `Ubicación GPS (${ubicacionActiva.latitud.toFixed(4)}, ${ubicacionActiva.longitud.toFixed(4)})`;
+      return "Ubicación GPS activa";
     }
     if (ubicacionActiva.tipo === "macrodistrito" && ubicacionActiva.macrodistrito) {
       return `Macrodistrito: ${ubicacionActiva.macrodistrito}`;
@@ -127,22 +174,33 @@ export function LocationSelector({
   };
 
   return (
-    <div className="w-full space-y-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="w-full rounded-[1.25rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] p-4 shadow-[0_8px_30px_rgba(72,55,38,0.06)]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-sm font-semibold text-gray-900">
-          Ubicación para búsqueda
-        </h3>
-        <span className="inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
-          {obtenerEtiquetaActiva()}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-black uppercase tracking-[0.18em] text-[#8D4F32]">
+            Ubicación
+          </span>
+          <span className="inline-flex items-center rounded-full border border-[#2F4B3B]/20 bg-[#2F4B3B]/[0.06] px-3 py-1 text-[0.7rem] font-bold text-[#2F4B3B]">
+            {obtenerEtiquetaActiva()}
+          </span>
+        </div>
+        {ubicacionActiva && (
+          <button
+            type="button"
+            onClick={handleLimpiarUbicacion}
+            className="text-xs font-bold text-[#8D4F32] underline-offset-4 hover:underline"
+          >
+            Limpiar ubicación / Ver todos
+          </button>
+        )}
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
         <button
           type="button"
           onClick={handleUsarUbicacionActual}
           disabled={loading}
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-[#2F4B3B] px-5 py-2.5 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128] disabled:cursor-not-allowed disabled:opacity-55"
         >
           {loading ? (
             <>
@@ -166,7 +224,7 @@ export function LocationSelector({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Ubicando...
+              Ubicando…
             </>
           ) : (
             <>
@@ -198,7 +256,7 @@ export function LocationSelector({
         <select
           value={macrodistritoSeleccionado}
           onChange={(e) => handleSeleccionarMacrodistrito(e.target.value)}
-          className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="flex-1 rounded-full border border-[#5B3A29]/15 bg-[#FFFDF8] px-4 py-2.5 text-sm font-semibold text-[#514B43] transition hover:border-[#2F4B3B]/40 focus:border-[#2F4B3B] focus:outline-none"
         >
           <option value="">Seleccionar macrodistrito manualmente</option>
           {MACRODISTRITOS_LA_PAZ.map((macrodistrito: Macrodistrito) => (
@@ -210,22 +268,8 @@ export function LocationSelector({
       </div>
 
       {error && errorMessage && (
-        <div className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-800">
-          <div className="flex gap-2">
-            <svg
-              className="h-5 w-5 flex-shrink-0"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <p>{errorMessage}</p>
-          </div>
+        <div className="mt-3 rounded-2xl border border-[#9A5B3C]/30 bg-[#9A5B3C]/[0.06] p-3 text-xs font-semibold text-[#8D4F32]">
+          <p>{errorMessage}</p>
         </div>
       )}
     </div>
