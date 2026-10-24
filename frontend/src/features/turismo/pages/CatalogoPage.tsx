@@ -17,11 +17,11 @@
  * compartible y el botón "volver al catálogo" del detalle la restaura.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
 import { CATALOGO_PAGE_SIZE } from "../../../config/turismo";
-import { useCatalogo, useFacetas } from "../hooks/useTurismo";
+import { useCatalogo, useFacetas, useAtractivosCercanos } from "../hooks/useTurismo";
 import { useFiltrosCatalogo } from "../hooks/useFiltrosCatalogo";
 import { CatalogoFiltros } from "../components/CatalogoFiltros";
 import { CatalogoVacio } from "../components/CatalogoVacio";
@@ -29,6 +29,7 @@ import { DestinoCard } from "../components/DestinoCard";
 import { DestinoCardSkeleton } from "../components/Skeletons";
 import { CatalogoError } from "../components/CatalogoError";
 import { EncabezadoImagen } from "../../../components/EncabezadoImagen";
+import { LocationSelector, type UbicacionSeleccionada } from "../../../components/LocationSelector";
 
 /**
  * Tarjetas de esqueleto durante la carga inicial. Se igualan al
@@ -40,6 +41,8 @@ const SKELETONS = CATALOGO_PAGE_SIZE;
 export function CatalogoPage() {
   const { isAuthenticated } = useAuth();
   const [parametros] = useSearchParams();
+  const [ubicacion, setUbicacion] = useState<UbicacionSeleccionada | null>(null);
+  const [usarCercanos, setUsarCercanos] = useState(false);
 
   const {
     filtros,
@@ -56,8 +59,8 @@ export function CatalogoPage() {
   const { data: facetas } = useFacetas();
 
   const {
-    destinos,
-    total,
+    destinos: destinosCatalogo,
+    total: totalCatalogo,
     hayMas,
     cargandoMas,
     isPending,
@@ -66,6 +69,33 @@ export function CatalogoPage() {
     recargar,
     fetchNextPage,
   } = useCatalogo(filtros);
+
+  const {
+    data: destinosCercanosData,
+    isPending: isPendingCercanos,
+    isFetching: isFetchingCercanos,
+    isError: isErrorCercanos,
+    refetch: recargarCercanos,
+  } = useAtractivosCercanos({
+    lat: ubicacion?.latitud ?? null,
+    lon: ubicacion?.longitud ?? null,
+    radio: 2000,
+    enabled: usarCercanos && ubicacion !== null,
+  });
+
+  const destinos = usarCercanos && ubicacion
+    ? destinosCercanosData?.results ?? []
+    : destinosCatalogo;
+  const total = usarCercanos && ubicacion ? destinos.length : totalCatalogo;
+  const isPendingActual = usarCercanos && ubicacion ? isPendingCercanos : isPending;
+  void (usarCercanos && ubicacion ? isFetchingCercanos : isFetching);
+  const isErrorActual = usarCercanos && ubicacion ? isErrorCercanos : isError;
+  const recargarActual = usarCercanos && ubicacion ? recargarCercanos : recargar;
+
+  const handleUbicacionChange = (nuevaUbicacion: UbicacionSeleccionada) => {
+    setUbicacion(nuevaUbicacion);
+    setUsarCercanos(true);
+  };
 
   const centinela = useRef<HTMLDivElement | null>(null);
 
@@ -197,45 +227,69 @@ export function CatalogoPage() {
       ========================================================== */}
       <div className="sticky top-0 z-30 border-b border-[#5B3A29]/[0.08] bg-[#F3EBDD]/92 backdrop-blur-xl">
         <div className="contenedor-amplio px-6 py-4 sm:px-8 lg:px-10">
-          <CatalogoFiltros
-            filtros={filtros}
-            borrador={borrador}
-            facetas={facetas ?? null}
-            disabled={isPending}
-            onBuscar={setBorrador}
-            onLimpiarTexto={limpiarTexto}
-            onCategoria={setCategoria}
-            onZona={setZona}
-            onPrecio={setRangoPrecio}
-            onLimpiar={limpiar}
-          />
+          <LocationSelector onUbicacionChange={handleUbicacionChange} />
 
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-            {!isError && (
-              <p
-                className="text-xs font-bold text-[#746D63]"
-                aria-live="polite"
-              >
-                {total} {total === 1 ? "destino" : "destinos"}
-                {activos > 0
-                  ? ` · ${activos} ${activos === 1 ? "filtro activo" : "filtros activos"}`
-                  : ""}
+          {usarCercanos && ubicacion && (
+            <div className="mt-3 flex items-center justify-between">
+              <p className="text-xs font-bold text-[#746D63]">
+                Mostrando destinos cercanos a tu ubicación (radio ~2km)
               </p>
-            )}
+              <button
+                type="button"
+                onClick={() => {
+                  setUsarCercanos(false);
+                  setUbicacion(null);
+                }}
+                className="text-xs font-bold text-[#8D4F32] underline-offset-4 hover:underline"
+              >
+                Ver todo el catálogo
+              </button>
+            </div>
+          )}
 
-            {actualizando && (
-              <p
-                className="inline-flex items-center gap-2 text-xs font-bold text-[#8D4F32]"
-                role="status"
-              >
-                <span
-                  className="h-2 w-2 animate-pulse rounded-full bg-[#9A5B3C]"
-                  aria-hidden="true"
-                />
-                Actualizando resultados…
-              </p>
-            )}
-          </div>
+          {!usarCercanos && (
+            <>
+              <CatalogoFiltros
+                filtros={filtros}
+                borrador={borrador}
+                facetas={facetas ?? null}
+                disabled={isPendingActual}
+                onBuscar={setBorrador}
+                onLimpiarTexto={limpiarTexto}
+                onCategoria={setCategoria}
+                onZona={setZona}
+                onPrecio={setRangoPrecio}
+                onLimpiar={limpiar}
+              />
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                {!isErrorActual && (
+                  <p
+                    className="text-xs font-bold text-[#746D63]"
+                    aria-live="polite"
+                  >
+                    {total} {total === 1 ? "destino" : "destinos"}
+                    {activos > 0
+                      ? ` · ${activos} ${activos === 1 ? "filtro activo" : "filtros activos"}`
+                      : ""}
+                  </p>
+                )}
+
+                {actualizando && (
+                  <p
+                    className="inline-flex items-center gap-2 text-xs font-bold text-[#8D4F32]"
+                    role="status"
+                  >
+                    <span
+                      className="h-2 w-2 animate-pulse rounded-full bg-[#9A5B3C]"
+                      aria-hidden="true"
+                    />
+                    Actualizando resultados…
+                  </p>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -245,10 +299,10 @@ export function CatalogoPage() {
       <div className="contenedor-amplio px-6 py-8 sm:px-8 lg:px-10 lg:py-12">
         <h2 className="sr-only">{titulo}</h2>
 
-        {isError && <CatalogoError onReintentar={() => void recargar()} />}
+        {isErrorActual && <CatalogoError onReintentar={() => void recargarActual()} />}
 
         {/* Esqueletos de carga */}
-        {isPending && (
+        {isPendingActual && (
           <>
             <p className="mb-7 text-sm font-semibold text-[#746D63]" role="status">
               Cargando destinos turísticos…
@@ -268,53 +322,89 @@ export function CatalogoPage() {
         )}
 
         {/* Sin resultados */}
-        {!isPending && !isError && destinos.length === 0 && (
-          <CatalogoVacio
-            categoria={filtros.categoria}
-            filtrosActivos={activos}
-            onLimpiar={limpiar}
-          />
+        {!isPendingActual && !isErrorActual && destinos.length === 0 && (
+          <>
+            {usarCercanos && ubicacion ? (
+              <div className="py-12 text-center">
+                <p className="text-lg font-semibold text-[#263029]">
+                  No hay destinos cercanos en un radio de 2 km
+                </p>
+                <p className="mt-2 text-sm text-[#746D63]">
+                  Intenta con un macrodistrito o amplia la búsqueda al catálogo completo
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUsarCercanos(false);
+                    setUbicacion(null);
+                  }}
+                  className="mt-4 inline-flex items-center rounded-full bg-[#2F4B3B] px-6 py-2.5 text-sm font-black text-[#F3EBDD] transition hover:bg-[#233128]"
+                >
+                  Ver todo el catálogo
+                </button>
+              </div>
+            ) : (
+              <CatalogoVacio
+                categoria={filtros.categoria}
+                filtrosActivos={activos}
+                onLimpiar={limpiar}
+              />
+            )}
+          </>
         )}
 
         {/* Tarjetas */}
-        {!isPending && !isError && destinos.length > 0 && (
+        {!isPendingActual && !isErrorActual && destinos.length > 0 && (
           <>
             <ul
               className={[
                 "grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4",
-                actualizando ? "opacity-70 transition-opacity" : "",
+                actualizando && !usarCercanos ? "opacity-70 transition-opacity" : "",
               ].join(" ")}
             >
-              {destinos.map((atractivo) => (
+              {destinos.map((atractivo: any) => (
                 <li key={atractivo.id} className="h-full">
                   <DestinoCard atractivo={atractivo} busqueda={queryActiva} />
+                  {(atractivo.distancia_m !== undefined && atractivo.distancia_m !== null) && (
+                    <p className="mt-1 text-xs text-[#746D63]">
+                      A {(atractivo.distancia_m / 1000).toFixed(2)} km
+                    </p>
+                  )}
                 </li>
               ))}
             </ul>
 
-            {/* Centinela del scroll infinito */}
-            <div ref={centinela} aria-hidden="true" className="h-px" />
+            {/* Centinela del scroll infinito - solo para catálogo normal */}
+            {!usarCercanos && <div ref={centinela} aria-hidden="true" className="h-px" />}
 
-            {/* Fallback accesible: botón "Cargar más" siempre disponible.
-                Se mantiene visible por si IntersectionObserver no existe o
-                el usuario navega con teclado. */}
-            <div className="mt-12 flex flex-col items-center gap-4">
-              {hayMas ? (
-                <button
-                  type="button"
-                  onClick={() => void fetchNextPage()}
-                  disabled={cargandoMas}
-                  className="inline-flex items-center gap-3 rounded-full border border-[#2F4B3B]/25 bg-[#FFFDF8] px-7 py-3.5 text-sm font-black text-[#2F4B3B] transition hover:border-[#2F4B3B] hover:bg-[#2F4B3B] hover:text-[#FFFDF8] disabled:opacity-60"
-                >
-                  {cargandoMas ? "Cargando más destinos…" : "Cargar más destinos"}
-                  <span aria-hidden="true">↓</span>
-                </button>
-              ) : (
+            {/* Fallback accesible: botón "Cargar más" siempre disponible. */}
+            {!usarCercanos && (
+              <div className="mt-12 flex flex-col items-center gap-4">
+                {hayMas ? (
+                  <button
+                    type="button"
+                    onClick={() => void fetchNextPage()}
+                    disabled={cargandoMas}
+                    className="inline-flex items-center gap-3 rounded-full border border-[#2F4B3B]/25 bg-[#FFFDF8] px-7 py-3.5 text-sm font-black text-[#2F4B3B] transition hover:border-[#2F4B3B] hover:bg-[#2F4B3B] hover:text-[#FFFDF8] disabled:opacity-60"
+                  >
+                    {cargandoMas ? "Cargando más destinos…" : "Cargar más destinos"}
+                    <span aria-hidden="true">↓</span>
+                  </button>
+                ) : (
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8A8177]">
+                    Fin del catálogo · {destinos.length} de {total}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {usarCercanos && (
+              <div className="mt-12 flex flex-col items-center gap-4">
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8A8177]">
-                  Fin del catálogo · {destinos.length} de {total}
+                  {destinos.length} {destinos.length === 1 ? "destino cercano" : "destinos cercanos"}
                 </p>
-              )}
-            </div>
+              </div>
+            )}
           </>
         )}
       </div>
