@@ -68,11 +68,17 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    const url = originalRequest?.url ?? "";
+    const esEndpointDeAuth =
+      url.includes(AUTH_ENDPOINTS.login) ||
+      url.includes(AUTH_ENDPOINTS.register) ||
+      url.includes(AUTH_ENDPOINTS.refresh);
+
     if (
       error.response?.status !== 401 ||
       !originalRequest ||
       originalRequest._retry ||
-      originalRequest.url?.includes(AUTH_ENDPOINTS.refresh)
+      esEndpointDeAuth
     ) {
       return Promise.reject(error);
     }
