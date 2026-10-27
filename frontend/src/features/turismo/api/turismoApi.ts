@@ -279,6 +279,36 @@ export async function listarFacetas(): Promise<Facetas | null> {
   }
 }
 
+/**
+ * GET /api/turismo/atractivos/cercanos/?lat=&lon=&radio=
+ * Busca atractivos cercanos a una ubicación ordenados por distancia.
+ */
+export async function listarAtractivosCercanos({
+  lat,
+  lon,
+  radio = 2000,
+}: {
+  lat: number;
+  lon: number;
+  radio?: number;
+}): Promise<Paginado<Atractivo & { distancia_m?: number }>> {
+  try {
+    const { data } = await api.get(TURISMO_ENDPOINTS.atractivosCercanos, {
+      params: {
+        lat,
+        lon,
+        radio,
+      },
+    });
+
+    const pagina = normalizarPagina<Atractivo & { distancia_m?: number }>(data);
+
+    return { ...pagina, results: pagina.results.map(normalizarAtractivo) };
+  } catch (error) {
+    throw mensajeDesdeError(error, "No pudimos cargar los destinos cercanos.");
+  }
+}
+
 export const turismoApi = {
   listarAtractivos,
   obtenerAtractivo,
@@ -286,4 +316,5 @@ export const turismoApi = {
   listarHorariosDe,
   listarTarifasDe,
   listarFacetas,
+  listarAtractivosCercanos,
 };
