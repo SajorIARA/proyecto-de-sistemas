@@ -92,9 +92,9 @@ export function CatalogoPage() {
   const isErrorActual = usarCercanos && ubicacion ? isErrorCercanos : isError;
   const recargarActual = usarCercanos && ubicacion ? recargarCercanos : recargar;
 
-  const handleUbicacionChange = (nuevaUbicacion: UbicacionSeleccionada) => {
+  const handleUbicacionChange = (nuevaUbicacion: UbicacionSeleccionada | null) => {
     setUbicacion(nuevaUbicacion);
-    setUsarCercanos(true);
+    setUsarCercanos(!!nuevaUbicacion);
   };
 
   const centinela = useRef<HTMLDivElement | null>(null);
@@ -227,69 +227,59 @@ export function CatalogoPage() {
       ========================================================== */}
       <div className="sticky top-0 z-30 border-b border-[#5B3A29]/[0.08] bg-[#F3EBDD]/92 backdrop-blur-xl">
         <div className="contenedor-amplio px-6 py-4 sm:px-8 lg:px-10">
-          <LocationSelector onUbicacionChange={handleUbicacionChange} />
+          <div className="mt-4">
+            <LocationSelector onUbicacionChange={handleUbicacionChange} />
+          </div>
 
           {usarCercanos && ubicacion && (
             <div className="mt-3 flex items-center justify-between">
               <p className="text-xs font-bold text-[#746D63]">
-                Mostrando destinos cercanos a tu ubicación (radio ~2km)
+                Mostrando destinos cercanos ({ubicacion.tipo === "gps" ? "GPS" : ubicacion.macrodistrito}) — radio ~2 km
               </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setUsarCercanos(false);
-                  setUbicacion(null);
-                }}
-                className="text-xs font-bold text-[#8D4F32] underline-offset-4 hover:underline"
-              >
-                Ver todo el catálogo
-              </button>
             </div>
           )}
 
-          {!usarCercanos && (
-            <>
-              <CatalogoFiltros
-                filtros={filtros}
-                borrador={borrador}
-                facetas={facetas ?? null}
-                disabled={isPendingActual}
-                onBuscar={setBorrador}
-                onLimpiarTexto={limpiarTexto}
-                onCategoria={setCategoria}
-                onZona={setZona}
-                onPrecio={setRangoPrecio}
-                onLimpiar={limpiar}
-              />
+          <div className="mt-4">
+            <CatalogoFiltros
+              filtros={filtros}
+              borrador={borrador}
+              facetas={facetas ?? null}
+              disabled={isPendingActual}
+              onBuscar={setBorrador}
+              onLimpiarTexto={limpiarTexto}
+              onCategoria={setCategoria}
+              onZona={setZona}
+              onPrecio={setRangoPrecio}
+              onLimpiar={limpiar}
+            />
 
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                {!isErrorActual && (
-                  <p
-                    className="text-xs font-bold text-[#746D63]"
-                    aria-live="polite"
-                  >
-                    {total} {total === 1 ? "destino" : "destinos"}
-                    {activos > 0
-                      ? ` · ${activos} ${activos === 1 ? "filtro activo" : "filtros activos"}`
-                      : ""}
-                  </p>
-                )}
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+              {!isErrorActual && (
+                <p
+                  className="text-xs font-bold text-[#746D63]"
+                  aria-live="polite"
+                >
+                  {total} {total === 1 ? "destino" : "destinos"}
+                  {!usarCercanos && activos > 0
+                    ? ` · ${activos} ${activos === 1 ? "filtro activo" : "filtros activos"}`
+                    : ""}
+                </p>
+              )}
 
-                {actualizando && (
-                  <p
-                    className="inline-flex items-center gap-2 text-xs font-bold text-[#8D4F32]"
-                    role="status"
-                  >
-                    <span
-                      className="h-2 w-2 animate-pulse rounded-full bg-[#9A5B3C]"
-                      aria-hidden="true"
-                    />
-                    Actualizando resultados…
-                  </p>
-                )}
-              </div>
-            </>
-          )}
+              {actualizando && !usarCercanos && (
+                <p
+                  className="inline-flex items-center gap-2 text-xs font-bold text-[#8D4F32]"
+                  role="status"
+                >
+                  <span
+                    className="h-2 w-2 animate-pulse rounded-full bg-[#9A5B3C]"
+                    aria-hidden="true"
+                  />
+                  Actualizando resultados…
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
