@@ -18,26 +18,22 @@ const DIAPOSITIVAS = [
   {
     id: "aventura",
     etiqueta: "Aventura",
-    imagen: IMAGENES_SITIO.hero.aventura,
-    alt: "Cumbres nevadas de la cordillera andina",
+    ...IMAGENES_SITIO.hero.aventura,
   },
   {
     id: "cultura",
     etiqueta: "Cultura",
-    imagen: IMAGENES_SITIO.hero.cultura,
-    alt: "Calles y tejados de la ciudad de La Paz",
+    ...IMAGENES_SITIO.hero.cultura,
   },
   {
     id: "naturaleza",
     etiqueta: "Naturaleza",
-    imagen: IMAGENES_SITIO.hero.naturaleza,
-    alt: "Lago y montañas del altiplano boliviano",
+    ...IMAGENES_SITIO.hero.naturaleza,
   },
   {
     id: "gastronomia",
     etiqueta: "Gastronomía",
-    imagen: IMAGENES_SITIO.hero.gastronomia,
-    alt: "Mesa con platos de la cocina local",
+    ...IMAGENES_SITIO.hero.gastronomia,
   },
 ] as const;
 
@@ -88,7 +84,7 @@ export function HeroPrincipal() {
             ].join(" ")}
           >
             <img
-              src={item.imagen}
+              src={item.src}
               alt={indice === activa ? item.alt : ""}
               loading="eager"
               fetchPriority={indice === 0 ? "high" : "low"}

@@ -16,7 +16,7 @@ export function CtaFinal() {
       <div className="contenedor-sitio">
         <div className="relative overflow-hidden rounded-[2rem] bg-[#101710] px-6 py-16 text-center text-[#FFFDF8] sm:px-10 sm:py-20">
           <img
-            src={IMAGENES_SITIO.cierre}
+            src={IMAGENES_SITIO.cierre.src}
             alt=""
             loading="lazy"
             decoding="async"

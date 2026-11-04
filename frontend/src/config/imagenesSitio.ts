@@ -1,57 +1,90 @@
 /**
- * Fotografías de la portada pública.
+ * Fotografías de la portada pública y del panel de acceso.
  *
- * Todas viven en `images.unsplash.com`, el único host de imágenes
- * externo que la CSP del despliegue permite junto a Cloudinary
- * (ver `frontend/security-headers.conf`). Se piden por ancho y con
- * `auto=format` para que el navegador reciba WebP/AVIF cuando puede.
+ * Todas son fotografías reales de Bolivia con licencia libre (CC0,
+ * CC BY o CC BY-SA), descargadas de Wikimedia Commons y servidas desde
+ * `frontend/public/images/`. Al auto-hospedarlas no dependemos de hosts
+ * externos y la CSP solo necesita `img-src 'self'`
+ * (ver `frontend/security-headers.conf`).
+ *
+ * La autoría y la licencia de cada archivo están en
+ * `frontend/public/images/CREDITOS.md`. Si una foto cambia, este archivo
+ * y ese documento son los únicos puntos a tocar.
  *
  * No hay video en la portada: el hero rota entre estas fotografías.
- * Si una imagen cambiara de URL, este archivo es el único punto a
- * tocar.
  */
 
-const ANCHO_HERO = 1800;
-const ANCHO_SECCION = 1200;
-const ANCHO_TARJETA = 900;
-
-/** Construye una URL de entrega de Unsplash con el ancho indicado. */
-export function urlUnsplash(id: string, ancho: number): string {
-  return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${ancho}&q=78`;
+export interface FotoSitio {
+  /** Ruta pública servida por Vite/nginx. */
+  src: string;
+  /** Texto alternativo descriptivo y específico de la escena. */
+  alt: string;
 }
 
-/**
- * Identificadores de las fotos usadas. Se exponen por si alguna
- * sección necesita variar el recorte o el ancho.
- */
-export const FOTOS = {
-  ciudadMirador: "1596395819057-e37f55a8516b",
-  ciudadCalle: "1587595431973-160d0d94add1",
-  montanasNieve: "1464822759023-fed622ff2c3b",
-  montanasNeblina: "1506905925346-21bda4d32df4",
-  bosqueNeblina: "1470071459604-3b5ec3a7fe05",
-  lagoMontanas: "1501785888041-af3ef285b470",
-  mesaSabores: "1504674900247-0877df9cc836",
-  restauranteCalido: "1414235077428-338989a2e8c0",
-  ruinasAndinas: "1526392060635-9d6019884377",
-} as const;
+function foto(src: string, alt: string): FotoSitio {
+  return { src, alt };
+}
 
-/** Imágenes listas para usar, ya con el ancho de cada contexto. */
+const RUTA = "/images";
+
+/** Imágenes listas para usar, con su texto alternativo. */
 export const IMAGENES_SITIO = {
   hero: {
-    aventura: urlUnsplash(FOTOS.montanasNieve, ANCHO_HERO),
-    cultura: urlUnsplash(FOTOS.ciudadCalle, ANCHO_HERO),
-    naturaleza: urlUnsplash(FOTOS.lagoMontanas, ANCHO_HERO),
-    gastronomia: urlUnsplash(FOTOS.mesaSabores, ANCHO_HERO),
+    aventura: foto(
+      `${RUTA}/hero-aventura.jpg`,
+      "Huayna Potosí nevado al atardecer, en la Cordillera Real de Bolivia",
+    ),
+    cultura: foto(
+      `${RUTA}/hero-cultura.jpg`,
+      "Plaza San Francisco y su basílica en el centro histórico de La Paz",
+    ),
+    naturaleza: foto(
+      `${RUTA}/hero-naturaleza.jpg`,
+      "Formaciones de arcilla del Valle de la Luna, cerca de La Paz",
+    ),
+    gastronomia: foto(
+      `${RUTA}/hero-gastronomia.jpg`,
+      "Plato paceño con choclo, habas, papa, queso frito y llajua",
+    ),
   },
   categorias: {
-    Aventura: urlUnsplash(FOTOS.montanasNieve, ANCHO_TARJETA),
-    Gastronomía: urlUnsplash(FOTOS.mesaSabores, ANCHO_TARJETA),
-    Cultura: urlUnsplash(FOTOS.ciudadCalle, ANCHO_TARJETA),
-    Miradores: urlUnsplash(FOTOS.ciudadMirador, ANCHO_TARJETA),
-    Naturaleza: urlUnsplash(FOTOS.bosqueNeblina, ANCHO_TARJETA),
-    Arqueología: urlUnsplash(FOTOS.ruinasAndinas, ANCHO_TARJETA),
+    Aventura: foto(
+      `${RUTA}/cat-aventura.jpg`,
+      "Nevado Huayna Potosí, destino de montaña en La Paz",
+    ),
+    Gastronomía: foto(
+      `${RUTA}/cat-gastronomia.jpg`,
+      "Salteña boliviana recién horneada, abierta sobre un plato",
+    ),
+    Cultura: foto(
+      `${RUTA}/cat-cultura.jpg`,
+      "Fachada de la Basílica de San Francisco en La Paz",
+    ),
+    Miradores: foto(
+      `${RUTA}/cat-miradores.jpg`,
+      "Vista de la hoyada de La Paz desde el mirador Killi Killi",
+    ),
+    Naturaleza: foto(
+      `${RUTA}/cat-naturaleza.jpg`,
+      "Arcillas erosionadas del Valle de la Luna en el altiplano",
+    ),
+    Arqueología: foto(
+      `${RUTA}/cat-arqueologia.jpg`,
+      "Puerta del Sol del templo de Kalasasaya en Tiwanaku",
+    ),
   },
-  gastronomia: urlUnsplash(FOTOS.restauranteCalido, ANCHO_SECCION),
-  cierre: urlUnsplash(FOTOS.montanasNeblina, ANCHO_SECCION),
+  gastronomia: foto(
+    `${RUTA}/banner-gastronomia.jpg`,
+    "Comedor popular del Mercado Rodríguez en La Paz",
+  ),
+  cierre: foto(
+    `${RUTA}/cierre-atardecer.jpg`,
+    "Ciudad de La Paz iluminada al atardecer",
+  ),
 } as const;
+
+/** Foto del panel lateral de login y registro. */
+export const FOTO_ACCESO = foto(
+  `${RUTA}/auth-illimani.jpg`,
+  "El Illimani con luna llena sobre La Paz",
+);

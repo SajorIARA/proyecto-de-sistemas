@@ -24,8 +24,8 @@ export function GastronomiaBanner() {
       className="relative scroll-mt-24 overflow-hidden bg-[#101710] py-24 text-[#FFFDF8] sm:py-32"
     >
       <img
-        src={IMAGENES_SITIO.gastronomia}
-        alt="Interior cálido de un restaurante paceño"
+        src={IMAGENES_SITIO.gastronomia.src}
+        alt={IMAGENES_SITIO.gastronomia.alt}
         loading="lazy"
         decoding="async"
         className="absolute inset-0 h-full w-full object-cover"

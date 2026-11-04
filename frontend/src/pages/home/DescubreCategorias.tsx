@@ -87,8 +87,8 @@ export function DescubreCategorias() {
               >
                 <div className="aspect-[4/5] w-full overflow-hidden sm:aspect-[3/4]">
                   <img
-                    src={IMAGENES_SITIO.categorias[categoria.nombre]}
-                    alt={`Atractivos de ${categoria.nombre} en La Paz`}
+                    src={IMAGENES_SITIO.categorias[categoria.nombre].src}
+                    alt={IMAGENES_SITIO.categorias[categoria.nombre].alt}
                     loading="lazy"
                     decoding="async"
                     className="h-full w-full object-cover transition duration-[900ms] ease-out group-hover:scale-[1.07]"
