@@ -1,7 +1,12 @@
 import uuid
 
+from django.contrib.gis.geos import Point
+from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from recomendaciones.permissions import IsAuthenticatedOwnerOrAdmin
@@ -11,8 +16,11 @@ from .models import ConsultaRecomendacion, UsuarioPreferencia
 from .serializers import (
     ConsultaRecomendacionSerializer,
     MiPreferenciaSerializer,
+    RecomendacionRequestSerializer,
+    RecomendacionResponseSerializer,
     UsuarioPreferenciaSerializer,
 )
+from .services import recomendar
 
 
 @extend_schema(
@@ -74,3 +82,91 @@ class MisPreferenciasViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(usuario=self.request.user)
+
+
+class RecomendarView(APIView):
+    """Motor de recomendación multicriterio (issue #27).
+
+    ``POST /api/recommendations/`` (alias ``/api/recomendaciones/recomendar/``)
+    recibe el perfil del turista, persiste la consulta y devuelve el Top-K
+    ordenado de forma determinista. Los filtros duros se aplican en la base
+    de datos: costo BOB <= presupuesto y distancia esférica <= radio.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=RecomendacionRequestSerializer,
+        responses={status.HTTP_200_OK: RecomendacionResponseSerializer},
+        description=(
+            "Calcula el ranking Top-K de destinos viables. El costo se "
+            "compara contra la tarifa mínima vigente en BOB y la distancia "
+            "se calcula con ST_DistanceSphere. Si no se envían "
+            "``preferencias``, se usan las del usuario autenticado."
+        ),
+    )
+    def post(self, request):
+        entrada = RecomendacionRequestSerializer(data=request.data)
+        entrada.is_valid(raise_exception=True)
+        datos = entrada.validated_data
+
+        preferencias = datos.get("preferencias")
+        if preferencias is None:
+            preferencias = {
+                preferencia.categoria.nombre: preferencia.nivel_interes
+                for preferencia in UsuarioPreferencia.objects.filter(
+                    usuario=request.user,
+                    categoria__activo=True,
+                ).select_related("categoria")
+            }
+
+        lon, lat = datos["punto_partida"]["coordinates"]
+        punto = Point(lon, lat, srid=4326)
+        resultado = recomendar(
+            presupuesto_bob=datos["presupuesto_bob"],
+            tiempo_horas=datos["tiempo_horas"],
+            punto_partida=punto,
+            radio_km=datos["radio_km"],
+            top_k=datos["top_k"],
+            preferencias=preferencias,
+        )
+        consulta = ConsultaRecomendacion.objects.create(
+            usuario=request.user,
+            presupuesto_bob=datos["presupuesto_bob"],
+            tiempo_horas=datos["tiempo_horas"],
+            punto_partida=punto,
+            macrodistrito=datos.get("macrodistrito") or None,
+        )
+
+        items = [
+            {
+                "id_atractivo": recomendacion.puntuacion.id_atractivo,
+                "nombre": recomendacion.puntuacion.nombre,
+                "puntaje": recomendacion.puntuacion.puntaje,
+                "afinidad_categoria": recomendacion.puntuacion.afinidad_categoria,
+                "proximidad": recomendacion.puntuacion.proximidad,
+                "holgura_presupuesto": recomendacion.puntuacion.holgura_presupuesto,
+                "holgura_tiempo": recomendacion.puntuacion.holgura_tiempo,
+                "distancia_km": recomendacion.puntuacion.distancia_km,
+                "factor_penalizacion": recomendacion.puntuacion.factor_penalizacion,
+                "viable": recomendacion.puntuacion.viable,
+                "motivos": list(recomendacion.puntuacion.motivos),
+                "categorias": list(recomendacion.categorias),
+                "costo_bob": recomendacion.costo_bob,
+                "duracion_horas": float(recomendacion.duracion_horas),
+                "latitud": recomendacion.latitud,
+                "longitud": recomendacion.longitud,
+            }
+            for recomendacion in resultado.recomendaciones
+        ]
+        payload = {
+            "id_consulta": consulta.id_consulta,
+            "generado_en": timezone.now(),
+            "total_activos": resultado.total_activos,
+            "total_evaluados": resultado.total_evaluados,
+            "total_recomendaciones": len(items),
+            "radio_km": resultado.radio_km,
+            "top_k": resultado.top_k,
+            "recomendaciones": items,
+        }
+        return Response(RecomendacionResponseSerializer(payload).data)

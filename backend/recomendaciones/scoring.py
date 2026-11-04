@@ -127,7 +127,12 @@ class PerfilTuristico:
 
 @dataclass(frozen=True)
 class AtractivoCandidato:
-    """Datos mínimos de un atractivo para calcular su puntaje."""
+    """Datos mínimos de un atractivo para calcular su puntaje.
+
+    ``distancia_km`` permite reutilizar una distancia ya calculada en la
+    base de datos (issue #27: ``ST_DistanceSphere``) en lugar de repetir
+    el cálculo Haversine en Python. Si es ``None``, se calcula aquí.
+    """
 
     id_atractivo: str
     nombre: str
@@ -136,12 +141,15 @@ class AtractivoCandidato:
     duracion_horas: Decimal
     latitud: float
     longitud: float
+    distancia_km: float | None = None
 
     def __post_init__(self) -> None:
         if self.costo_bob < 0:
             raise ValueError("costo_bob no puede ser negativo.")
         if self.duracion_horas < 0:
             raise ValueError("duracion_horas no puede ser negativa.")
+        if self.distancia_km is not None and self.distancia_km < 0:
+            raise ValueError("distancia_km no puede ser negativa.")
 
 
 @dataclass(frozen=True)
@@ -173,11 +181,15 @@ class Puntuador:
     ) -> Puntuacion:
         config = self.configuracion
         afinidad = self._afinidad_categoria(perfil, atractivo)
-        distancia = distancia_haversine_km(
-            perfil.latitud,
-            perfil.longitud,
-            atractivo.latitud,
-            atractivo.longitud,
+        distancia = (
+            atractivo.distancia_km
+            if atractivo.distancia_km is not None
+            else distancia_haversine_km(
+                perfil.latitud,
+                perfil.longitud,
+                atractivo.latitud,
+                atractivo.longitud,
+            )
         )
         proximidad = _acotar(1.0 - distancia / config.radio_km)
         holgura_presupuesto = self._holgura(atractivo.costo_bob, perfil.presupuesto_bob)
