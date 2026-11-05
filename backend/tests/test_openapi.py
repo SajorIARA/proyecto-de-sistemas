@@ -23,6 +23,8 @@ class OpenAPITests(TestCase):
             "/api/turismo/atractivos/cercanos/",
             "/api/conocimiento/fragmentos/",
             "/api/recomendaciones/consultas/",
+            "/api/recommendations/",
+            "/api/recomendaciones/recomendar/",
         ):
             self.assertIn(esperada, rutas)
 

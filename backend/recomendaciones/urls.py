@@ -1,6 +1,11 @@
+from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from .views import ConsultaRecomendacionViewSet, UsuarioPreferenciaViewSet
+from .views import (
+    ConsultaRecomendacionViewSet,
+    RecomendarView,
+    UsuarioPreferenciaViewSet,
+)
 
 router = DefaultRouter()
 router.register(
@@ -12,4 +17,7 @@ router.register(
 
 app_name = "recomendaciones"
 
-urlpatterns = router.urls
+urlpatterns = [
+    path("recomendar/", RecomendarView.as_view(), name="recomendar"),
+    *router.urls,
+]
