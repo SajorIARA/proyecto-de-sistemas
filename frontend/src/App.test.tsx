@@ -14,6 +14,14 @@ function renderHome() {
   );
 }
 
+/**
+ * La portada monta el hero con cuatro diapositivas, seis categorías, seis
+ * zonas, la franja gastronómica, los datos útiles y el pie. En jsdom eso
+ * tarda más que el límite por defecto de 5 s cuando la suite completa
+ * corre en paralelo, así que cada prueba declara su propio margen.
+ */
+const TIMEOUT_PORTADA_MS = 20_000;
+
 describe("HomePage", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -31,7 +39,7 @@ describe("HomePage", () => {
     expect(
       screen.getByRole("link", { name: /Turismo La Paz/i }),
     ).toBeInTheDocument();
-  });
+  }, TIMEOUT_PORTADA_MS);
 
   it("muestra las opciones de autenticación cuando no existe sesión", () => {
     renderHome();
@@ -47,7 +55,7 @@ describe("HomePage", () => {
     expect(
       screen.getByRole("link", { name: /Comenzar ahora/i }),
     ).toHaveAttribute("href", "/registro");
-  });
+  }, TIMEOUT_PORTADA_MS);
 
   it("muestra las categorías principales de turismo", () => {
     renderHome();
@@ -75,5 +83,5 @@ describe("HomePage", () => {
     expect(
       screen.getByRole("heading", { name: "Arqueología" }),
     ).toBeInTheDocument();
-  });
+  }, TIMEOUT_PORTADA_MS);
 });
