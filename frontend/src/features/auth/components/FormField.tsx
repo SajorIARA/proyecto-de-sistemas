@@ -1,31 +1,49 @@
-import { useId, type InputHTMLAttributes } from "react";
+import {
+  useId,
+  type InputHTMLAttributes,
+  type ReactNode,
+} from "react";
 
 interface FormFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;
   hint?: string;
+  /** Control a la derecha del campo (p. ej. mostrar/ocultar contraseña). */
+  trailing?: ReactNode;
+  /** Contenido bajo el campo: medidor de fuerza, checklist, etc. */
+  meta?: ReactNode;
 }
 
 export function FormField({
   label,
   error,
   hint,
+  trailing,
+  meta,
+  id: idProp,
+  required,
   className = "",
   ...props
 }: FormFieldProps) {
-  const id = useId();
+  const generatedId = useId();
+  const id = idProp ?? generatedId;
 
-  const describedBy = error
-    ? `${id}-error`
-    : hint
-      ? `${id}-hint`
-      : undefined;
+  const errorId = error ? `${id}-error` : undefined;
+  const hintId = hint && !error ? `${id}-hint` : undefined;
+
+  const describedBy =
+    [hintId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
     <div className="group">
       <label
         htmlFor={id}
-        className="mb-2.5 block text-sm font-black tracking-[-0.01em] text-[#26342B]"
+        className={[
+          "mb-2.5 block text-sm font-black tracking-[-0.01em] text-[#26342B]",
+          required
+            ? "after:ml-1 after:text-[#9A5B3C] after:content-['*']"
+            : "",
+        ].join(" ")}
       >
         {label}
       </label>
@@ -36,6 +54,7 @@ export function FormField({
 
         <input
           id={id}
+          required={required}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy}
           className={`
@@ -45,6 +64,7 @@ export function FormField({
             bg-[#FFFDF8]
             px-4
             py-3.5
+            ${trailing ? "pr-[6.2rem]" : ""}
             text-sm
             font-semibold
             text-[#242B25]
@@ -88,7 +108,15 @@ export function FormField({
           `}
           {...props}
         />
+
+        {trailing && (
+          <div className="absolute inset-y-0 right-2 flex items-center">
+            {trailing}
+          </div>
+        )}
       </div>
+
+      {meta && <div className="mt-2.5">{meta}</div>}
 
       {error ? (
         <span

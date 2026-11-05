@@ -14,6 +14,19 @@ export function AppLayout() {
   const { pathname } = useLocation();
 
   useEffect(() => {
+    // Un enlace profundo con `#seccion` (por ejemplo `/#zonas`) debe
+    // respetar el ancla; si no hay hash, la navegación vuelve arriba.
+    const hash = window.location.hash;
+
+    if (hash.length > 1) {
+      const destino = document.getElementById(decodeURIComponent(hash.slice(1)));
+
+      if (destino) {
+        destino.scrollIntoView({ behavior: "instant", block: "start" });
+        return;
+      }
+    }
+
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   }, [pathname]);
 

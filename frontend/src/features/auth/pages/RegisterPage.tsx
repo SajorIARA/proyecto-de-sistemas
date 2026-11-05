@@ -2,8 +2,13 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthShell } from "../components/AuthShell";
 import { FormField } from "../components/FormField";
+import { PasswordStrength } from "../components/PasswordStrength";
 import { useAuth } from "../context/AuthContext";
-import { getApiErrorMessage } from "../utils/errors";
+import { getApiFieldErrors } from "../utils/errors";
+import {
+  evaluarContrasena,
+  LARGO_MINIMO_CONTRASENA,
+} from "../utils/password";
 
 interface FormState {
   nombre: string;
@@ -19,56 +24,136 @@ const INITIAL_FORM: FormState = {
   passwordConfirm: "",
 };
 
+const CAMPOS = ["nombre", "email", "password", "passwordConfirm"] as const;
+
+type Campo = (typeof CAMPOS)[number];
+
+const IDS: Record<Campo, string> = {
+  nombre: "registro-nombre",
+  email: "registro-email",
+  password: "registro-password",
+  passwordConfirm: "registro-password-confirm",
+};
+
+function ToggleContrasena({
+  visible,
+  controls,
+  onToggle,
+}: {
+  visible: boolean;
+  controls: string;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={visible}
+      aria-controls={controls}
+      aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
+      className="flex h-9 items-center gap-1 rounded-full px-2.5 text-[0.62rem] font-black uppercase tracking-[0.1em] text-[#6F6558] transition hover:bg-[#2F4B3B]/10 hover:text-[#2F4B3B] focus-visible:ring-2 focus-visible:ring-[#2F4B3B]/30 focus-visible:outline-none"
+    >
+      <span aria-hidden="true" className="text-sm leading-none">
+        {visible ? "◉" : "◎"}
+      </span>
+
+      <span aria-hidden="true">{visible ? "Ocultar" : "Ver"}</span>
+    </button>
+  );
+}
+
 export function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuth();
 
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
-  const [errors, setErrors] = useState<Partial<FormState>>({});
+  const [errors, setErrors] = useState<Partial<Record<Campo, string>>>({});
   const [formError, setFormError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [verPassword, setVerPassword] = useState(false);
+  const [verConfirmacion, setVerConfirmacion] = useState(false);
 
-  function updateField(field: keyof FormState, value: string) {
+  const evaluacion = evaluarContrasena(form.password, {
+    nombre: form.nombre,
+    email: form.email,
+  });
+
+  function updateField(campo: Campo, value: string) {
     setForm((current) => ({
       ...current,
-      [field]: value,
+      [campo]: value,
     }));
 
     setErrors((current) => ({
       ...current,
-      [field]: undefined,
+      [campo]: undefined,
     }));
   }
 
-  function validate() {
-    const nextErrors: Partial<FormState> = {};
+  function validarCampo(campo: Campo): string | undefined {
+    switch (campo) {
+      case "nombre":
+        if (!form.nombre.trim()) return "Escribe tu nombre.";
+        if (form.nombre.trim().length < 2) return "Usa al menos 2 caracteres.";
+        return undefined;
 
-    if (form.nombre.trim().length < 2) {
-      nextErrors.nombre = "Ingresa tu nombre.";
+      case "email":
+        if (!form.email.trim()) return "Escribe tu correo.";
+        if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
+          return "Ingresa un correo válido.";
+        }
+        return undefined;
+
+      case "password":
+        if (!form.password) return "Crea una contraseña.";
+        return evaluacion.errores[0];
+
+      case "passwordConfirm":
+        if (!form.passwordConfirm) return "Repite tu contraseña.";
+        if (form.password !== form.passwordConfirm) {
+          return "Las contraseñas no coinciden.";
+        }
+        return undefined;
+
+      default:
+        return undefined;
+    }
+  }
+
+  function enfocarCampo(campo: Campo) {
+    document.getElementById(IDS[campo])?.focus();
+  }
+
+  function validarAlSalir(campo: Campo) {
+    setErrors((current) => ({
+      ...current,
+      [campo]: validarCampo(campo),
+    }));
+  }
+
+  function validarTodo() {
+    const siguientes: Partial<Record<Campo, string>> = {};
+
+    for (const campo of CAMPOS) {
+      const mensaje = validarCampo(campo);
+
+      if (mensaje) siguientes[campo] = mensaje;
     }
 
-    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) {
-      nextErrors.email = "Ingresa un correo válido.";
-    }
+    setErrors(siguientes);
 
-    if (form.password.length < 8) {
-      nextErrors.password = "Usa al menos 8 caracteres.";
-    }
+    const primerCampo = CAMPOS.find((campo) => siguientes[campo]);
 
-    if (form.password !== form.passwordConfirm) {
-      nextErrors.passwordConfirm = "Las contraseñas no coinciden.";
-    }
+    if (primerCampo) enfocarCampo(primerCampo);
 
-    setErrors(nextErrors);
-
-    return Object.keys(nextErrors).length === 0;
+    return Object.keys(siguientes).length === 0;
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError("");
 
-    if (!validate()) return;
+    if (!validarTodo()) return;
 
     setLoading(true);
 
@@ -84,13 +169,22 @@ export function RegisterPage() {
         replace: true,
       });
     } catch (error) {
-      setFormError(
-        getApiErrorMessage(error, "No se pudo crear la cuenta."),
-      );
+      const { campos, general } = getApiFieldErrors(error);
+
+      setErrors(campos);
+      setFormError(general);
+
+      const primerCampo = CAMPOS.find((campo) => campos[campo]);
+
+      if (primerCampo) enfocarCampo(primerCampo);
     } finally {
       setLoading(false);
     }
   }
+
+  const confirmacionCoincide =
+    form.passwordConfirm.length > 0 &&
+    form.password === form.passwordConfirm;
 
   return (
     <AuthShell
@@ -120,54 +214,133 @@ export function RegisterPage() {
       </div>
 
       {/* FORMULARIO */}
-      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
-        <FormField
-          label="Nombre"
-          type="text"
-          autoComplete="name"
-          placeholder="Tu nombre"
-          value={form.nombre}
-          onChange={(event) =>
-            updateField("nombre", event.target.value)
-          }
-          error={errors.nombre}
-        />
+      <form
+        className="space-y-5"
+        onSubmit={handleSubmit}
+        noValidate
+        aria-busy={loading}
+      >
+        {/* TUS DATOS */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <span className="text-[0.58rem] font-black uppercase tracking-[0.18em] text-[#9A5B3C]">
+              01
+            </span>
 
-        <FormField
-          label="Correo electrónico"
-          type="email"
-          autoComplete="email"
-          placeholder="tu@correo.com"
-          value={form.email}
-          onChange={(event) =>
-            updateField("email", event.target.value)
-          }
-          error={errors.email}
-        />
+            <span className="text-[0.62rem] font-black uppercase tracking-[0.2em] text-[#5E5A53]">
+              Tus datos
+            </span>
 
-        <FormField
-          label="Contraseña"
-          type="password"
-          autoComplete="new-password"
-          placeholder="Mínimo 8 caracteres"
-          value={form.password}
-          onChange={(event) =>
-            updateField("password", event.target.value)
-          }
-          error={errors.password}
-        />
+            <span className="h-px flex-1 bg-gradient-to-r from-[#5B3A29]/15 to-transparent" />
+          </div>
 
-        <FormField
-          label="Confirmar contraseña"
-          type="password"
-          autoComplete="new-password"
-          placeholder="Repite tu contraseña"
-          value={form.passwordConfirm}
-          onChange={(event) =>
-            updateField("passwordConfirm", event.target.value)
-          }
-          error={errors.passwordConfirm}
-        />
+          <FormField
+            id={IDS.nombre}
+            label="Nombre"
+            type="text"
+            autoComplete="name"
+            autoFocus
+            required
+            placeholder="Tu nombre"
+            maxLength={150}
+            enterKeyHint="next"
+            value={form.nombre}
+            onChange={(event) => updateField("nombre", event.target.value)}
+            onBlur={() => validarAlSalir("nombre")}
+            error={errors.nombre}
+          />
+
+          <FormField
+            id={IDS.email}
+            label="Correo electrónico"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            spellCheck={false}
+            required
+            placeholder="tu@correo.com"
+            maxLength={254}
+            enterKeyHint="next"
+            value={form.email}
+            onChange={(event) => updateField("email", event.target.value)}
+            onBlur={() => validarAlSalir("email")}
+            error={errors.email}
+          />
+        </div>
+
+        {/* SEGURIDAD */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <span className="text-[0.58rem] font-black uppercase tracking-[0.18em] text-[#9A5B3C]">
+              02
+            </span>
+
+            <span className="text-[0.62rem] font-black uppercase tracking-[0.2em] text-[#5E5A53]">
+              Seguridad
+            </span>
+
+            <span className="h-px flex-1 bg-gradient-to-r from-[#5B3A29]/15 to-transparent" />
+          </div>
+
+          <FormField
+            id={IDS.password}
+            label="Contraseña"
+            type={verPassword ? "text" : "password"}
+            autoComplete="new-password"
+            autoCapitalize="none"
+            spellCheck={false}
+            required
+            placeholder={`Mínimo ${LARGO_MINIMO_CONTRASENA} caracteres`}
+            maxLength={128}
+            enterKeyHint="next"
+            value={form.password}
+            onChange={(event) => updateField("password", event.target.value)}
+            onBlur={() => validarAlSalir("password")}
+            error={errors.password}
+            trailing={
+              <ToggleContrasena
+                visible={verPassword}
+                controls={IDS.password}
+                onToggle={() => setVerPassword((visible) => !visible)}
+              />
+            }
+            meta={
+              form.password ? (
+                <PasswordStrength evaluacion={evaluacion} />
+              ) : undefined
+            }
+          />
+
+          <FormField
+            id={IDS.passwordConfirm}
+            label="Confirmar contraseña"
+            type={verConfirmacion ? "text" : "password"}
+            autoComplete="new-password"
+            autoCapitalize="none"
+            spellCheck={false}
+            required
+            placeholder="Repite tu contraseña"
+            maxLength={128}
+            enterKeyHint="done"
+            value={form.passwordConfirm}
+            onChange={(event) =>
+              updateField("passwordConfirm", event.target.value)
+            }
+            onBlur={() => validarAlSalir("passwordConfirm")}
+            error={errors.passwordConfirm}
+            hint={
+              confirmacionCoincide ? "Las contraseñas coinciden." : undefined
+            }
+            trailing={
+              <ToggleContrasena
+                visible={verConfirmacion}
+                controls={IDS.passwordConfirm}
+                onToggle={() => setVerConfirmacion((visible) => !visible)}
+              />
+            }
+          />
+        </div>
 
         {/* ERROR GENERAL */}
         {formError && (
@@ -187,27 +360,42 @@ export function RegisterPage() {
         )}
 
         {/* BOTÓN */}
-        <button
-          type="submit"
-          disabled={loading}
-          className="group relative mt-2 flex w-full overflow-hidden rounded-full bg-[#2F4B3B] px-5 py-3.5 text-sm font-black text-[#FFFDF8] shadow-[0_16px_38px_rgba(47,75,59,0.24)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#3C5C48] hover:shadow-[0_20px_46px_rgba(47,75,59,0.30)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60"
-        >
-          {/* Reflejo */}
-          <span className="pointer-events-none absolute inset-y-0 -left-24 w-20 rotate-12 bg-white/15 blur-xl transition-all duration-700 group-hover:left-[115%]" />
+        <div className="space-y-3 pt-1">
+          <button
+            type="submit"
+            disabled={loading}
+            className="group relative flex w-full overflow-hidden rounded-full bg-[#2F4B3B] px-5 py-3.5 text-sm font-black text-[#FFFDF8] shadow-[0_16px_38px_rgba(47,75,59,0.24)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#3C5C48] hover:shadow-[0_20px_46px_rgba(47,75,59,0.30)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60"
+          >
+            {/* Reflejo */}
+            <span className="pointer-events-none absolute inset-y-0 -left-24 w-20 rotate-12 bg-white/15 blur-xl transition-all duration-700 group-hover:left-[115%]" />
 
-          <span className="relative flex w-full items-center justify-between">
+            <span className="relative flex w-full items-center justify-between">
+              <span>
+                {loading ? "Creando cuenta…" : "Crear cuenta"}
+              </span>
+
+              <span
+                aria-hidden="true"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E8C16A] text-[#28352C] shadow-[inset_0_1px_1px_rgba(255,255,255,0.55)] transition duration-300 group-hover:rotate-45 group-hover:scale-105"
+              >
+                {loading ? "…" : "↗"}
+              </span>
+            </span>
+          </button>
+
+          <p className="flex items-start gap-2 px-1 text-[0.68rem] font-medium leading-5 text-[#81796F]">
+            <span aria-hidden="true" className="mt-px">
+              ⓘ
+            </span>
             <span>
-              {loading ? "Creando cuenta..." : "Crear cuenta"}
+              <span aria-hidden="true" className="text-[#9A5B3C]">
+                *
+              </span>{" "}
+              Campos obligatorios. Usaremos tu correo solo para tu cuenta y
+              tus preferencias de viaje.
             </span>
-
-            <span
-              aria-hidden="true"
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E8C16A] text-[#28352C] shadow-[inset_0_1px_1px_rgba(255,255,255,0.55)] transition duration-300 group-hover:rotate-45 group-hover:scale-105"
-            >
-              {loading ? "…" : "↗"}
-            </span>
-          </span>
-        </button>
+          </p>
+        </div>
       </form>
 
       {/* DIVISOR */}
