@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Icono } from "../../../components/site/Iconos";
 import { AuthShell } from "../components/AuthShell";
 import { FormField } from "../components/FormField";
 import { PasswordStrength } from "../components/PasswordStrength";
+import { ToggleContrasena } from "../components/ToggleContrasena";
 import { useAuth } from "../context/AuthContext";
 import { getApiFieldErrors } from "../utils/errors";
 import {
@@ -34,33 +36,6 @@ const IDS: Record<Campo, string> = {
   password: "registro-password",
   passwordConfirm: "registro-password-confirm",
 };
-
-function ToggleContrasena({
-  visible,
-  controls,
-  onToggle,
-}: {
-  visible: boolean;
-  controls: string;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-pressed={visible}
-      aria-controls={controls}
-      aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
-      className="flex h-9 items-center gap-1 rounded-full px-2.5 text-[0.62rem] font-black uppercase tracking-[0.1em] text-[#6F6558] transition hover:bg-[#2F4B3B]/10 hover:text-[#2F4B3B] focus-visible:ring-2 focus-visible:ring-[#2F4B3B]/30 focus-visible:outline-none"
-    >
-      <span aria-hidden="true" className="text-sm leading-none">
-        {visible ? "◉" : "◎"}
-      </span>
-
-      <span aria-hidden="true">{visible ? "Ocultar" : "Ver"}</span>
-    </button>
-  );
-}
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -352,7 +327,7 @@ export function RegisterPage() {
               aria-hidden="true"
               className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#9A5B3C]/15 text-xs font-black"
             >
-              !
+              <Icono nombre="alerta" className="h-4 w-4" />
             </span>
 
             <span>{formError}</span>
@@ -378,7 +353,11 @@ export function RegisterPage() {
                 aria-hidden="true"
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E8C16A] text-[#28352C] shadow-[inset_0_1px_1px_rgba(255,255,255,0.55)] transition duration-300 group-hover:rotate-45 group-hover:scale-105"
               >
-                {loading ? "…" : "↗"}
+                {loading ? (
+                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#28352C]/30 border-t-[#28352C]" />
+                ) : (
+                  <Icono nombre="flechaDiagonal" className="h-4 w-4" />
+                )}
               </span>
             </span>
           </button>
@@ -431,7 +410,7 @@ export function RegisterPage() {
           aria-hidden="true"
           className="transition duration-300 group-hover:-translate-x-1"
         >
-          ←
+          <Icono nombre="flecha" className="h-3.5 w-3.5 rotate-180" />
         </span>
 
         Volver al inicio

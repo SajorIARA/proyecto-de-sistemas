@@ -56,7 +56,7 @@ describe("LoginPage", () => {
       },
     );
 
-    fireEvent.change(screen.getByLabelText(/contraseña/i), {
+    fireEvent.change(screen.getByLabelText(/^contraseña$/i), {
       target: { value: "secreto123" },
     });
 

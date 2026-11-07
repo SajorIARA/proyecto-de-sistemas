@@ -18,8 +18,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { useAuth } from "../../auth/context/AuthContext";
+import { useSearchParams } from "react-router-dom";
 import { CATALOGO_PAGE_SIZE } from "../../../config/turismo";
 import { useCatalogo, useFacetas, useAtractivosCercanos } from "../hooks/useTurismo";
 import { useFiltrosCatalogo } from "../hooks/useFiltrosCatalogo";
@@ -29,6 +28,8 @@ import { DestinoCard } from "../components/DestinoCard";
 import { DestinoCardSkeleton } from "../components/Skeletons";
 import { CatalogoError } from "../components/CatalogoError";
 import { EncabezadoImagen } from "../../../components/EncabezadoImagen";
+import { PublicShell } from "../../../components/site/PublicShell";
+import { Icono } from "../../../components/site/Iconos";
 import { LocationSelector, type UbicacionSeleccionada } from "../../../components/LocationSelector";
 
 /**
@@ -39,7 +40,6 @@ import { LocationSelector, type UbicacionSeleccionada } from "../../../component
 const SKELETONS = CATALOGO_PAGE_SIZE;
 
 export function CatalogoPage() {
-  const { isAuthenticated } = useAuth();
   const [parametros] = useSearchParams();
   const [ubicacion, setUbicacion] = useState<UbicacionSeleccionada | null>(null);
   const [usarCercanos, setUsarCercanos] = useState(false);
@@ -136,7 +136,8 @@ export function CatalogoPage() {
   const queryActiva = parametros.toString();
 
   return (
-    <main className="min-h-screen bg-[#F3EBDD] text-[#263029]">
+    <PublicShell>
+      <main className="min-h-screen bg-[#F3EBDD] text-[#263029]">
       {/* =========================================================
           ENCABEZADO
       ========================================================== */}
@@ -159,41 +160,8 @@ export function CatalogoPage() {
         />
 
         <div className="contenedor-amplio relative px-6 py-10 sm:px-8 lg:px-10 lg:py-14">
-          {/* Navegación */}
-          <nav className="flex items-center justify-between gap-4">
-            <Link
-              to="/"
-              className="group flex w-fit items-center gap-3 text-[#F3EBDD]"
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E9DFC9]/25 bg-[#F5EFE4]/10 text-lg backdrop-blur-xl transition group-hover:bg-[#F5EFE4]/20">
-                ⛰
-              </span>
-
-              <span className="text-base font-black tracking-tight">
-                Turismo{" "}
-                <span className="font-medium text-[#E7B75F]">La Paz</span>
-              </span>
-            </Link>
-
-            <div className="flex items-center gap-3">
-              <Link
-                to="/"
-                className="hidden text-sm font-semibold text-[#F3EBDD]/75 transition hover:text-[#F3EBDD] sm:inline"
-              >
-                Inicio
-              </Link>
-
-              <Link
-                to={isAuthenticated ? "/mi-cuenta" : "/login"}
-                className="rounded-full bg-[#F3EBDD] px-5 py-2.5 text-sm font-black text-[#233128] transition hover:bg-[#FFFDF8]"
-              >
-                {isAuthenticated ? "Mi cuenta" : "Iniciar sesión"}
-              </Link>
-            </div>
-          </nav>
-
           {/* Titular */}
-          <div className="mt-10 flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
             <div className="max-w-3xl">
               <p className="inline-flex items-center gap-2.5 rounded-full border border-[#E9DFC9]/20 bg-[#1A241C]/40 px-4 py-2 text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#F1D79D] backdrop-blur-xl">
                 <span className="h-2 w-2 rounded-full bg-[#E7B75F]" />
@@ -225,7 +193,7 @@ export function CatalogoPage() {
       {/* =========================================================
           FILTROS
       ========================================================== */}
-      <div className="sticky top-0 z-30 border-b border-[#5B3A29]/[0.08] bg-[#F3EBDD]/92 backdrop-blur-xl">
+      <div className="relative z-30 border-b border-[#5B3A29]/[0.08] bg-[#F3EBDD]/92 backdrop-blur-xl">
         <div className="contenedor-amplio px-6 py-4 sm:px-8 lg:px-10">
           <div className="mt-4">
             <LocationSelector onUbicacionChange={handleUbicacionChange} />
@@ -378,7 +346,7 @@ export function CatalogoPage() {
                     className="inline-flex items-center gap-3 rounded-full border border-[#2F4B3B]/25 bg-[#FFFDF8] px-7 py-3.5 text-sm font-black text-[#2F4B3B] transition hover:border-[#2F4B3B] hover:bg-[#2F4B3B] hover:text-[#FFFDF8] disabled:opacity-60"
                   >
                     {cargandoMas ? "Cargando más destinos…" : "Cargar más destinos"}
-                    <span aria-hidden="true">↓</span>
+                    <Icono nombre="flechaAbajo" className="h-4 w-4" />
                   </button>
                 ) : (
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8A8177]">
@@ -398,25 +366,7 @@ export function CatalogoPage() {
           </>
         )}
       </div>
-
-      {/* =========================================================
-          PIE
-      ========================================================== */}
-      <footer className="border-t border-[#5B3A29]/[0.08] px-6 py-10 text-center sm:px-8">
-        <p className="text-[0.6rem] font-black uppercase tracking-[0.22em] text-[#8A8177]">
-          Turismo La Paz · Bolivia
-        </p>
-
-        <p className="mt-3 text-xs text-[#746D63]">
-          ¿No encuentras el destino que buscas?{" "}
-          <Link
-            to="/"
-            className="font-bold text-[#8D4F32] underline-offset-4 hover:underline"
-          >
-            Vuelve al inicio
-          </Link>
-        </p>
-      </footer>
-    </main>
+      </main>
+    </PublicShell>
   );
 }

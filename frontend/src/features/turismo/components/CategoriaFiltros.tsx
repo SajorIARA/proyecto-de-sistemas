@@ -14,7 +14,8 @@ import {
   CATEGORIAS_OFICIALES,
   CATEGORIA_TODOS,
 } from "../../../config/turismo";
-import { INSIGNIA_CATEGORIA } from "./CategoriaBadge";
+import { Icono, type NombreIcono } from "../../../components/site/Iconos";
+import { ICONO_CATEGORIA } from "./CategoriaBadge";
 
 interface CategoriaFiltrosProps {
   /** Categoría seleccionada, o `null` para "Todos". */
@@ -48,7 +49,7 @@ export function CategoriaFiltros({
         <Chip
           key={categoria}
           etiqueta={categoria}
-          insignia={INSIGNIA_CATEGORIA[categoria]}
+          icono={ICONO_CATEGORIA[categoria]}
           activo={seleccionada === categoria}
           conteo={conteos?.[categoria]}
           onClick={() => onChange(categoria)}
@@ -63,7 +64,7 @@ interface ChipProps {
   etiqueta: string;
   activo: boolean;
   onClick: () => void;
-  insignia?: string;
+  icono?: NombreIcono;
   conteo?: number;
   disabled?: boolean;
 }
@@ -72,7 +73,7 @@ function Chip({
   etiqueta,
   activo,
   onClick,
-  insignia,
+  icono,
   conteo,
   disabled = false,
 }: ChipProps) {
@@ -90,9 +91,9 @@ function Chip({
           : "border-[#5B3A29]/15 bg-[#FFFDF8]/80 text-[#514B43] hover:border-[#2F4B3B]/40 hover:bg-[#FFFDF8] hover:text-[#233128]",
       ].join(" ")}
     >
-      {insignia && (
-        <span aria-hidden="true" className="text-sm leading-none">
-          {insignia}
+      {icono && (
+        <span aria-hidden="true">
+          <Icono nombre={icono} className="h-4 w-4" />
         </span>
       )}
 

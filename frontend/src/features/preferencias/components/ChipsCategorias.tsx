@@ -9,7 +9,8 @@
  * lista fija: así el formulario sigue funcionando si el catálogo cambia.
  */
 
-import { INSIGNIA_CATEGORIA } from "../../turismo/components/CategoriaBadge";
+import { CategoriaIcono } from "../../turismo/components/CategoriaBadge";
+import { Icono } from "../../../components/site/Iconos";
 import type { Categoria } from "../../../types/turismo";
 
 interface ChipsCategoriasProps {
@@ -48,17 +49,13 @@ function Chip({
           : "border-[#5B3A29]/15 bg-[#FFFDF8]/80 text-[#514B43] hover:border-[#2F4B3B]/40 hover:bg-[#FFFDF8] hover:text-[#233128]",
       ].join(" ")}
     >
-      <span aria-hidden="true" className="text-sm leading-none">
-        {INSIGNIA_CATEGORIA[categoria.nombre] ?? "📍"}
+      <span aria-hidden="true">
+        <CategoriaIcono categoria={categoria.nombre} className="h-4 w-4" />
       </span>
 
       {categoria.nombre}
 
-      {activo && (
-        <span aria-hidden="true" className="text-[0.65rem] leading-none">
-          ✓
-        </span>
-      )}
+      {activo && <Icono nombre="check" className="h-3.5 w-3.5" />}
     </button>
   );
 }

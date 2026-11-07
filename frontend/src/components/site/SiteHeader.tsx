@@ -1,14 +1,19 @@
 /**
  * Cabecera del sitio público.
  *
- * Flota sobre el hero con fondo transparente y, al hacer scroll, pasa a
- * una barra sólida para que la navegación siga legible. Incluye menú
- * móvil y el estado de sesión, sin duplicar los enlaces de acceso que
- * ya viven en el hero.
+ * Tiene dos variantes:
+ *  - `flotante` (portada): se superpone al hero con fondo transparente y
+ *    pasa a barra sólida al hacer scroll.
+ *  - `fija` (catálogo, detalle, 404): barra sólida y `sticky` que acompaña
+ *    la lectura sin tapar el contenido.
+ *
+ * Los enlaces a secciones funcionan tanto dentro de la portada (`#zonas`)
+ * como desde otra ruta (`/#zonas`). Incluye menú móvil y el estado de
+ * sesión.
  */
 
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState, type ReactNode } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../features/auth/context/AuthContext";
 import { Icono } from "./Iconos";
 
@@ -19,26 +24,73 @@ const ENLACES = [
   { etiqueta: "Datos útiles", destino: "#datos" },
 ] as const;
 
-export function SiteHeader() {
+interface SiteHeaderProps {
+  /**
+   * `flotante` para la portada (transparente sobre el hero) y `fija` para
+   * el resto de páginas públicas.
+   */
+  variante?: "flotante" | "fija";
+}
+
+/**
+ * Enlace a una sección de la portada. En el inicio usa un ancla nativa
+ * (scroll suave y sin recarga); fuera del inicio navega a `/#seccion`.
+ */
+function EnlaceSeccion({
+  destino,
+  className,
+  onClick,
+  children,
+}: {
+  destino: string;
+  className: string;
+  onClick?: () => void;
+  children: ReactNode;
+}) {
+  const { pathname } = useLocation();
+
+  if (pathname === "/") {
+    return (
+      <a href={destino} onClick={onClick} className={className}>
+        {children}
+      </a>
+    );
+  }
+
+  return (
+    <Link to={`/${destino}`} onClick={onClick} className={className}>
+      {children}
+    </Link>
+  );
+}
+
+export function SiteHeader({ variante = "flotante" }: SiteHeaderProps) {
   const { isAuthenticated } = useAuth();
-  const [conFondo, setConFondo] = useState(false);
+  const flotante = variante === "flotante";
+  const [conFondo, setConFondo] = useState(!flotante);
   const [menuAbierto, setMenuAbierto] = useState(false);
 
   useEffect(() => {
+    if (!flotante) {
+      setConFondo(true);
+      return;
+    }
+
     const alDesplazar = () => setConFondo(window.scrollY > 24);
 
     alDesplazar();
     window.addEventListener("scroll", alDesplazar, { passive: true });
 
     return () => window.removeEventListener("scroll", alDesplazar);
-  }, []);
+  }, [flotante]);
 
   const solido = conFondo || menuAbierto;
 
   return (
     <header
       className={[
-        "fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,border-color] duration-500",
+        "z-50 transition-[background-color,box-shadow,border-color] duration-500",
+        flotante ? "fixed inset-x-0 top-0" : "sticky top-0",
         solido
           ? "border-b border-[#5B3A29]/10 bg-[#FFFDF8]/95 shadow-[0_10px_40px_rgba(38,48,41,0.08)] backdrop-blur-xl"
           : "border-b border-transparent bg-gradient-to-b from-[#0F150F]/75 via-[#0F150F]/30 to-transparent",
@@ -84,9 +136,9 @@ export function SiteHeader() {
           className="hidden items-center gap-1 lg:flex"
         >
           {ENLACES.map((enlace) => (
-            <a
+            <EnlaceSeccion
               key={enlace.destino}
-              href={enlace.destino}
+              destino={enlace.destino}
               className={[
                 "rounded-full px-4 py-2 text-sm font-semibold transition",
                 solido
@@ -95,7 +147,7 @@ export function SiteHeader() {
               ].join(" ")}
             >
               {enlace.etiqueta}
-            </a>
+            </EnlaceSeccion>
           ))}
         </nav>
 
@@ -181,18 +233,15 @@ export function SiteHeader() {
             className="contenedor-sitio flex flex-col py-5"
           >
             {ENLACES.map((enlace) => (
-              <a
+              <EnlaceSeccion
                 key={enlace.destino}
-                href={enlace.destino}
+                destino={enlace.destino}
                 onClick={() => setMenuAbierto(false)}
                 className="flex items-center justify-between border-b border-[#5B3A29]/10 py-3.5 text-base font-bold text-[#233128]"
               >
                 {enlace.etiqueta}
-                <Icono
-                  nombre="flecha"
-                  className="h-4 w-4 text-[#9A5B3C]"
-                />
-              </a>
+                <Icono nombre="flecha" className="h-4 w-4 text-[#9A5B3C]" />
+              </EnlaceSeccion>
             ))}
 
             <div className="mt-5 grid grid-cols-2 gap-2.5">

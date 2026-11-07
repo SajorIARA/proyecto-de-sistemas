@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Icono, type NombreIcono } from "../../../components/site/Iconos";
 import { useAuth } from "../../auth/context/AuthContext";
 import { PrivateShell } from "../components/PrivateShell";
 import { PasswordForm } from "../components/PasswordForm";
@@ -20,15 +21,15 @@ function AtajoAdmin({
   to: string;
   titulo: string;
   descripcion: string;
-  icono: string;
+  icono: NombreIcono;
 }) {
   return (
     <Link
       to={to}
       className="group flex items-center gap-4 rounded-2xl border border-[#E9DFD0] bg-[#FFFCF7] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#C6923B]/50 hover:bg-white hover:shadow-[0_12px_30px_rgba(60,50,35,0.08)]"
     >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F1E9DB] text-xl transition-colors group-hover:bg-[#E8D5B5]">
-        <span aria-hidden="true">{icono}</span>
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F1E9DB] text-[#8D4F32] transition-colors group-hover:bg-[#E8D5B5]">
+        <Icono nombre={icono} className="h-5 w-5" />
       </div>
 
       <div className="min-w-0 flex-1">
@@ -45,7 +46,7 @@ function AtajoAdmin({
         aria-hidden="true"
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#E9DFD0] text-[#9A5B3C] transition-all group-hover:translate-x-1 group-hover:border-[#2F4B3B] group-hover:bg-[#2F4B3B] group-hover:text-white"
       >
-        →
+        <Icono nombre="flecha" className="h-4 w-4" />
       </span>
     </Link>
   );
@@ -97,7 +98,7 @@ export function PerfilPage() {
             </div>
 
             <div className="self-start rounded-full border border-[#E8C16A]/30 bg-[#E8C16A]/10 px-4 py-2 text-xs font-black text-[#F3D992]">
-              {esAdmin ? "✦ Administrador" : "✦ Miembro"}
+              {esAdmin ? "Administrador" : "Miembro"}
             </div>
           </div>
         </div>
@@ -111,9 +112,9 @@ export function PerfilPage() {
             <div className="flex items-center gap-3 border-b border-[#EEE5D8] px-6 py-5 sm:px-7">
               <span
                 aria-hidden="true"
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F1E8DB] text-xl"
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F1E8DB] text-[#8D4F32]"
               >
-                👤
+                <Icono nombre="usuario" className="h-5 w-5" />
               </span>
 
               <div>
@@ -190,7 +191,7 @@ export function PerfilPage() {
                     to="/mi-cuenta/preferencias"
                     titulo="Preferencias de viaje"
                     descripcion="Categorías, presupuesto, duración y punto de partida"
-                    icono="🧭"
+                    icono="brujula"
                   />
 
                   {esAdmin && (
@@ -199,14 +200,14 @@ export function PerfilPage() {
                         to="/mi-cuenta/destinos"
                         titulo="Gestión de destinos"
                         descripcion="Administrar los atractivos turísticos"
-                        icono="🏔️"
+                        icono="montana"
                       />
 
                       <AtajoAdmin
                         to="/mi-cuenta/usuarios"
                         titulo="Panel de usuarios"
                         descripcion="Consultar las cuentas registradas"
-                        icono="👥"
+                        icono="usuarios"
                       />
                     </>
                   )}
@@ -221,9 +222,9 @@ export function PerfilPage() {
             <div className="flex items-center gap-3 border-b border-[#EEE5D8] px-6 py-5 sm:px-7">
               <span
                 aria-hidden="true"
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E7EFE7] text-xl"
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E7EFE7] text-[#2F4B3B]"
               >
-                🔐
+                <Icono nombre="escudo" className="h-5 w-5" />
               </span>
 
               <div>
@@ -239,8 +240,8 @@ export function PerfilPage() {
             <div className="p-6 sm:p-7">
 
               <div className="flex items-start gap-4 rounded-2xl border border-[#DCE8DC] bg-[#F3F7F1] p-5">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#DDE9D8] text-2xl">
-                  🛡️
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#DDE9D8] text-[#2F4B3B]">
+                  <Icono nombre="escudo" className="h-6 w-6" />
                 </div>
 
                 <div>
@@ -261,8 +262,8 @@ export function PerfilPage() {
 
                 <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-[#E9DFD0] bg-[#FFFCF7] p-4">
                   <div className="flex min-w-0 items-center gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F1E8DB] text-xl">
-                      🔑
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F1E8DB] text-[#8D4F32]">
+                      <Icono nombre="llave" className="h-5 w-5" />
                     </span>
 
                     <div className="min-w-0">
@@ -292,15 +293,21 @@ export function PerfilPage() {
 
                 <ul className="mt-3 space-y-3 text-xs leading-6 text-[#6F655B]">
                   <li className="flex items-start gap-2">
-                    <span className="font-black text-[#6F8064]">✓</span>
+                    <span className="mt-0.5 text-[#6F8064]">
+                      <Icono nombre="check" className="h-3.5 w-3.5" />
+                    </span>
                     Utiliza una contraseña difícil de adivinar.
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="font-black text-[#6F8064]">✓</span>
+                    <span className="mt-0.5 text-[#6F8064]">
+                      <Icono nombre="check" className="h-3.5 w-3.5" />
+                    </span>
                     Incluye al menos 8 caracteres.
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="font-black text-[#6F8064]">✓</span>
+                    <span className="mt-0.5 text-[#6F8064]">
+                      <Icono nombre="check" className="h-3.5 w-3.5" />
+                    </span>
                     Evita compartir tu contraseña con otras personas.
                   </li>
                 </ul>
@@ -311,8 +318,8 @@ export function PerfilPage() {
                 onClick={() => setModalAbierto(true)}
                 className="group mt-7 flex w-full items-center justify-center gap-3 rounded-2xl bg-[#2F4B3B] px-6 py-4 text-sm font-black text-white shadow-[0_12px_28px_rgba(47,75,59,0.17)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#3C5C48] hover:shadow-[0_16px_34px_rgba(47,75,59,0.23)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#2F4B3B]"
               >
-                <span aria-hidden="true" className="text-lg">
-                  🔒
+                <span aria-hidden="true" className="text-[#F3D992]">
+                  <Icono nombre="candado" className="h-4 w-4" />
                 </span>
 
                 Cambiar contraseña
@@ -321,7 +328,7 @@ export function PerfilPage() {
                   aria-hidden="true"
                   className="transition-transform group-hover:translate-x-1"
                 >
-                  →
+                  <Icono nombre="flecha" className="h-4 w-4" />
                 </span>
               </button>
 
@@ -356,9 +363,9 @@ export function PerfilPage() {
                 type="button"
                 onClick={() => setModalAbierto(false)}
                 aria-label="Cerrar ventana"
-                className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-[#E6DCCB] bg-[#F3EBDD] text-lg font-bold text-[#233128] shadow-sm transition hover:rotate-90 hover:bg-[#E8D5B5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2F4B3B]"
+                className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-[#E6DCCB] bg-[#F3EBDD] text-[#233128] shadow-sm transition hover:rotate-90 hover:bg-[#E8D5B5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2F4B3B]"
               >
-                ✕
+                <Icono nombre="cerrar" className="h-4 w-4" />
               </button>
 
               <PasswordForm />

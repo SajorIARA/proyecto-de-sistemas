@@ -15,6 +15,7 @@
  *  - manejo de 404 con mensaje propio y reintento ante otros errores.
  */
 
+import type { ReactNode } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { TurismoApiError } from "../api/turismoApi";
 import { useDestino } from "../hooks/useTurismo";
@@ -27,6 +28,8 @@ import { HorarioTabla } from "../components/HorarioTabla";
 import { MapaDestino } from "../components/MapaDestino";
 import { TarifaTabla } from "../components/TarifaTabla";
 import { EncabezadoImagen } from "../../../components/EncabezadoImagen";
+import { PublicShell } from "../../../components/site/PublicShell";
+import { Icono } from "../../../components/site/Iconos";
 
 export function DestinoDetailPage() {
   const { id = "" } = useParams();
@@ -41,20 +44,22 @@ export function DestinoDetailPage() {
 
   if (isPending) {
     return (
-      <main className="min-h-screen bg-[#F3EBDD] px-6 py-14 text-[#263029] sm:px-8 lg:px-10">
-        <div className="contenedor-medio">
-          <Link
-            to={volverA}
-            className="inline-flex items-center gap-2 text-sm font-bold text-[#8D4F32] underline-offset-4 hover:underline"
-          >
-            <span aria-hidden="true">←</span> Volver al catálogo
-          </Link>
+      <PublicShell>
+        <main className="min-h-screen bg-[#F3EBDD] px-6 py-14 text-[#263029] sm:px-8 lg:px-10">
+          <div className="contenedor-medio">
+            <Link
+              to={volverA}
+              className="inline-flex items-center gap-2 text-sm font-bold text-[#8D4F32] underline-offset-4 hover:underline"
+            >
+              <span aria-hidden="true">←</span> Volver al catálogo
+            </Link>
 
-          <div className="mt-10">
-            <DetalleSkeleton />
+            <div className="mt-10">
+              <DetalleSkeleton />
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </PublicShell>
     );
   }
 
@@ -62,51 +67,53 @@ export function DestinoDetailPage() {
     const noExiste = error instanceof TurismoApiError && error.esNoEncontrado;
 
     return (
-      <main className="grid min-h-screen place-items-center bg-[#F3EBDD] px-6 py-16 text-[#263029]">
-        <div className="w-full max-w-lg text-center">
-          {noExiste ? (
-            <>
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#9A5B3C]">
-                Error 404
-              </p>
+      <PublicShell>
+        <main className="grid min-h-screen place-items-center bg-[#F3EBDD] px-6 py-16 text-[#263029]">
+          <div className="w-full max-w-lg text-center">
+            {noExiste ? (
+              <>
+                <p className="text-xs font-black uppercase tracking-[0.24em] text-[#9A5B3C]">
+                  Error 404
+                </p>
 
-              <span
-                className="mx-auto mt-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#2F4B3B]/10 text-4xl"
-                aria-hidden="true"
-              >
-                🧭
-              </span>
+                <span
+                  className="mx-auto mt-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#2F4B3B]/10 text-[#2F4B3B]"
+                  aria-hidden="true"
+                >
+                  <Icono nombre="brujula" className="h-9 w-9" />
+                </span>
 
-              <h1 className="mt-6 text-3xl font-black tracking-[-0.03em] text-[#233128]">
-                No encontramos este destino
-              </h1>
+                <h1 className="mt-6 text-3xl font-black tracking-[-0.03em] text-[#233128]">
+                  No encontramos este destino
+                </h1>
 
-              <p className="mt-4 text-sm leading-6 text-[#514B43]">
-                El atractivo que buscas no existe o ya no está disponible en
-                nuestro catálogo. Puede que haya cambiado su nombre o que se
-                haya dado de baja.
-              </p>
+                <p className="mt-4 text-sm leading-6 text-[#514B43]">
+                  El atractivo que buscas no existe o ya no está disponible en
+                  nuestro catálogo. Puede que haya cambiado su nombre o que se
+                  haya dado de baja.
+                </p>
 
-              <Link
-                to={volverA}
-                className="mt-8 inline-flex items-center gap-2.5 rounded-full bg-[#2F4B3B] px-7 py-3.5 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128]"
-              >
-                Volver al catálogo
-                <span aria-hidden="true">→</span>
-              </Link>
-            </>
-          ) : (
-            <CatalogoError
-              onReintentar={() => void refetch()}
-              mensaje={
-                error instanceof Error
-                  ? error.message
-                  : "No pudimos cargar la información de este destino."
-              }
-            />
-          )}
-        </div>
-      </main>
+                <Link
+                  to={volverA}
+                  className="mt-8 inline-flex items-center gap-2.5 rounded-full bg-[#2F4B3B] px-7 py-3.5 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128]"
+                >
+                  Volver al catálogo
+                  <Icono nombre="flecha" className="h-4 w-4" />
+                </Link>
+              </>
+            ) : (
+              <CatalogoError
+                onReintentar={() => void refetch()}
+                mensaje={
+                  error instanceof Error
+                    ? error.message
+                    : "No pudimos cargar la información de este destino."
+                }
+              />
+            )}
+          </div>
+        </main>
+      </PublicShell>
     );
   }
 
@@ -117,7 +124,8 @@ export function DestinoDetailPage() {
   const duracion = formatearDuracion(destino.duracion_minutos);
 
   return (
-    <main className="min-h-screen bg-[#F3EBDD] text-[#263029]">
+    <PublicShell>
+      <main className="min-h-screen bg-[#F3EBDD] text-[#263029]">
       {/* =========================================================
           CABECERA
       ========================================================== */}
@@ -168,8 +176,8 @@ export function DestinoDetailPage() {
               </h1>
 
               <p className="mt-5 flex items-start gap-2.5 text-sm font-semibold text-[#E8D8B7]/85">
-                <span className="mt-px" aria-hidden="true">
-                  📍
+                <span className="mt-0.5 text-[#E8C16A]" aria-hidden="true">
+                  <Icono nombre="ubicacion" className="h-4 w-4" />
                 </span>
 
                 <span>
@@ -182,19 +190,19 @@ export function DestinoDetailPage() {
                 <DatoRapido
                   etiqueta="Tiempo de visita"
                   valor={duracion}
-                  insignia="⏱"
+                  icono={<Icono nombre="reloj" className="h-3.5 w-3.5" />}
                 />
 
                 <DatoRapido
                   etiqueta="Coordenadas"
                   valor={formatearCoordenadas(destino.ubicacion)}
-                  insignia="🧭"
+                  icono={<Icono nombre="brujula" className="h-3.5 w-3.5" />}
                 />
 
                 <DatoRapido
                   etiqueta="Fuente"
                   valor={destino.fuente_origen}
-                  insignia="🗂️"
+                  icono={<Icono nombre="estrella" className="h-3.5 w-3.5" />}
                 />
               </dl>
             </div>
@@ -259,11 +267,12 @@ export function DestinoDetailPage() {
             className="inline-flex items-center gap-2.5 rounded-full bg-[#2F4B3B] px-7 py-3.5 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128]"
           >
             Volver al catálogo
-            <span aria-hidden="true">→</span>
+            <Icono nombre="flecha" className="h-4 w-4" />
           </Link>
         </div>
       </div>
-    </main>
+      </main>
+    </PublicShell>
   );
 }
 
@@ -271,16 +280,16 @@ export function DestinoDetailPage() {
 function DatoRapido({
   etiqueta,
   valor,
-  insignia,
+  icono,
 }: {
   etiqueta: string;
   valor: string;
-  insignia: string;
+  icono: ReactNode;
 }) {
   return (
     <div className="min-w-[9rem] rounded-[1.1rem] border border-[#E9DFC9]/12 bg-[#F5EFE4]/[0.07] px-4 py-3 backdrop-blur-xl">
       <dt className="flex items-center gap-2 text-[0.55rem] font-black uppercase tracking-[0.2em] text-[#E8D8B7]/60">
-        <span aria-hidden="true">{insignia}</span>
+        <span aria-hidden="true">{icono}</span>
         {etiqueta}
       </dt>
 

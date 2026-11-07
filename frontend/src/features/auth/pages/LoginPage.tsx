@@ -1,9 +1,16 @@
 import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Icono } from "../../../components/site/Iconos";
 import { AuthShell } from "../components/AuthShell";
 import { FormField } from "../components/FormField";
+import { ToggleContrasena } from "../components/ToggleContrasena";
 import { useAuth } from "../context/AuthContext";
 import { getApiErrorMessage } from "../utils/errors";
+
+const IDS = {
+  email: "login-email",
+  password: "login-password",
+} as const;
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -12,6 +19,7 @@ export function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [verPassword, setVerPassword] = useState(false);
   const [formError, setFormError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -83,9 +91,9 @@ export function LoginPage() {
         >
           <span
             aria-hidden="true"
-            className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#6F8064]/15 text-xs font-black"
+            className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#6F8064]/15 text-[#304A38]"
           >
-            ✓
+            <Icono nombre="check" className="h-4 w-4" />
           </span>
 
           <span>
@@ -105,7 +113,7 @@ export function LoginPage() {
             aria-hidden="true"
             className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#C6923B]/15 text-xs font-black"
           >
-            !
+            <Icono nombre="alerta" className="h-4 w-4" />
           </span>
 
           <span>
@@ -158,23 +166,42 @@ export function LoginPage() {
           "
         onSubmit={handleSubmit}
         noValidate
+        aria-busy={loading}
       >
         <FormField
+          id={IDS.email}
           label="Correo electrónico"
           type="email"
+          inputMode="email"
           autoComplete="email"
+          autoCapitalize="none"
+          spellCheck={false}
+          autoFocus
+          required
+          maxLength={254}
+          enterKeyHint="next"
           placeholder="tu@correo.com"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
         />
 
         <FormField
+          id={IDS.password}
           label="Contraseña"
-          type="password"
+          type={verPassword ? "text" : "password"}
           autoComplete="current-password"
+          required
           placeholder="••••••••"
+          enterKeyHint="go"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
+          trailing={
+            <ToggleContrasena
+              visible={verPassword}
+              controls={IDS.password}
+              onToggle={() => setVerPassword((visible) => !visible)}
+            />
+          }
         />
 
         {/* ERROR */}
@@ -187,7 +214,7 @@ export function LoginPage() {
               aria-hidden="true"
               className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#9A5B3C]/15 text-xs font-black"
             >
-              !
+              <Icono nombre="alerta" className="h-4 w-4" />
             </span>
 
             <span>{formError}</span>
@@ -210,7 +237,11 @@ export function LoginPage() {
               aria-hidden="true"
               className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E8C16A] text-[#28352C] shadow-[inset_0_1px_1px_rgba(255,255,255,0.55)] transition duration-300 group-hover:rotate-45 group-hover:scale-105"
             >
-              {loading ? "…" : "↗"}
+              {loading ? (
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#28352C]/30 border-t-[#28352C]" />
+              ) : (
+                <Icono nombre="flechaDiagonal" className="h-4 w-4" />
+              )}
             </span>
           </span>
         </button>
@@ -248,7 +279,7 @@ export function LoginPage() {
           aria-hidden="true"
           className="transition duration-300 group-hover:-translate-x-1"
         >
-          ←
+          <Icono nombre="flecha" className="h-3.5 w-3.5 rotate-180" />
         </span>
 
         Volver al inicio
