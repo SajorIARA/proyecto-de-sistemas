@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { EncabezadoImagen } from "../../../components/EncabezadoImagen";
+import { Icono } from "../../../components/site/Iconos";
 import { FOTO_ACCESO } from "../../../config/imagenesSitio";
 
 export function AuthShell({
@@ -80,8 +81,8 @@ export function AuthShell({
               to="/"
               className="group flex w-fit items-center gap-3 text-white"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E9DFC9]/25 bg-[#F5EFE4]/10 text-lg shadow-lg backdrop-blur-xl transition duration-300 group-hover:bg-[#F5EFE4]/20">
-                ⛰
+              <span className="flex h-11 w-11 items-center justify-center rounded-full border border-[#E9DFC9]/25 bg-[#F5EFE4]/10 text-[#F5EFE4] shadow-lg backdrop-blur-xl transition duration-300 group-hover:bg-[#F5EFE4]/20">
+                <Icono nombre="montana" className="h-5 w-5" />
               </span>
 
               <div>
@@ -106,12 +107,12 @@ export function AuthShell({
                 </span>
               </div>
 
-              <h1 className="max-w-2xl text-5xl font-black leading-[0.92] tracking-[-0.045em] text-[#FFFDF8] xl:text-6xl 2xl:text-7xl">
+              <p className="max-w-2xl text-5xl font-black leading-[0.92] tracking-[-0.045em] text-[#FFFDF8] xl:text-6xl 2xl:text-7xl">
                 Donde los Andes
                 <span className="block text-[#E8D8B7]">
                   cuentan historias.
                 </span>
-              </h1>
+              </p>
 
               <p className="mt-7 max-w-xl text-base leading-7 text-[#F5EFE4]/70 xl:text-lg xl:leading-8">
                 Descubre una ciudad abrazada por montañas, mercados,
@@ -197,7 +198,7 @@ export function AuthShell({
                 className="flex w-fit items-center gap-3 text-[#26362C]"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2F4B3B] text-white shadow-lg">
-                  ⛰
+                  <Icono nombre="montana" className="h-5 w-5" />
                 </span>
 
                 <div>
@@ -221,9 +222,9 @@ export function AuthShell({
             {/* Título */}
             <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-md">
-                <h2 className="max-w-md text-4xl font-black leading-[0.95] tracking-[-0.045em] text-[#233128] sm:text-5xl">
+                <h1 className="max-w-md text-4xl font-black leading-[0.95] tracking-[-0.045em] text-[#233128] sm:text-5xl">
                   {title}
-                </h2>
+                </h1>
 
                 <p className="mt-5 max-w-md text-sm font-medium leading-7 text-[#514B43] sm:text-base">
                   {subtitle}

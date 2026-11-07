@@ -29,6 +29,11 @@ services:
       dockerfile: Dockerfile
     container_name: turismo-melgarejo_backend
     restart: always
+    # Expone la API también fuera de Docker para que `pnpm dev` (Vite en
+    # localhost:5173) pueda hacer proxy de /api hacia localhost:8000 sin
+    # depender del contenedor `proxy`.
+    ports:
+      - "127.0.0.1:8000:8000"
     command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./backend:/app

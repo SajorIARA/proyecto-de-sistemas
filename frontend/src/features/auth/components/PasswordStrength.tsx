@@ -6,6 +6,7 @@
  * con los mensajes de `evaluarContrasena`, no con el puntaje.
  */
 
+import { Icono } from "../../../components/site/Iconos";
 import {
   nivelContrasena,
   type EvaluacionContrasena,
@@ -61,13 +62,17 @@ export function PasswordStrength({
             <span
               aria-hidden="true"
               className={[
-                "mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.6rem] font-black",
+                "mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full",
                 requisito.cumple
                   ? "bg-[#2F4B3B]/12 text-[#2F4B3B]"
                   : "bg-[#5B3A29]/8 text-[#9B9184]",
               ].join(" ")}
             >
-              {requisito.cumple ? "✓" : "·"}
+              {requisito.cumple ? (
+                <Icono nombre="check" className="h-3 w-3" />
+              ) : (
+                <span className="h-px w-1.5 rounded-full bg-current" />
+              )}
             </span>
 
             {requisito.etiqueta}

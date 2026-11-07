@@ -10,10 +10,11 @@
  */
 
 import { useState, type ReactNode } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
 import { RoleBadge } from "./RoleBadge";
 import { EncabezadoImagen } from "../../../components/EncabezadoImagen";
+import { Icono } from "../../../components/site/Iconos";
 
 /** Enlaces del área privada, resueltos según el rol. */
 function useNavegacionPrivada() {
@@ -51,6 +52,7 @@ export function PrivateShell({
 }) {
   const { user, roles, esAdmin, logout } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const enlaces = useNavegacionPrivada();
 
   const [cerrando, setCerrando] = useState(false);
@@ -70,6 +72,13 @@ export function PrivateShell({
 
   return (
     <div className="flex min-h-screen flex-col bg-[#F3EBDD] text-[#263029]">
+      <a
+        href="#contenido-privado"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-[#FFFDF8] focus:px-5 focus:py-3 focus:text-sm focus:font-black focus:text-[#233128] focus:shadow-xl"
+      >
+        Saltar al contenido
+      </a>
+
       {/* =========================================================
           ENCABEZADO
       ========================================================== */}
@@ -95,8 +104,8 @@ export function PrivateShell({
           <div className="flex flex-wrap items-center justify-between gap-4">
             {/* Marca */}
             <Link to="/" className="group flex w-fit items-center gap-3 text-[#F3EBDD]">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E9DFC9]/25 bg-[#F5EFE4]/10 text-lg backdrop-blur-xl transition group-hover:bg-[#F5EFE4]/20">
-                ⛰
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E9DFC9]/25 bg-[#F5EFE4]/10 text-[#F5EFE4] backdrop-blur-xl transition group-hover:bg-[#F5EFE4]/20">
+                <Icono nombre="montana" className="h-5 w-5" />
               </span>
 
               <span className="text-base font-black tracking-tight">
@@ -130,15 +139,28 @@ export function PrivateShell({
             aria-label="Navegación de la cuenta"
             className="mt-7 flex flex-wrap items-center gap-2"
           >
-            {enlaces.map((enlace) => (
-              <Link
-                key={enlace.to}
-                to={enlace.to}
-                className="rounded-full border border-[#E9DFC9]/18 bg-[#1A241C]/40 px-4 py-2 text-xs font-black text-[#F3EBDD]/80 backdrop-blur-xl transition hover:border-[#E7B75F]/50 hover:text-[#FFFDF8]"
-              >
-                {enlace.label}
-              </Link>
-            ))}
+            {enlaces.map((enlace) => {
+              const activo =
+                enlace.to === "/mi-cuenta"
+                  ? pathname === "/mi-cuenta"
+                  : pathname.startsWith(enlace.to);
+
+              return (
+                <Link
+                  key={enlace.to}
+                  to={enlace.to}
+                  aria-current={activo ? "page" : undefined}
+                  className={[
+                    "rounded-full border px-4 py-2 text-xs font-black backdrop-blur-xl transition",
+                    activo
+                      ? "border-[#E7B75F]/60 bg-[#E7B75F]/15 text-[#FFFDF8]"
+                      : "border-[#E9DFC9]/18 bg-[#1A241C]/40 text-[#F3EBDD]/80 hover:border-[#E7B75F]/50 hover:text-[#FFFDF8]",
+                  ].join(" ")}
+                >
+                  {enlace.label}
+                </Link>
+              );
+            })}
 
             {roles.map((rol) => (
               <RoleBadge
@@ -154,7 +176,10 @@ export function PrivateShell({
       {/* =========================================================
           CONTENIDO
       ========================================================== */}
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-12 sm:px-8 lg:px-10 lg:py-16">
+      <main
+        id="contenido-privado"
+        className="mx-auto w-full max-w-6xl flex-1 px-6 py-12 sm:px-8 lg:px-10 lg:py-16"
+      >
         <div className="mb-10 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-2xl">
             <p className="inline-flex items-center gap-2.5 rounded-full border border-[#9A5B3C]/25 bg-[#9A5B3C]/10 px-4 py-2 text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#8D4F32]">

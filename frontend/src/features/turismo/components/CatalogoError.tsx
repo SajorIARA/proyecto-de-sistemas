@@ -5,6 +5,8 @@
  * cuadrícula se quede en blanco.
  */
 
+import { Icono } from "../../../components/site/Iconos";
+
 interface CatalogoErrorProps {
   onReintentar: () => void;
   mensaje?: string;
@@ -21,10 +23,10 @@ export function CatalogoError({
       data-testid="catalogo-error"
     >
       <span
-        className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#9A5B3C]/12 text-3xl"
+        className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#9A5B3C]/12 text-[#9A5B3C]"
         aria-hidden="true"
       >
-        📡
+        <Icono nombre="alerta" className="h-8 w-8" />
       </span>
 
       <h3 className="mt-6 text-xl font-black tracking-tight text-[#233128]">
@@ -41,7 +43,7 @@ export function CatalogoError({
         className="mt-7 inline-flex items-center gap-2.5 rounded-full bg-[#2F4B3B] px-6 py-3 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128]"
       >
         Reintentar
-        <span aria-hidden="true">↻</span>
+        <Icono nombre="refrescar" className="h-4 w-4" />
       </button>
     </div>
   );

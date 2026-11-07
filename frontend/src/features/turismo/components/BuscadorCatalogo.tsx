@@ -7,6 +7,7 @@
  */
 
 import { useId } from "react";
+import { Icono } from "../../../components/site/Iconos";
 
 interface BuscadorCatalogoProps {
   valor: string;
@@ -30,11 +31,8 @@ export function BuscadorCatalogo({
         Buscar destinos por nombre, palabra clave o dirección
       </label>
 
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-base text-[#8A8177]"
-      >
-        🔍
+      <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8A8177]">
+        <Icono nombre="buscar" className="h-[1.15rem] w-[1.15rem]" />
       </span>
 
       <input
@@ -44,7 +42,7 @@ export function BuscadorCatalogo({
         onChange={(evento) => onChange(evento.target.value)}
         disabled={disabled}
         autoComplete="off"
-        placeholder="Buscar por nombre, palabra clave o dirección…"
+        placeholder="Buscar atractivos, zonas o lugares…"
         className="w-full rounded-full border border-[#5B3A29]/15 bg-[#FFFDF8] py-3 pl-11 pr-28 text-sm text-[#263029] shadow-[0_10px_30px_rgba(72,55,38,0.06)] transition placeholder:text-[#8A8177] focus:border-[#2F4B3B] focus:outline-none focus:ring-2 focus:ring-[#2F4B3B]/20 disabled:cursor-not-allowed disabled:opacity-60"
       />
 

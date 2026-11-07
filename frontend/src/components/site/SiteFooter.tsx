@@ -11,12 +11,16 @@ import { Link } from "react-router-dom";
 import { CATEGORIAS_OFICIALES } from "../../config/turismo";
 import { Icono } from "./Iconos";
 
+/**
+ * Los enlaces a secciones incluyen la ruta (`/#zonas`) para que funcionen
+ * también fuera de la portada; el layout se encarga de hacer scroll al ancla.
+ */
 const ENLACES_EXPLORAR = [
-  { etiqueta: "Catálogo completo", destino: "/destinos", ancla: false },
-  { etiqueta: "Descubre La Paz", destino: "#descubre", ancla: true },
-  { etiqueta: "La Paz por zonas", destino: "#zonas", ancla: true },
-  { etiqueta: "Rutas gastronómicas", destino: "#gastronomia", ancla: true },
-  { etiqueta: "Datos útiles", destino: "#datos", ancla: true },
+  { etiqueta: "Catálogo completo", destino: "/destinos" },
+  { etiqueta: "Descubre La Paz", destino: "/#descubre" },
+  { etiqueta: "La Paz por zonas", destino: "/#zonas" },
+  { etiqueta: "Rutas gastronómicas", destino: "/#gastronomia" },
+  { etiqueta: "Datos útiles", destino: "/#datos" },
 ] as const;
 
 const ENLACES_CUENTA = [
@@ -66,21 +70,12 @@ export function SiteFooter() {
             <ul className="mt-5 space-y-3">
               {ENLACES_EXPLORAR.map((enlace) => (
                 <li key={enlace.etiqueta}>
-                  {enlace.ancla ? (
-                    <a
-                      href={enlace.destino}
-                      className="text-sm font-medium text-[#F3EBDD]/70 transition hover:text-[#FFFDF8]"
-                    >
-                      {enlace.etiqueta}
-                    </a>
-                  ) : (
-                    <Link
-                      to={enlace.destino}
-                      className="text-sm font-medium text-[#F3EBDD]/70 transition hover:text-[#FFFDF8]"
-                    >
-                      {enlace.etiqueta}
-                    </Link>
-                  )}
+                  <Link
+                    to={enlace.destino}
+                    className="text-sm font-medium text-[#F3EBDD]/70 transition hover:text-[#FFFDF8]"
+                  >
+                    {enlace.etiqueta}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -128,13 +123,13 @@ export function SiteFooter() {
             © 2026 Turismo La Paz · Proyecto de Sistemas
           </p>
 
-          <a
-            href="#inicio"
+          <Link
+            to="/#inicio"
             className="inline-flex items-center gap-2 text-xs font-bold text-[#F3EBDD]/70 transition hover:text-[#FFFDF8]"
           >
             Volver al inicio
-            <span aria-hidden="true">↑</span>
-          </a>
+            <Icono nombre="flecha" className="h-3.5 w-3.5 -rotate-90" />
+          </Link>
         </div>
       </div>
     </footer>

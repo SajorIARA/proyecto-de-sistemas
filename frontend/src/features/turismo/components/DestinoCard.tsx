@@ -15,6 +15,7 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import type { Atractivo } from "../../../types/turismo";
+import { Icono } from "../../../components/site/Iconos";
 import { imagenesDe } from "../utils/destinoImages";
 import { formatearDuracion, recortar } from "../utils/formato";
 import { CarruselImagenes } from "./CarruselImagenes";
@@ -78,7 +79,7 @@ export function DestinoCard({ atractivo, busqueda = "" }: DestinoCardProps) {
 
         {atractivo.duracion_minutos ? (
           <span className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-full border border-[#F3EBDD]/25 bg-[#263029]/50 px-3 py-1.5 text-[0.6rem] font-bold text-[#F3EBDD]/90 backdrop-blur-md">
-            <span aria-hidden="true">⏱</span>
+            <Icono nombre="reloj" className="h-3 w-3" />
             {duracion}
           </span>
         ) : null}
@@ -87,12 +88,17 @@ export function DestinoCard({ atractivo, busqueda = "" }: DestinoCardProps) {
       {/* Cuerpo */}
       <div className="flex flex-1 flex-col p-6">
         <h3 className="text-xl font-black leading-tight tracking-[-0.02em] text-[#233128]">
-          {atractivo.nombre}
+          <Link
+            to={detalle}
+            className="underline-offset-4 transition hover:text-[#8D4F32] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]"
+          >
+            {atractivo.nombre}
+          </Link>
         </h3>
 
         <p className="mt-2.5 flex items-start gap-2 text-xs font-semibold leading-5 text-[#8D4F32]">
-          <span className="mt-px shrink-0" aria-hidden="true">
-            📍
+          <span className="mt-0.5 shrink-0" aria-hidden="true">
+            <Icono nombre="ubicacion" className="h-3.5 w-3.5" />
           </span>
           <span>{ubicacion || "Ubicación no registrada"}</span>
         </p>
@@ -111,7 +117,7 @@ export function DestinoCard({ atractivo, busqueda = "" }: DestinoCardProps) {
               className="transition-transform duration-300 group-hover:translate-x-1"
               aria-hidden="true"
             >
-              →
+              <Icono nombre="flecha" className="h-4 w-4" />
             </span>
           </Link>
         </div>

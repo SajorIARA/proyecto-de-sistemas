@@ -332,6 +332,8 @@ describe("CatalogoPage", () => {
       ).toBe("Miradores");
     });
 
+    fireEvent.click(screen.getByRole("button", { name: /más filtros/i }));
+
     fireEvent.change(screen.getByRole("combobox", { name: "Zona" }), {
       target: { value: "Centro" },
     });
@@ -350,6 +352,7 @@ describe("CatalogoPage", () => {
     renderCatalogo();
     await screen.findByTestId("catalogo-vacio");
 
+    fireEvent.click(screen.getByRole("button", { name: /más filtros/i }));
     fireEvent.click(screen.getByTestId("rango-precio-hasta-20"));
 
     await waitFor(() => {

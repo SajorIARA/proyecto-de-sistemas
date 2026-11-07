@@ -161,7 +161,7 @@ export interface RangoPrecioBob {
  * las tarifas del destino). "Todos" no envía ningún parámetro.
  */
 export const RANGOS_PRECIO_BOB: readonly RangoPrecioBob[] = [
-  { id: "todos", etiqueta: "Todos", min: null, max: null },
+  { id: "todos", etiqueta: "Cualquier precio", min: null, max: null },
   { id: "gratis", etiqueta: "Gratuito", min: 0, max: 0 },
   { id: "hasta-20", etiqueta: "Hasta Bs 20", min: 0, max: 20 },
   { id: "20-50", etiqueta: "Bs 20 – 50", min: 20, max: 50 },

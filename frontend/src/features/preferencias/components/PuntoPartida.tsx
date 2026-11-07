@@ -10,6 +10,7 @@
  */
 
 import { useState } from "react";
+import { Icono } from "../../../components/site/Iconos";
 import {
   LA_PAZ_BBOX,
   MACRODISTRITOS_LA_PAZ,
@@ -214,9 +215,9 @@ export function PuntoPartida({
         >
           <span
             aria-hidden="true"
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2F4B3B] text-xs font-black text-[#F3EBDD]"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2F4B3B] text-[#F3EBDD]"
           >
-            ✓
+            <Icono nombre="check" className="h-4 w-4" />
           </span>
           <div className="min-w-0">
             <p className="text-xs font-black uppercase tracking-[0.14em] text-[#2F4B3B]">

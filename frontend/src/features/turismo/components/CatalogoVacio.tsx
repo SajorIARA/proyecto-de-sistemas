@@ -9,6 +9,8 @@
  * zona o precio) se usa un mensaje genérico y se ofrece quitarlos todos.
  */
 
+import { Icono } from "../../../components/site/Iconos";
+
 interface CatalogoVacioProps {
   /** Categoría filtrada, o `null` si no hay filtro de categoría. */
   categoria: string | null;
@@ -30,11 +32,8 @@ export function CatalogoVacio({
       className="rounded-[2rem] border border-dashed border-[#5B3A29]/20 bg-[#FFFDF8]/70 px-6 py-16 text-center"
       data-testid="catalogo-vacio"
     >
-      <span
-        className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#2F4B3B]/10 text-3xl"
-        aria-hidden="true"
-      >
-        🧭
+      <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#2F4B3B]/10 text-[#2F4B3B]">
+        <Icono nombre="brujula" className="h-8 w-8" />
       </span>
 
       <h3 className="mt-6 text-xl font-black tracking-tight text-[#233128]">
@@ -69,7 +68,7 @@ export function CatalogoVacio({
           {soloCategoria
             ? "Ver todos los destinos"
             : "Quitar todos los filtros"}
-          <span aria-hidden="true">→</span>
+          <Icono nombre="flecha" className="h-4 w-4" />
         </button>
       )}
 

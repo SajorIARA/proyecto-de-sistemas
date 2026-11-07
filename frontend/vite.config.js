@@ -21,5 +21,8 @@ export default defineConfig({
 		globals: true,
 		setupFiles: "./src/test/setup.ts",
 		css: true,
+		// La suite completa corre en paralelo; en equipos modestos algunos
+		// tests con waitFor superan los 5 s por defecto aunque pasen solos.
+		testTimeout: 15000,
 	},
 });

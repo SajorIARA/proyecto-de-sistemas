@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Turismo La Paz">
+  <rect width="64" height="64" rx="16" fill="#233128" />
+  <circle cx="47" cy="17" r="6" fill="#E7B75F" />
+  <path
+    d="M11 47 25 22l9 17 5-6 9 14Z"
+    fill="none"
+    stroke="#F3EBDD"
+    stroke-width="3.4"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+  <path d="M15 51h34" stroke="#C06B45" stroke-width="3.4" stroke-linecap="round" />
+</svg>

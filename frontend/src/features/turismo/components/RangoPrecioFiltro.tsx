@@ -42,11 +42,8 @@ export function RangoPrecioFiltro({
   const idEtiqueta = useId();
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <span
-        id={idEtiqueta}
-        className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[#8A8177]"
-      >
+    <div className="flex flex-col gap-3">
+      <span id={idEtiqueta} className="sr-only">
         Precio (BOB)
       </span>
 
