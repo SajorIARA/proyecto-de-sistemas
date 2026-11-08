@@ -202,33 +202,34 @@ sequenceDiagram
     Frontend-->>Admin: Quitar de la lista
 ```
 
-# Diagrama de Secuencia — Solicitud de Recomendación (diseño objetivo Sprint 3)
+# Diagrama de Secuencia — Solicitud de Recomendación (motor, issues #26–#27)
 
-> Hoy solo se persiste la consulta (`POST /api/recomendaciones/consultas/`
-> y `/api/preferences/`). El ranking con PostGIS + pgvector y el
-> asistente RAG son Sprint 3 (issues #26–#29). Este diagrama es el
-> contrato a implementar, no el comportamiento actual.
+> El motor de recomendación operativo responde a
+> `POST /api/recommendations/` (alias `POST /api/recomendaciones/recomendar/`):
+> filtra por costo BOB (`costo_bob <= presupuesto_bob`) y radio espacial
+> (`ST_DistanceSphere(...) <= radio_km`), persiste la consulta y devuelve el
+> Top-K determinista ordenado por afinidad, proximidad y holgura. El ranking
+> con pgvector y el asistente RAG siguen en los issues #28–#29. Este diagrama
+> documenta el contrato actual del endpoint.
 
 ```mermaid
 sequenceDiagram
     actor Turista
     participant Frontend as SPA React
     participant API as Django REST API
-    participant Recomendador as Motor de Recomendación (Sprint 3)
-    participant DB as PostgreSQL + PostGIS + pgvector
+    participant Recomendador as Motor de Recomendación
+    participant DB as PostgreSQL + PostGIS
 
     Turista->>Frontend: Envía preferencias y ubicación
-    Frontend->>API: POST /api/recomendaciones/consultas/
+    Frontend->>API: POST /api/recommendations/ {presupuesto_bob, tiempo_horas, punto_partida, top_k, preferencias}
     API->>DB: INSERT consulta_recomendacion
     DB-->>API: Consulta persistida
     API->>Recomendador: Solicitar ranking
-    Recomendador->>DB: ST_DWithin (filtro espacial)
-    DB-->>Recomendador: Candidatos geográficos
-    Recomendador->>DB: pgvector cosine similarity
-    DB-->>Recomendador: Puntajes de similitud
+    Recomendador->>DB: ST_DistanceSphere (filtro espacial por radio)
+    DB-->>Recomendador: Candidatos con costo_bob y distancia_m
     Recomendador->>Recomendador: Calcular penalización costo/tiempo
-    Recomendador->>Recomendador: Normalizar + Rankear
+    Recomendador->>Recomendador: Normalizar + Rankear Top-K
     Recomendador-->>API: Top N atractivos rankeados
-    API-->>Frontend: 200 OK {recomendaciones}
+    API-->>Frontend: 200 OK {id_consulta, total_activos, total_evaluados, total_recomendaciones, radio_km, top_k, recomendaciones[]}
     Frontend-->>Turista: Mostrar mapa con resultados
 ```

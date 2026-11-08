@@ -1,8 +1,11 @@
+from decimal import Decimal
+
 from django.contrib.gis.geos import Point
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from .models import ConsultaRecomendacion, UsuarioPreferencia
+from .services import TOP_K_MAXIMO, TOP_K_POR_DEFECTO
 
 
 class UsuarioPreferenciaSerializer(serializers.ModelSerializer):
@@ -154,3 +157,93 @@ class ConsultaRecomendacionSerializer(serializers.ModelSerializer):
             )
             validated_data["punto_partida"] = coords
         return super().update(instance, validated_data)
+
+
+class RecomendacionRequestSerializer(serializers.Serializer):
+    """Perfil de entrada del motor de recomendación (issue #27).
+
+    ``preferencias`` es opcional: si se omite, la vista usa las
+    preferencias persistidas del usuario autenticado. El mapa permite
+    probar perfiles alternativos sin alterar su perfil guardado:
+    ``{"Cultura": 0.9, "Naturaleza": 0.5}``.
+    """
+
+    presupuesto_bob = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        min_value=Decimal("0.00"),
+    )
+    tiempo_horas = serializers.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        min_value=Decimal("0.01"),
+    )
+    punto_partida = PuntoPartidaField()
+    radio_km = serializers.FloatField(
+        required=False,
+        default=15.0,
+        min_value=0.1,
+        max_value=50.0,
+    )
+    top_k = serializers.IntegerField(
+        required=False,
+        default=TOP_K_POR_DEFECTO,
+        min_value=1,
+        max_value=TOP_K_MAXIMO,
+    )
+    preferencias = serializers.DictField(
+        child=serializers.DecimalField(
+            max_digits=3,
+            decimal_places=2,
+            min_value=Decimal("0.00"),
+            max_value=Decimal("1.00"),
+        ),
+        required=False,
+    )
+    macrodistrito = serializers.CharField(
+        max_length=80,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+    )
+
+    def validate_preferencias(self, value):
+        if any(not str(categoria).strip() for categoria in value):
+            raise serializers.ValidationError(
+                "Las categorías de preferencias no pueden estar vacías."
+            )
+        return value
+
+
+class RecomendacionItemSerializer(serializers.Serializer):
+    """Un destino del Top-K con su puntaje explicable."""
+
+    id_atractivo = serializers.CharField()
+    nombre = serializers.CharField()
+    puntaje = serializers.FloatField()
+    afinidad_categoria = serializers.FloatField()
+    proximidad = serializers.FloatField()
+    holgura_presupuesto = serializers.FloatField()
+    holgura_tiempo = serializers.FloatField()
+    distancia_km = serializers.FloatField()
+    factor_penalizacion = serializers.FloatField()
+    viable = serializers.BooleanField()
+    motivos = serializers.ListField(child=serializers.CharField())
+    categorias = serializers.ListField(child=serializers.CharField())
+    costo_bob = serializers.DecimalField(max_digits=10, decimal_places=2)
+    duracion_horas = serializers.FloatField()
+    latitud = serializers.FloatField()
+    longitud = serializers.FloatField()
+
+
+class RecomendacionResponseSerializer(serializers.Serializer):
+    """Contrato de ``POST /api/recommendations/``."""
+
+    id_consulta = serializers.UUIDField(allow_null=True)
+    generado_en = serializers.DateTimeField()
+    total_activos = serializers.IntegerField()
+    total_evaluados = serializers.IntegerField()
+    total_recomendaciones = serializers.IntegerField()
+    radio_km = serializers.FloatField()
+    top_k = serializers.IntegerField()
+    recomendaciones = RecomendacionItemSerializer(many=True)
