@@ -145,6 +145,18 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API del sistema de recomendación turística de La Paz.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    # Evita que una actualización incompatible de los CDN rompa Swagger/ReDoc.
+    "SWAGGER_UI_DIST": "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.34.1",
+    "SWAGGER_UI_FAVICON_HREF": (
+        "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.34.1/favicon-32x32.png"
+    ),
+    "REDOC_DIST": "https://cdn.jsdelivr.net/npm/redoc@3.1.0",
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": False,
+        "displayRequestDuration": True,
+        "filter": True,
+        "persistAuthorization": True,
+    },
 }
 
 # Docs OpenAPI servidas salvo apagado explícito (SERVE_DOCS=0 en prod
