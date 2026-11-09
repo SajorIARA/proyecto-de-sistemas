@@ -35,18 +35,31 @@ class FragmentoEmbeddingWriteOnlyTests(TestCase):
                 "fuente": str(self.fuente.id_fuente),
                 "numero_fragmento": 1,
                 "contenido": "Texto con vector",
-                "embedding": [0.0] * 1536,
+                "embedding": [0.0] * 768,
             },
             format="json",
         )
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+    def test_create_acepta_fragmento_pendiente_sin_embedding(self) -> None:
+        resp = self.cliente.post(
+            "/api/conocimiento/fragmentos/",
+            {
+                "fuente": str(self.fuente.id_fuente),
+                "numero_fragmento": 4,
+                "contenido": "Texto pendiente de vectorización",
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertIsNone(FragmentoDocumental.objects.get(numero_fragmento=4).embedding)
 
     def test_list_no_expone_embedding(self) -> None:
         FragmentoDocumental.objects.create(
             fuente=self.fuente,
             numero_fragmento=0,
             contenido="Texto",
-            embedding=[0.1] * 1536,
+            embedding=[0.1] * 768,
         )
         resp = self.cliente.get("/api/conocimiento/fragmentos/")
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
@@ -57,7 +70,7 @@ class FragmentoEmbeddingWriteOnlyTests(TestCase):
             fuente=self.fuente,
             numero_fragmento=0,
             contenido="Texto",
-            embedding=[0.1] * 1536,
+            embedding=[0.1] * 768,
         )
         resp = self.cliente.get(
             f"/api/conocimiento/fragmentos/{fragmento.id_fragmento}/"
@@ -85,7 +98,7 @@ class FragmentoEmbeddingWriteOnlyTests(TestCase):
                 "fuente": str(self.fuente.id_fuente),
                 "numero_fragmento": 3,
                 "contenido": "Vector sucio",
-                "embedding": ["x"] * 1536,
+                "embedding": ["x"] * 768,
             },
             format="json",
         )

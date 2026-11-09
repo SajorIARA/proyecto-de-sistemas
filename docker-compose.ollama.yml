@@ -1,0 +1,113 @@
+# Overlay aislado para IA local. Uso:
+# docker compose -f docker-compose.yml -f docker-compose.ollama.yml up -d ollama worker
+
+services:
+  ollama-bootstrap:
+    image: ollama/ollama:0.11.10@sha256:a5409cb903d30f9cd67e9f430dd336ddc9274e16fd78f75b675c42065991b4fd
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        ollama serve &
+        server_pid=$$!
+        cleanup() {
+          kill "$$server_pid" 2>/dev/null || true
+          wait "$$server_pid" 2>/dev/null || true
+        }
+        trap cleanup EXIT
+        until ollama list >/dev/null 2>&1; do sleep 1; done
+        pull_model() {
+          model="$$1"
+          if ollama list | grep -F "$$model" >/dev/null; then
+            return 0
+          fi
+          attempt=1
+          until ollama pull "$$model"; do
+            if [ "$$attempt" -ge 5 ]; then
+              echo "No se pudo descargar $$model después de $$attempt intentos." >&2
+              return 1
+            fi
+            attempt=$$((attempt + 1))
+            sleep $$((attempt * 5))
+          done
+          ollama list | grep -F "$$model" >/dev/null
+        }
+        pull_model "$${OLLAMA_EMBED_MODEL}"
+        pull_model "$${OLLAMA_LLM_MODEL}"
+    environment:
+      OLLAMA_HOST: 127.0.0.1:11434
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-embeddinggemma:300m}
+      OLLAMA_LLM_MODEL: ${OLLAMA_LLM_MODEL:-qwen3:0.6b}
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - model-download-network
+    mem_limit: 3g
+    cpus: "4.0"
+
+  ollama:
+    image: ollama/ollama:0.11.10@sha256:a5409cb903d30f9cd67e9f430dd336ddc9274e16fd78f75b675c42065991b4fd
+    container_name: turismo-melgarejo_ollama
+    restart: unless-stopped
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_NO_CLOUD: "1"
+      OLLAMA_CONTEXT_LENGTH: ${OLLAMA_CONTEXT_LENGTH:-4096}
+      OLLAMA_KEEP_ALIVE: 5m
+      OLLAMA_MAX_LOADED_MODELS: 2
+      OLLAMA_NUM_PARALLEL: 1
+      OLLAMA_MAX_QUEUE: 16
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-embeddinggemma:300m}
+      OLLAMA_LLM_MODEL: ${OLLAMA_LLM_MODEL:-qwen3:0.6b}
+    volumes:
+      - ollama_models:/root/.ollama
+    networks:
+      - ia-network
+    depends_on:
+      ollama-bootstrap:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "ollama list | grep -F \"$${OLLAMA_EMBED_MODEL}\" >/dev/null && ollama list | grep -F \"$${OLLAMA_LLM_MODEL}\" >/dev/null",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    mem_limit: 3g
+    cpus: "4.0"
+    security_opt:
+      - no-new-privileges:true
+
+  worker:
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-embeddinggemma:300m}
+      OLLAMA_LLM_MODEL: ${OLLAMA_LLM_MODEL:-qwen3:0.6b}
+      EMBEDDING_DIM: ${EMBEDDING_DIM:-768}
+      OLLAMA_TIMEOUT_SECONDS: ${OLLAMA_TIMEOUT_SECONDS:-60}
+      OLLAMA_RETRIES: ${OLLAMA_RETRIES:-2}
+      OLLAMA_CONTEXT_LENGTH: ${OLLAMA_CONTEXT_LENGTH:-4096}
+      OLLAMA_MAX_PREDICT: ${OLLAMA_MAX_PREDICT:-384}
+      SCRAPER_AUTO_EMBED: ${SCRAPER_AUTO_EMBED:-1}
+    networks:
+      - app-network
+      - datos-network
+      - ia-network
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+networks:
+  ia-network:
+    driver: bridge
+    internal: true
+  model-download-network:
+    driver: bridge
+
+volumes:
+  ollama_models:
+    driver: local

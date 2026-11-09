@@ -25,6 +25,6 @@ class ModeloSchemaConocimientoTests(TestCase):
             fuente=fuente,
             numero_fragmento=0,
             contenido="Atractivo natural al sur de La Paz.",
-            embedding=[0.0] * 1536,
+            embedding=[0.0] * 768,
         )
-        self.assertEqual(fragmento.embedding, [0.0] * 1536)
+        self.assertEqual(fragmento.embedding, [0.0] * 768)
