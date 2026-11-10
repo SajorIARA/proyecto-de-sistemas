@@ -40,6 +40,39 @@ class HorarioSerializer(serializers.ModelSerializer):
             "vigente_hasta",
         ]
         read_only_fields = ["id_horario"]
+        # Replica el CHECK ck_horario_dia (1–7) de models.py.
+        extra_kwargs = {"dia_semana": {"min_value": 1, "max_value": 7}}
+
+    def validate(self, attrs):
+        """Replica ck_horario_horas y ck_horario_vigencia (models.py).
+
+        Sin esto, la violación llega a la BD y escala a IntegrityError (500
+        antes del handler central; 409 genérico con él). Aquí responde 400
+        con el campo exacto que falla. En PATCH mira también la instancia.
+        """
+        actual = self.instance
+        cerrado = attrs.get("cerrado", getattr(actual, "cerrado", False))
+        apertura = attrs.get("hora_apertura", getattr(actual, "hora_apertura", None))
+        cierre = attrs.get("hora_cierre", getattr(actual, "hora_cierre", None))
+        if not cerrado:
+            if not apertura or not cierre:
+                raise serializers.ValidationError(
+                    {
+                        "hora_apertura": "Obligatoria si el día no está cerrado.",
+                        "hora_cierre": "Obligatoria si el día no está cerrado.",
+                    }
+                )
+            if apertura >= cierre:
+                raise serializers.ValidationError(
+                    {"hora_cierre": "Debe ser posterior a la hora de apertura."}
+                )
+        desde = attrs.get("vigente_desde", getattr(actual, "vigente_desde", None))
+        hasta = attrs.get("vigente_hasta", getattr(actual, "vigente_hasta", None))
+        if desde and hasta and hasta < desde:
+            raise serializers.ValidationError(
+                {"vigente_hasta": "No puede ser anterior a vigente_desde."}
+            )
+        return attrs
 
 
 class TarifaSerializer(serializers.ModelSerializer):
@@ -65,13 +98,25 @@ class TarifaSerializer(serializers.ModelSerializer):
         # 400 en vez de escalar a 500 por IntegrityError.
         extra_kwargs = {"monto": {"min_value": 0}}
 
+    def validate(self, attrs):
+        """Replica ck_tarifa_vigencia: hasta >= desde (si ambas vienen)."""
+        actual = self.instance
+        desde = attrs.get("vigente_desde", getattr(actual, "vigente_desde", None))
+        hasta = attrs.get("vigente_hasta", getattr(actual, "vigente_hasta", None))
+        if desde and hasta and hasta < desde:
+            raise serializers.ValidationError(
+                {"vigente_hasta": "No puede ser anterior a vigente_desde."}
+            )
+        return attrs
+
 
 class AtractivoSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="id_atractivo", read_only=True)
     categorias = serializers.SerializerMethodField()
     ubicacion = serializers.SerializerMethodField()
-    area = serializers.SerializerMethodField()
     imagenes = serializers.SerializerMethodField()
+
+    area = serializers.SerializerMethodField()
 
     class Meta:
         model = Atractivo
@@ -79,6 +124,7 @@ class AtractivoSerializer(serializers.ModelSerializer):
             "id",
             "nombre",
             "descripcion",
+            "url",
             "direccion",
             "duracion_minutos",
             "ubicacion",
@@ -91,6 +137,8 @@ class AtractivoSerializer(serializers.ModelSerializer):
             "fecha_actualizacion",
         ]
         read_only_fields = ["id", "fecha_creacion", "fecha_actualizacion"]
+        # Replica el CHECK ck_atractivo_duracion (> 0).
+        extra_kwargs = {"duracion_minutos": {"min_value": 1}}
 
     def get_categorias(self, obj: Atractivo) -> list[str]:
         return [
@@ -105,10 +153,26 @@ class AtractivoSerializer(serializers.ModelSerializer):
         return {"longitud": point.x, "latitud": point.y}
 
     @extend_schema_field({"type": "array", "items": {}, "nullable": True})
+    @extend_schema_field({"type": "array", "items": {}, "nullable": True})
     def get_area(self, obj: Atractivo) -> object | None:
         if obj.area is None:
             return None
         return obj.area.coords
+
+
+class SubirFotoSerializer(serializers.Serializer):
+    """Validación del POST multipart de subida async (issue medios).
+
+    Todo escalar pasa por DRF: UUID válido, tipo permitido y orden
+    entero >= 0. El archivo se valida por separado (extensión y peso).
+    """
+
+    atractivo = serializers.UUIDField()
+    tipo = serializers.ChoiceField(
+        choices=[Foto.TIPO_IMAGEN, Foto.TIPO_VIDEO],
+        default=Foto.TIPO_IMAGEN,
+    )
+    orden = serializers.IntegerField(min_value=0, required=False, default=0)
 
 
 class FotoSerializer(serializers.ModelSerializer):
@@ -137,8 +201,21 @@ class FotoSerializer(serializers.ModelSerializer):
             "fecha_creacion",
         ]
         read_only_fields = ["id_foto", "fecha_creacion"]
+        # Replica el CHECK ck_foto_orden (>= 0). SubirFotoSerializer ya lo
+        # validaba; FotoSerializer (escritura admin) no.
+        extra_kwargs = {"orden": {"min_value": 0}}
 
 
+@extend_schema_field(
+    {
+        "type": "object",
+        "properties": {
+            "longitud": {"type": "number", "minimum": -180, "maximum": 180},
+            "latitud": {"type": "number", "minimum": -90, "maximum": 90},
+        },
+        "required": ["longitud", "latitud"],
+    }
+)
 class UbicacionField(serializers.Field):
     """Campo {longitud, latitud} <-> Point SRID 4326."""
 
@@ -173,6 +250,7 @@ class AtractivoAdminSerializer(serializers.ModelSerializer):
         many=True, queryset=Categoria.objects.all(), required=False
     )
     fotos = FotoSerializer(many=True, read_only=True)
+    area = serializers.SerializerMethodField()
 
     class Meta:
         model = Atractivo
@@ -180,6 +258,7 @@ class AtractivoAdminSerializer(serializers.ModelSerializer):
             "id_atractivo",
             "nombre",
             "descripcion",
+            "url",
             "direccion",
             "duracion_minutos",
             "ubicacion",
@@ -196,6 +275,8 @@ class AtractivoAdminSerializer(serializers.ModelSerializer):
             "fecha_creacion",
             "fecha_actualizacion",
         ]
+        # Replica el CHECK ck_atractivo_duracion (> 0).
+        extra_kwargs = {"duracion_minutos": {"min_value": 1}}
 
     def create(self, validated_data):
         categorias = validated_data.pop("categorias", [])
@@ -210,3 +291,9 @@ class AtractivoAdminSerializer(serializers.ModelSerializer):
         if categorias is not None:
             atractivo.categorias.set(categorias)
         return atractivo
+
+    @extend_schema_field({"type": "array", "items": {}, "nullable": True})
+    def get_area(self, obj: Atractivo) -> object | None:
+        if obj.area is None:
+            return None
+        return obj.area.coords

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { EncabezadoImagen } from "../../../components/EncabezadoImagen";
+import { FOTO_ACCESO } from "../../../config/imagenesSitio";
 
 export function AuthShell({
   title,
@@ -19,11 +20,12 @@ export function AuthShell({
         ========================================================== */}
         <section className="relative hidden min-h-screen overflow-hidden lg:block">
           {/* Fotografía */}
-          <div
-            className="absolute inset-0 scale-[1.02] bg-cover bg-center"
-            style={{
-              backgroundImage: 'url("/images/illimani-login.webp")',
-            }}
+          <img
+            src={FOTO_ACCESO.src}
+            alt={FOTO_ACCESO.alt}
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full scale-[1.02] object-cover"
           />
 
           {/* Overlay natural */}

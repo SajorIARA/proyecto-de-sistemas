@@ -1,18 +1,15 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
-from .views import (
-    AtractivoAdminViewSet,
+from .views_admin import AtractivoAdminViewSet, FotoAdminViewSet
+from .views_catalogo import (
     AtractivoViewSet,
     CategoriaViewSet,
-    EstadoFotoView,
-    FirmaFotoView,
-    FotoAdminViewSet,
     HorarioViewSet,
-    SubirFotoView,
     TarifaViewSet,
     TipoTarifaViewSet,
 )
+from .views_medios import EstadoFotoView, FirmaFotoView, SubirFotoView
 
 router = DefaultRouter()
 router.register("atractivos", AtractivoViewSet, basename="atractivo")

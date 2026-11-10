@@ -7,6 +7,7 @@
  * destino para que la galería pública se refresque.
  */
 
+import { useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../../auth/context/AuthContext";
 import { KeysTurismo } from "../../hooks/useTurismo";
@@ -79,10 +80,30 @@ export interface UseSubirFotoResultado {
  */
 export function useSubirFoto(atractivoId: string): UseSubirFotoResultado {
   const invalidar = useInvalidarFotos(atractivoId);
+  const controladorActual = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      controladorActual.current?.abort();
+    };
+  }, []);
 
   const mutacion = useMutation({
-    mutationFn: ({ archivo, orden, onProgress }: SubirFotoVariables) =>
-      subirFotoDestino({ atractivo: atractivoId, archivo, orden }, onProgress),
+    mutationFn: ({ archivo, orden, onProgress }: SubirFotoVariables) => {
+      // AbortController para cancelar la subida (y el polling de video) si el
+      // componente se desmonta antes de terminar.
+      const controlador = new AbortController();
+      controladorActual.current = controlador;
+      return subirFotoDestino(
+        { atractivo: atractivoId, archivo, orden },
+        onProgress,
+        controlador.signal,
+      ).finally(() => {
+        if (controladorActual.current === controlador) {
+          controladorActual.current = null;
+        }
+      });
+    },
     onSuccess: () => invalidar(),
   });
 

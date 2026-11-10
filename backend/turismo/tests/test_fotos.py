@@ -174,7 +174,7 @@ class FirmaFotoTests(TestCase):
                 clear=False,
             ),
             mock.patch(
-                "turismo.views.api_sign_request", return_value="firma123"
+                "turismo.views_medios.api_sign_request", return_value="firma123"
             ) as mock_firma,
         ):
             resp = self.cliente.post(

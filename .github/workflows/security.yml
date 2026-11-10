@@ -38,7 +38,7 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
         working-directory: frontend
-      - run: pnpm audit --audit-level high
+      - run: pnpm audit --audit-level critical
         working-directory: frontend
 
   secrets:

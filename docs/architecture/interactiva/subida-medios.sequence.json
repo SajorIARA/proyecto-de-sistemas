@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Subida de medios — firma directa y flujo async",
+    "output": "subida-medios.sequence.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "directa",
+        "label": "Subida directa firmada (imágenes)",
+        "focus": [
+          "admin",
+          "spa",
+          "api",
+          "cloudinary"
+        ],
+        "note": "El navegador sube directo a Cloudinary con firma; el secret nunca sale del backend."
+      },
+      {
+        "id": "async",
+        "label": "Subida async con Celery (video/pesados)",
+        "focus": [
+          "api",
+          "db",
+          "redis",
+          "worker",
+          "cloudinary"
+        ],
+        "note": "La API responde 202 con la foto en pending y el worker completa el upload."
+      },
+      {
+        "id": "estado",
+        "label": "Polling de estado",
+        "focus": [
+          "spa",
+          "api",
+          "db"
+        ],
+        "note": "El frontend consulta estado/ hasta ver completed con la URL final."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "admin",
+      "type": "external",
+      "label": "Administrador",
+      "sublabel": "navegador"
+    },
+    {
+      "id": "spa",
+      "type": "frontend",
+      "label": "SPA React",
+      "sublabel": "panel admin"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "API Django",
+      "sublabel": "DRF · rol ADMIN"
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "tabla foto"
+    },
+    {
+      "id": "redis",
+      "type": "messagebus",
+      "label": "Redis",
+      "sublabel": "broker + results"
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Celery worker",
+      "sublabel": "subir_foto_task"
+    },
+    {
+      "id": "cloudinary",
+      "type": "cloud",
+      "label": "Cloudinary",
+      "sublabel": "signed upload"
+    }
+  ],
+  "segments": [
+    {
+      "from": 130,
+      "to": 330,
+      "label": "Directa firmada"
+    },
+    {
+      "from": 350,
+      "to": 520,
+      "label": "Async Celery"
+    },
+    {
+      "from": 540,
+      "to": 660,
+      "label": "Estado"
+    }
+  ],
+  "messages": [
+    {
+      "from": "admin",
+      "to": "spa",
+      "y": 160,
+      "label": "elige imagen ≤10MB",
+      "variant": "default"
+    },
+    {
+      "from": "spa",
+      "to": "api",
+      "y": 210,
+      "label": "POST /admin/fotos/firma/",
+      "variant": "emphasis"
+    },
+    {
+      "from": "api",
+      "to": "spa",
+      "y": 260,
+      "label": "200 {signature, folder}",
+      "variant": "return"
+    },
+    {
+      "from": "spa",
+      "to": "cloudinary",
+      "y": 310,
+      "label": "upload directo firmado",
+      "variant": "emphasis"
+    },
+    {
+      "from": "spa",
+      "to": "api",
+      "y": 380,
+      "label": "POST /admin/fotos/ completed",
+      "variant": "emphasis"
+    },
+    {
+      "from": "api",
+      "to": "db",
+      "y": 410,
+      "label": "INSERT foto",
+      "variant": "default"
+    },
+    {
+      "from": "spa",
+      "to": "api",
+      "y": 455,
+      "label": "POST /admin/fotos/subir/ (multipart)",
+      "variant": "emphasis"
+    },
+    {
+      "from": "api",
+      "to": "db",
+      "y": 485,
+      "label": "INSERT foto pending",
+      "variant": "default"
+    },
+    {
+      "from": "api",
+      "to": "redis",
+      "y": 515,
+      "label": "encola subir_foto_task",
+      "variant": "emphasis"
+    },
+    {
+      "from": "worker",
+      "to": "redis",
+      "y": 550,
+      "label": "consume tarea",
+      "variant": "default"
+    },
+    {
+      "from": "worker",
+      "to": "cloudinary",
+      "y": 585,
+      "label": "upload video/pesado",
+      "variant": "emphasis"
+    },
+    {
+      "from": "worker",
+      "to": "db",
+      "y": 615,
+      "label": "UPDATE completed + dims",
+      "variant": "default"
+    },
+    {
+      "from": "spa",
+      "to": "api",
+      "y": 645,
+      "label": "GET /admin/fotos/ID/estado/",
+      "variant": "default"
+    }
+  ]
+}

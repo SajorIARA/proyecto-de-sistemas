@@ -262,4 +262,159 @@ describe("CatalogoPage", () => {
 
     expect(await screen.findByTestId("catalogo-vacio")).toBeInTheDocument();
   });
+
+  it("debouncea el texto del buscador antes de consultar el catálogo", async () => {
+    vi.mocked(listarAtractivos).mockResolvedValue(pagina([]));
+
+    renderCatalogo();
+
+    await screen.findByTestId("catalogo-vacio");
+    const llamadasIniciales = vi.mocked(listarAtractivos).mock.calls.length;
+
+    const buscador = screen.getByRole("searchbox", {
+      name: /buscar destinos/i,
+    });
+
+    // Tres pulsaciones rápidas: deben colapsar en una sola consulta.
+    fireEvent.change(buscador, { target: { value: "m" } });
+    fireEvent.change(buscador, { target: { value: "mu" } });
+    fireEvent.change(buscador, { target: { value: "museo" } });
+
+    expect(vi.mocked(listarAtractivos).mock.calls.length).toBe(
+      llamadasIniciales,
+    );
+    expect(
+      vi.mocked(listarAtractivos).mock.calls.every((llamada) => !llamada[0]?.q),
+    ).toBe(true);
+
+    await waitFor(
+      () => {
+        expect(vi.mocked(listarAtractivos).mock.calls.at(-1)?.[0]?.q).toBe(
+          "museo",
+        );
+      },
+      { timeout: 2000 },
+    );
+  });
+
+  it("combina categoría y zona en una sola consulta con ambos query params", async () => {
+    vi.mocked(listarAtractivos).mockResolvedValue(pagina([]));
+
+    renderCatalogo("/destinos?categoria=Miradores&zona=Centro");
+
+    await screen.findByTestId("catalogo-vacio");
+
+    expect(vi.mocked(listarAtractivos)).toHaveBeenCalledWith(
+      expect.objectContaining({ categoria: "Miradores", zona: "Centro" }),
+    );
+
+    expect(
+      screen.getByRole("button", {
+        name: /quitar filtro categoría: miradores/i,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /quitar filtro zona: centro/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("actualiza el catálogo al combinar categoría y zona desde el panel", async () => {
+    vi.mocked(listarAtractivos).mockResolvedValue(pagina([]));
+
+    renderCatalogo();
+    await screen.findByTestId("catalogo-vacio");
+
+    fireEvent.click(screen.getByRole("button", { name: /miradores/i }));
+
+    await waitFor(() => {
+      expect(
+        vi.mocked(listarAtractivos).mock.calls.at(-1)?.[0]?.categoria,
+      ).toBe("Miradores");
+    });
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Zona" }), {
+      target: { value: "Centro" },
+    });
+
+    await waitFor(() => {
+      const ultimo = vi.mocked(listarAtractivos).mock.calls.at(-1)?.[0];
+
+      expect(ultimo?.categoria).toBe("Miradores");
+      expect(ultimo?.zona).toBe("Centro");
+    });
+  });
+
+  it("envía el rango de precio en BOB al elegir un preset", async () => {
+    vi.mocked(listarAtractivos).mockResolvedValue(pagina([]));
+
+    renderCatalogo();
+    await screen.findByTestId("catalogo-vacio");
+
+    fireEvent.click(screen.getByTestId("rango-precio-hasta-20"));
+
+    await waitFor(() => {
+      const ultimo = vi.mocked(listarAtractivos).mock.calls.at(-1)?.[0];
+
+      expect(ultimo?.precioMin).toBe(0);
+      expect(ultimo?.precioMax).toBe(20);
+    });
+
+    expect(
+      screen.getByRole("button", { name: /quitar filtro hasta bs 20/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("permite quitar un filtro activo sin perder los demás", async () => {
+    vi.mocked(listarAtractivos).mockResolvedValue(pagina([]));
+
+    renderCatalogo("/destinos?categoria=Miradores&zona=Centro");
+    await screen.findByTestId("catalogo-vacio");
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: /quitar filtro categoría: miradores/i,
+      }),
+    );
+
+    await waitFor(() => {
+      const ultimo = vi.mocked(listarAtractivos).mock.calls.at(-1)?.[0];
+
+      expect(ultimo?.categoria ?? null).toBeNull();
+      expect(ultimo?.zona).toBe("Centro");
+    });
+  });
+
+  it("limpia todos los filtros de una sola vez", async () => {
+    vi.mocked(listarAtractivos).mockResolvedValue(pagina([]));
+
+    renderCatalogo(
+      "/destinos?categoria=Miradores&zona=Centro&q=museo&precio_max=20",
+    );
+    await screen.findByTestId("catalogo-vacio");
+
+    fireEvent.click(screen.getByRole("button", { name: /limpiar todo/i }));
+
+    await waitFor(() => {
+      const ultimo = vi.mocked(listarAtractivos).mock.calls.at(-1)?.[0];
+
+      expect(ultimo?.categoria ?? null).toBeNull();
+      expect(ultimo?.zona ?? null).toBeNull();
+      expect(ultimo?.q ?? "").toBe("");
+      expect(ultimo?.precioMax ?? null).toBeNull();
+    });
+  });
+
+  it("usa el mensaje genérico cuando la combinación de filtros no tiene resultados", async () => {
+    vi.mocked(listarAtractivos).mockResolvedValue(pagina([]));
+
+    renderCatalogo("/destinos?categoria=Miradores&zona=Centro");
+
+    expect(
+      await screen.findByText(/no encontramos atractivos con esos filtros/i),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("button", { name: /quitar todos los filtros/i }),
+    ).toBeInTheDocument();
+  });
 });

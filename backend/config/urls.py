@@ -24,6 +24,8 @@ def root(request):
         "/api/turismo/",
         "/api/conocimiento/",
         "/api/recomendaciones/",
+        "/api/recommendations/",
+        "/api/preferences/",
     ]
     if settings.SERVE_DOCS:
         endpoints += ["/api/schema/", "/api/docs/", "/api/redoc/"]
@@ -44,6 +46,8 @@ urlpatterns = [
     path("api/turismo/", include("turismo.urls")),
     path("api/conocimiento/", include("conocimiento.urls")),
     path("api/recomendaciones/", include("recomendaciones.urls")),
+    path("api/recommendations/", include("recomendaciones.urls_ingles")),
+    path("api/preferences/", include("recomendaciones.urls_propias")),
 ]
 
 if settings.SERVE_DOCS:

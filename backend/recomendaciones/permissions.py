@@ -8,9 +8,11 @@ class IsAuthenticatedOwnerOrAdmin(BasePermission):
     propio salvo ADMIN). Escritura: solo ADMIN. Nunca anónimos."""
 
     def has_permission(self, request, view) -> bool:
+        from usuarios.permissions import es_admin
+
         user = request.user
         if not user or not user.is_authenticated:
             return False
         if request.method in SAFE_METHODS:
             return True
-        return user.roles.filter(codigo="ADMIN").exists()
+        return es_admin(user)

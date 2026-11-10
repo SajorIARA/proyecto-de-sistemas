@@ -297,7 +297,10 @@ export async function eliminarFoto(id: number): Promise<void> {
 }
 
 /** GET /turismo/admin/fotos/:id/estado/ */
-export async function estadoFoto(id: number): Promise<{
+export async function estadoFoto(
+  id: number,
+  signal?: AbortSignal,
+): Promise<{
   id_foto: number;
   estado: EstadoFoto;
   tipo: TipoFoto;
@@ -305,7 +308,7 @@ export async function estadoFoto(id: number): Promise<{
   public_id: string;
 }> {
   try {
-    const { data } = await api.get(TURISMO_ENDPOINTS.fotoEstado(id));
+    const { data } = await api.get(TURISMO_ENDPOINTS.fotoEstado(id), { signal });
 
     return data;
   } catch (error) {
@@ -328,9 +331,21 @@ async function obtenerFoto(id: number): Promise<Foto> {
    Subida directa (imágenes)
    ========================================================================== */
 
-const dormir = (ms: number) =>
-  new Promise<void>((resolve) => {
-    setTimeout(resolve, ms);
+const dormir = (ms: number, signal?: AbortSignal) =>
+  new Promise<void>((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException("Aborted", "AbortError"));
+      return;
+    }
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timer);
+        reject(new DOMException("Aborted", "AbortError"));
+      },
+      { once: true },
+    );
   });
 
 /**
@@ -427,6 +442,7 @@ const ESPERA_ESTADO_MS = 1500;
 export async function subirVideoAsync(
   entrada: { atractivo: string; archivo: File; orden?: number },
   onProgress?: (porcentaje: number) => void,
+  signal?: AbortSignal,
 ): Promise<Foto> {
   const { atractivo, archivo, orden = 0 } = entrada;
 
@@ -444,6 +460,7 @@ export async function subirVideoAsync(
       formulario,
       {
         headers: { "Content-Type": "multipart/form-data" },
+        signal,
         onUploadProgress: (evento) => {
           if (onProgress && evento.total) {
             // El archivo se está subiendo al backend; la subida a Cloudinary
@@ -460,7 +477,7 @@ export async function subirVideoAsync(
   }
 
   for (let intento = 0; intento < MAX_INTENTOS_ESTADO; intento += 1) {
-    const estado = await estadoFoto(idFoto);
+    const estado = await estadoFoto(idFoto, signal);
 
     if (estado.estado === "completed") {
       return obtenerFoto(idFoto);
@@ -474,7 +491,7 @@ export async function subirVideoAsync(
     }
 
     onProgress?.(Math.min(99, 10 + intento));
-    await dormir(ESPERA_ESTADO_MS);
+    await dormir(ESPERA_ESTADO_MS, signal);
   }
 
   throw new FotosAdminApiError(
@@ -487,11 +504,12 @@ export async function subirVideoAsync(
 export async function subirFotoDestino(
   entrada: { atractivo: string; archivo: File; orden?: number },
   onProgress?: (porcentaje: number) => void,
+  signal?: AbortSignal,
 ): Promise<Foto> {
   const tipo = tipoDeArchivo(entrada.archivo);
 
   if (tipo === "video") {
-    return subirVideoAsync(entrada, onProgress);
+    return subirVideoAsync(entrada, onProgress, signal);
   }
 
   return subirImagenDirecta(entrada, onProgress);

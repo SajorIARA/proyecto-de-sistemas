@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
+    "django_filters",
     "usuarios",
     "turismo",
     "recomendaciones",
@@ -134,6 +135,9 @@ REST_FRAMEWORK = {
     },
     "NUM_PROXIES": 1,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # ValidationError/IntegrityError/ProtectedError de Django -> 400/409
+    # en vez de 500 (ver config/exceptions.py).
+    "EXCEPTION_HANDLER": "config.exceptions.api_exception_handler",
 }
 
 SPECTACULAR_SETTINGS = {

@@ -33,6 +33,9 @@ class Atractivo(models.Model):
         max_length=120, blank=True, default=""
     )
     descripcion: models.TextField[str, str] = models.TextField()
+    url: models.URLField[str | None, str | None] = models.URLField(
+        max_length=500, null=True, blank=True
+    )
     direccion: models.CharField[str | None, str | None] = models.CharField(
         max_length=300, null=True, blank=True
     )
