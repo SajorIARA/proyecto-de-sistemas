@@ -116,9 +116,7 @@ def ingerir_url(
         digest = hashlib.sha256(documento.texto.encode("utf-8")).hexdigest()
         with transaction.atomic():
             fuente = FuenteDocumental.objects.select_for_update().get(pk=fuente.pk)
-            sin_cambios = (
-                fuente.hash_contenido == digest and fuente.fragmentos.exists()
-            )
+            sin_cambios = fuente.hash_contenido == digest and fuente.fragmentos.exists()
             fuente.titulo = documento.titulo
             fuente.tipo = "web"
             fuente.hash_contenido = digest

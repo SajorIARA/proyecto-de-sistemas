@@ -83,9 +83,7 @@ class IngestaScraperTests(TestCase):
 
     @patch("conocimiento.services.validar_url")
     @patch("conocimiento.services.scrapear_url")
-    def test_crea_fuente_y_fragmentos_sin_embedding(
-        self, scrapear, validar
-    ) -> None:
+    def test_crea_fuente_y_fragmentos_sin_embedding(self, scrapear, validar) -> None:
         validar.return_value = self.url
         scrapear.return_value = self.documento
         resultado = ingerir_url(self.url)
@@ -96,9 +94,7 @@ class IngestaScraperTests(TestCase):
 
     @patch("conocimiento.services.validar_url")
     @patch("conocimiento.services.scrapear_url")
-    def test_segunda_ingesta_identica_es_idempotente(
-        self, scrapear, validar
-    ) -> None:
+    def test_segunda_ingesta_identica_es_idempotente(self, scrapear, validar) -> None:
         validar.return_value = self.url
         scrapear.return_value = self.documento
         primero = ingerir_url(self.url)

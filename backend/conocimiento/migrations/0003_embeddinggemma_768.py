@@ -1,6 +1,6 @@
-from django.db import migrations, models
 import pgvector.django.indexes
 import pgvector.django.vector
+from django.db import migrations, models
 
 
 def limpiar_embeddings_anteriores(apps, schema_editor):

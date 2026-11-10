@@ -79,9 +79,7 @@ class OpenAPITests(TestCase):
 
     def setUp(self) -> None:
         self.cliente = APIClient()
-        respuesta = self.cliente.get(
-            "/api/schema/", HTTP_ACCEPT="application/json"
-        )
+        respuesta = self.cliente.get("/api/schema/", HTTP_ACCEPT="application/json")
         self.assertEqual(respuesta.status_code, status.HTTP_200_OK)
         self.esquema = respuesta.data
 
@@ -118,9 +116,7 @@ class OpenAPITests(TestCase):
                     if (metodo, ruta) in self.OPERACIONES_PUBLICAS:
                         self.assertFalse(operacion.get("security"))
                     else:
-                        self.assertEqual(
-                            operacion.get("security"), [{"jwtAuth": []}]
-                        )
+                        self.assertEqual(operacion.get("security"), [{"jwtAuth": []}])
 
     def test_swagger_ui_carga_recursos_fijados_y_opciones_utiles(self) -> None:
         respuesta = self.cliente.get("/api/docs/")

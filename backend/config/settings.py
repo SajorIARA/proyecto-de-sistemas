@@ -231,13 +231,9 @@ SCRAPER_USER_AGENT = os.getenv(
 SCRAPER_TIMEOUT_SECONDS = float(os.getenv("SCRAPER_TIMEOUT_SECONDS", "15"))
 SCRAPER_MAX_BYTES = int(os.getenv("SCRAPER_MAX_BYTES", str(2 * 1024 * 1024)))
 SCRAPER_MAX_REDIRECTS = int(os.getenv("SCRAPER_MAX_REDIRECTS", "3"))
-SCRAPER_MIN_INTERVAL_SECONDS = float(
-    os.getenv("SCRAPER_MIN_INTERVAL_SECONDS", "1")
-)
+SCRAPER_MIN_INTERVAL_SECONDS = float(os.getenv("SCRAPER_MIN_INTERVAL_SECONDS", "1"))
 SCRAPER_CHUNK_CHARS = int(os.getenv("SCRAPER_CHUNK_CHARS", "1200"))
-SCRAPER_CHUNK_OVERLAP_CHARS = int(
-    os.getenv("SCRAPER_CHUNK_OVERLAP_CHARS", "200")
-)
+SCRAPER_CHUNK_OVERLAP_CHARS = int(os.getenv("SCRAPER_CHUNK_OVERLAP_CHARS", "200"))
 
 # Inferencia local aislada (Ollama). En el compose de IA solo el worker de
 # scraping/RAG comparte red con Ollama; el servicio no se publica al host.

@@ -1,6 +1,6 @@
-from django.db import migrations, models
 import django.db.models
 import pgvector.django.vector
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
