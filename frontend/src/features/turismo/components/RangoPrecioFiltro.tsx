@@ -68,11 +68,12 @@ export function RangoPrecioFiltro({
               aria-pressed={activo}
               data-testid={`rango-precio-${rangoPrecio.id}`}
               className={[
-                "rounded-full border px-3.5 py-2 text-xs font-black transition duration-200",
+                "inline-flex min-h-11 items-center rounded-full border px-3.5 py-2 text-xs font-black transition duration-200",
+                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]",
                 "disabled:cursor-not-allowed disabled:opacity-55",
                 activo
                   ? "border-[#9A5B3C] bg-[#9A5B3C] text-[#FFFDF8] shadow-[0_8px_22px_rgba(154,91,60,0.25)]"
-                  : "border-[#5B3A29]/15 bg-[#FFFDF8]/80 text-[#514B43] hover:border-[#9A5B3C]/45 hover:text-[#8D4F32]",
+                  : "border-[#5B3A29]/15 bg-[#FFFDF8]/90 text-[#514B43] hover:border-[#9A5B3C]/45 hover:text-[#8D4F32]",
               ].join(" ")}
             >
               {rangoPrecio.etiqueta}
