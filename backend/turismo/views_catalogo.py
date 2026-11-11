@@ -9,7 +9,7 @@ from django.contrib.gis.measure import D
 from django.db.models import Avg, Count, Max, Min
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -28,6 +28,10 @@ from .serializers import (
 )
 
 
+@extend_schema_view(
+    list=extend_schema(auth=[]),
+    retrieve=extend_schema(auth=[]),
+)
 class CategoriaViewSet(ModelViewSet):
     """CRUD categorías. Lectura pública, escritura solo ADMIN."""
 
@@ -49,6 +53,10 @@ class CategoriaViewSet(ModelViewSet):
         instance.save(update_fields=["activo"])
 
 
+@extend_schema_view(
+    list=extend_schema(auth=[]),
+    retrieve=extend_schema(auth=[]),
+)
 class TipoTarifaViewSet(ModelViewSet):
     """CRUD tipos de tarifa. Lectura pública, escritura solo ADMIN."""
 
@@ -57,6 +65,10 @@ class TipoTarifaViewSet(ModelViewSet):
     queryset = TipoTarifa.objects.all().order_by("nombre")
 
 
+@extend_schema_view(
+    list=extend_schema(auth=[]),
+    retrieve=extend_schema(auth=[]),
+)
 class HorarioViewSet(ModelViewSet):
     """CRUD horarios. Lectura pública, escritura solo ADMIN."""
 
@@ -65,6 +77,10 @@ class HorarioViewSet(ModelViewSet):
     queryset = Horario.objects.select_related("atractivo").all()
 
 
+@extend_schema_view(
+    list=extend_schema(auth=[]),
+    retrieve=extend_schema(auth=[]),
+)
 class TarifaViewSet(ModelViewSet):
     """CRUD tarifas. Lectura pública, escritura solo ADMIN."""
 
@@ -73,6 +89,12 @@ class TarifaViewSet(ModelViewSet):
     queryset = Tarifa.objects.select_related("atractivo", "tipo_tarifa").all()
 
 
+@extend_schema_view(
+    list=extend_schema(auth=[]),
+    retrieve=extend_schema(auth=[]),
+    cercanos=extend_schema(auth=[]),
+    facetas=extend_schema(auth=[]),
+)
 class AtractivoViewSet(ReadOnlyModelViewSet):
     """Catálogo público de atractivos (solo lectura).
 
