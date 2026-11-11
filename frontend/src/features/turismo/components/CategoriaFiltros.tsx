@@ -35,7 +35,7 @@ export function CategoriaFiltros({
     <div
       role="group"
       aria-label="Filtrar catálogo por categoría"
-      className="flex items-center gap-3 overflow-x-auto pb-1 sin-scrollbar"
+      className="flex items-center gap-2.5 overflow-x-auto pb-1 pt-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] sm:gap-3 [&::-webkit-scrollbar]:hidden"
     >
       <Chip
         etiqueta={CATEGORIA_TODOS}
@@ -83,11 +83,12 @@ function Chip({
       disabled={disabled}
       aria-pressed={activo}
       className={[
-        "inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-black transition duration-200",
+        "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-black transition duration-200",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]",
         "disabled:cursor-not-allowed disabled:opacity-55",
         activo
           ? "border-[#2F4B3B] bg-[#2F4B3B] text-[#FFFDF8] shadow-[0_8px_22px_rgba(47,75,59,0.28)]"
-          : "border-[#5B3A29]/15 bg-[#FFFDF8]/80 text-[#514B43] hover:border-[#2F4B3B]/40 hover:bg-[#FFFDF8] hover:text-[#233128]",
+          : "border-[#5B3A29]/15 bg-[#FFFDF8]/90 text-[#514B43] hover:border-[#2F4B3B]/40 hover:bg-[#FFFDF8] hover:text-[#233128]",
       ].join(" ")}
     >
       {insignia && (

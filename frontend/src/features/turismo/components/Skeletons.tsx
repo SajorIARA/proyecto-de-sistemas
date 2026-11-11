@@ -11,6 +11,7 @@ export function DestinoCardSkeleton() {
     <div
       className="flex h-full flex-col overflow-hidden rounded-[1.85rem] border border-[#5B3A29]/[0.06] bg-[#FFFDF8] shadow-[0_16px_40px_rgba(72,55,38,0.06)]"
       data-testid="destino-card-skeleton"
+      aria-hidden="true"
     >
       <div className="flex h-[3px] shrink-0 overflow-hidden">
         <span className="flex-1 bg-[#2F4B3B]/20" />
@@ -20,19 +21,21 @@ export function DestinoCardSkeleton() {
       </div>
 
       <div className="relative aspect-[4/3] shrink-0 overflow-hidden bg-[#E9DFC9]">
-        <div className="absolute left-4 top-4 h-7 w-28 rounded-full bg-[#263029]/15" />
+        <div className="absolute left-4 top-4 h-7 w-28 rounded-full bg-[#263029]/12" />
 
         <Pulso />
       </div>
 
-      <div className="flex flex-1 flex-col p-6">
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
         <Pulso className="h-5 w-3/4" />
         <Pulso className="mt-3 h-3.5 w-1/2" />
         <Pulso className="mt-5 h-3 w-full" />
         <Pulso className="mt-2 h-3 w-11/12" />
         <Pulso className="mt-2 h-3 w-2/3" />
 
-        <div className="mt-6 h-[50px] w-full rounded-full bg-[#2F4B3B]/15" />
+        <div className="mt-auto pt-6">
+          <div className="h-12 w-full animate-pulse rounded-full bg-[#2F4B3B]/12" />
+        </div>
       </div>
     </div>
   );
