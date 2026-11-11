@@ -81,3 +81,15 @@ export interface PasswordChangePayload {
   new_password: string;
   new_password_confirm: string;
 }
+
+/**
+ * Respuesta de `POST /api/auth/password/change/`.
+ *
+ * El backend revoca todos los refresh y emite un par nuevo para la sesión
+ * que hizo el cambio, de modo que no expira al vencer el access actual.
+ */
+export interface PasswordChangeResponse {
+  detail?: string;
+  access?: string;
+  refresh?: string;
+}

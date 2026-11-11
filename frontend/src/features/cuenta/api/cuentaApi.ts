@@ -18,6 +18,7 @@ import { api } from "../../../api/http";
 import { AUTH_ENDPOINTS, USUARIOS_PAGE_SIZE } from "../../../config/auth";
 import type {
   PasswordChangePayload,
+  PasswordChangeResponse,
   UsuarioAdmin,
 } from "../../../types/auth";
 import type { Paginado } from "../../../types/turismo";
@@ -189,12 +190,18 @@ export const cuentaApi = {
   /**
    * Cambio de contraseña propia (`PasswordChangeView`).
    *
-   * No devuelve cuerpo útil (el backend responde 204) y **no** invalida los
-   * tokens emitidos, así que la sesión sigue viva sin pedir un login nuevo.
+   * El backend revoca los refresh anteriores y devuelve un par nuevo para la
+   * sesión actual; `useCambiarPassword` lo persiste para no cerrar sesión.
    */
-  async cambiarPassword(payload: PasswordChangePayload): Promise<void> {
+  async cambiarPassword(
+    payload: PasswordChangePayload,
+  ): Promise<PasswordChangeResponse> {
     try {
-      await api.post(AUTH_ENDPOINTS.passwordChange, payload);
+      const { data } = await api.post<PasswordChangeResponse>(
+        AUTH_ENDPOINTS.passwordChange,
+        payload,
+      );
+      return data;
     } catch (error) {
       throw aCuentaApiError(error);
     }

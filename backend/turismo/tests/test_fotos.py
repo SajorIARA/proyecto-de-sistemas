@@ -91,10 +91,36 @@ class FotoAdminCRUDTests(TestCase):
             atractivo=self.atractivo,
             public_id="turismo/dev/portada",
             url="https://res.cloudinary.com/x/portada",
+            estado=Foto.ESTADO_COMPLETED,
             orden=0,
         )
         resp = APIClient().get("/api/turismo/atractivos/")
         self.assertEqual(resp.data["results"][0]["imagenes"], ["turismo/dev/portada"])
+
+    def test_catalogo_excluye_pendientes_y_videos(self) -> None:
+        Foto.objects.create(
+            atractivo=self.atractivo,
+            public_id="turismo/dev/pendiente",
+            estado=Foto.ESTADO_PENDING,
+            orden=0,
+        )
+        Foto.objects.create(
+            atractivo=self.atractivo,
+            public_id="turismo/dev/video",
+            tipo=Foto.TIPO_VIDEO,
+            estado=Foto.ESTADO_COMPLETED,
+            orden=1,
+        )
+        Foto.objects.create(
+            atractivo=self.atractivo,
+            public_id="turismo/dev/lista",
+            estado=Foto.ESTADO_COMPLETED,
+            orden=2,
+        )
+
+        resp = APIClient().get("/api/turismo/atractivos/")
+
+        self.assertEqual(resp.data["results"][0]["imagenes"], ["turismo/dev/lista"])
 
     def test_admin_serializa_fotos_del_destino(self) -> None:
         Foto.objects.create(

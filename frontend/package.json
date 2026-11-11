@@ -15,11 +15,6 @@
     "test:watch": "vitest",
     "preview": "vite preview --host 0.0.0.0"
   },
-  "pnpm": {
-    "auditConfig": {
-      "ignoreGhsas": ["GHSA-587h-7wmj-h5pm"]
-    }
-  },
   "dependencies": {
     "@tanstack/react-query": "^5.105.0",
     "axios": "^1.21.0",
@@ -62,11 +57,6 @@
       "picomatch": "^4.0.7",
       "tar": "^7.5.22",
       "source-map-js": ">=1.2.2"
-    },
-    "auditConfig": {
-      "ignoreGhsas": [
-        "GHSA-587h-7wmj-h5pm"
-      ]
     }
   }
 }

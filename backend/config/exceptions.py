@@ -44,18 +44,21 @@ def api_exception_handler(exc, context):
         logger.warning("ValidationError de Django en %s: %s", context, exc)
         return Response(_detail(exc), status=status.HTTP_400_BAD_REQUEST)
 
+    # ProtectedError hereda de IntegrityError: debe evaluarse antes o la
+    # respuesta genérica de integridad lo tapa (el registro en uso nunca
+    # llegaría a su mensaje específico).
+    if isinstance(exc, ProtectedError):
+        logger.warning("ProtectedError en %s", context)
+        return Response(
+            {"detail": "El registro está en uso y no puede eliminarse."},
+            status=status.HTTP_409_CONFLICT,
+        )
+
     if isinstance(exc, IntegrityError):
         # No filtrar el texto de la BD (expone nombres de tablas/columnas).
         logger.exception("IntegrityError en %s", context)
         return Response(
             {"detail": "Conflicto de integridad con la base de datos."},
-            status=status.HTTP_409_CONFLICT,
-        )
-
-    if isinstance(exc, ProtectedError):
-        logger.warning("ProtectedError en %s", context)
-        return Response(
-            {"detail": "El registro está en uso y no puede eliminarse."},
             status=status.HTTP_409_CONFLICT,
         )
 

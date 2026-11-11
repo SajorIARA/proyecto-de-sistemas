@@ -9,6 +9,7 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "../../auth/context/AuthContext";
+import { tokenStorage } from "../../../lib/tokenStorage";
 import { cuentaApi, CuentaApiError } from "../api/cuentaApi";
 import type { PasswordChangePayload } from "../../../types/auth";
 
@@ -53,9 +54,10 @@ export interface UseCambiarPasswordResultado {
 /**
  * Cambio de contraseña.
  *
- * No hay nada que invalidar en caché: `PasswordChangeView` no invalida los
- * tokens emitidos, así que la sesión sigue activa con el mismo JWT. Cambiar
- * la contraseña propia no altera la tabla de usuarios.
+ * El backend blacklistea todos los refresh y emite uno nuevo para esta
+ * sesión: hay que persistir el par devuelto o la SPA se cae al expirar el
+ * access. No hay nada más que invalidar en caché: cambiar la contraseña
+ * propia no altera la tabla de usuarios.
  */
 export function useCambiarPassword(): UseCambiarPasswordResultado {
   const mutacion = useMutation({
@@ -71,7 +73,12 @@ export function useCambiarPassword(): UseCambiarPasswordResultado {
     // la mutación refleje realmente la petición en curso.
     cambiar: async (payload) => {
       try {
-        await mutacion.mutateAsync(payload);
+        const resultado = await mutacion.mutateAsync(payload);
+
+        if (resultado?.access && resultado?.refresh) {
+          tokenStorage.setTokens(resultado.access, resultado.refresh);
+        }
+
         return true;
       } catch {
         return false;
