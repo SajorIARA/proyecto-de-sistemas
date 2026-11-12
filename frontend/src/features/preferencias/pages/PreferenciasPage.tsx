@@ -6,6 +6,7 @@
  * restricciones duras a `/api/recomendaciones/consultas/`.
  */
 
+import { Link } from "react-router-dom";
 import { PrivateShell } from "../../cuenta/components/PrivateShell";
 import { PreferenciasForm } from "../components/PreferenciasForm";
 
@@ -60,6 +61,19 @@ export function PreferenciasPage() {
               detalle="Opcional. Debe estar dentro del área de La Paz; habilita el cálculo de distancias."
             />
           </ul>
+
+          <Link
+            to="/mi-cuenta/recomendaciones"
+            className="group flex items-center justify-between gap-3 rounded-2xl bg-[#2F4B3B] px-5 py-4 text-sm font-black text-[#FFFDF8] transition hover:bg-[#3C5C48] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#2F4B3B]"
+          >
+            Ver mis recomendaciones
+            <span
+              aria-hidden="true"
+              className="transition-transform group-hover:translate-x-1"
+            >
+              →
+            </span>
+          </Link>
         </aside>
       </div>
     </PrivateShell>

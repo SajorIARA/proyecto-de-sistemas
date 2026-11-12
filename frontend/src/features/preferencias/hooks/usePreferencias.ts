@@ -9,6 +9,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   guardarPerfil,
+  listarConsultas,
   listarMisPreferencias,
   PreferenciasApiError,
   type GuardarPerfilInput,
@@ -18,6 +19,7 @@ import type { PreferenciaUsuario } from "../../../types/preferencias";
 /** Claves centralizadas para invalidar sin repetir strings. */
 export const KeysPreferencias = {
   misPreferencias: () => ["preferencias", "mias"] as const,
+  ultimaConsulta: () => ["preferencias", "ultimaConsulta"] as const,
 };
 
 const PREFERENCIAS_STALE_MS = 2 * 60 * 1000;
@@ -27,6 +29,21 @@ export function useMisPreferencias() {
   return useQuery({
     queryKey: KeysPreferencias.misPreferencias(),
     queryFn: listarMisPreferencias,
+    staleTime: PREFERENCIAS_STALE_MS,
+  });
+}
+
+/**
+ * Última consulta de recorrido guardada por el usuario.
+ *
+ * Se usa para precargar presupuesto, duración y punto de partida en la
+ * pantalla de recomendaciones. Devuelve `null` si todavía no hay ninguna.
+ */
+export function useUltimaConsulta() {
+  return useQuery({
+    queryKey: KeysPreferencias.ultimaConsulta(),
+    queryFn: listarConsultas,
+    select: (consultas) => consultas[0] ?? null,
     staleTime: PREFERENCIAS_STALE_MS,
   });
 }
@@ -56,6 +73,12 @@ export function useGuardarPerfil(): UseGuardarPerfilResultado {
         KeysPreferencias.misPreferencias(),
         resultado.preferencias,
       );
+
+      // Cada guardado puede crear una consulta nueva: la pantalla de
+      // recomendaciones debe verla como «última consulta».
+      void queryClient.invalidateQueries({
+        queryKey: KeysPreferencias.ultimaConsulta(),
+      });
     },
   });
 
