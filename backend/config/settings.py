@@ -83,6 +83,16 @@ DATABASES = {
     }
 }
 
+# Soporte para DATABASE_URL (estándar en servicios como Supabase/Neon/Railway)
+import dj_database_url
+if os.getenv("DATABASE_URL"):
+    DATABASES["default"] = dj_database_url.config(
+        default=DATABASES["default"],
+        conn_max_age=600,
+        ssl_require=True if not DEBUG else False
+    )
+
+
 LANGUAGE_CODE = "es-bo"
 TIME_ZONE = os.getenv("DJANGO_TIME_ZONE", "America/La_Paz")
 USE_I18N = True
