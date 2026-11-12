@@ -92,7 +92,9 @@ class OpenAPITests(TestCase):
             for metodo, operacion in item.items()
             if metodo in self.METODOS_OPENAPI
         ]
-        self.assertEqual(len(operaciones), 82)
+        # Qa deshabilita PUT para consultas y admite actualizaciones parciales
+        # con PATCH; el contrato resultante contiene 81 operaciones.
+        self.assertEqual(len(operaciones), 81)
         ids = [operacion["operationId"] for operacion in operaciones]
         self.assertEqual(len(ids), len(set(ids)))
 
