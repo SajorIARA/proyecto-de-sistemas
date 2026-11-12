@@ -261,7 +261,7 @@ class ConocimientoFragmentoCRUDTests(TestCase):
             fuente=self.fuente,
             numero_fragmento=0,
             contenido="Texto",
-            embedding=[0.0] * 1536,
+            embedding=[0.0] * 768,
         )
         resp = self.cliente.get("/api/conocimiento/fragmentos/")
         self.assertEqual(resp.status_code, 200)
@@ -273,7 +273,7 @@ class ConocimientoFragmentoCRUDTests(TestCase):
                 "fuente": str(self.fuente.id_fuente),
                 "numero_fragmento": 1,
                 "contenido": "Nuevo fragmento",
-                "embedding": [0.0] * 1536,
+                "embedding": [0.0] * 768,
             },
             format="json",
         )
