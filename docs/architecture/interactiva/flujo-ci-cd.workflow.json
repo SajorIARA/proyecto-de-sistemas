@@ -41,7 +41,7 @@
           "images",
           "production"
         ],
-        "note": "El release con semver llega a Docker Hub y despliega a producción."
+        "note": "El release con semver llega a GHCR y despliega a producción."
       }
     ]
   },
@@ -64,7 +64,7 @@
     },
     {
       "id": "registry",
-      "label": "Docker Hub"
+      "label": "GHCR"
     },
     {
       "id": "deploy",
@@ -176,7 +176,7 @@
       "lane": "registry",
       "col": 4,
       "type": "cloud",
-      "label": "Docker Hub",
+      "label": "GHCR",
       "sublabel": "1.2.3 · 1.2 · 1 · latest · SHA",
       "width": 132
     },

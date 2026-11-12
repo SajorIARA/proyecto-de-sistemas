@@ -99,6 +99,15 @@ CORS_ALLOWED_ORIGINS = [
     if origin.strip()
 ]
 
+# Orígenes de confianza para CSRF. En Railway el dominio público se asigna
+# después de crear el servicio, así que se inyecta por variable de entorno
+# (p. ej. https://<servicio>.up.railway.app).
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
 # Seguridad
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -132,8 +141,12 @@ REST_FRAMEWORK = {
         "anon": "100/hour",
         "user": "1000/hour",
         "auth": "30/minute",
+        "rag_anon": os.getenv("RAG_THROTTLE_ANON", "10/minute"),
+        "rag_user": os.getenv("RAG_THROTTLE_USER", "30/minute"),
     },
-    "NUM_PROXIES": 1,
+    # Nº de proxies de confianza delante de Django. Local: 1 (Nginx).
+    # Railway: 2 (edge de Railway + proxy interno).
+    "NUM_PROXIES": int(os.getenv("DJANGO_NUM_PROXIES", "1")),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     # ValidationError/IntegrityError/ProtectedError de Django -> 400/409
     # en vez de 500 (ver config/exceptions.py).
@@ -235,8 +248,9 @@ SCRAPER_MIN_INTERVAL_SECONDS = float(os.getenv("SCRAPER_MIN_INTERVAL_SECONDS", "
 SCRAPER_CHUNK_CHARS = int(os.getenv("SCRAPER_CHUNK_CHARS", "1200"))
 SCRAPER_CHUNK_OVERLAP_CHARS = int(os.getenv("SCRAPER_CHUNK_OVERLAP_CHARS", "200"))
 
-# Inferencia local aislada (Ollama). En el compose de IA solo el worker de
-# scraping/RAG comparte red con Ollama; el servicio no se publica al host.
+# Inferencia local aislada (Ollama). En el compose de IA el worker y el
+# backend del asistente comparten red con Ollama; el servicio no se publica
+# al host.
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434").rstrip("/")
 OLLAMA_EMBED_MODEL = os.getenv("OLLAMA_EMBED_MODEL", "embeddinggemma:300m")
 OLLAMA_LLM_MODEL = os.getenv("OLLAMA_LLM_MODEL", "qwen3:0.6b")
@@ -251,6 +265,18 @@ OLLAMA_RETRIES = int(os.getenv("OLLAMA_RETRIES", "2"))
 OLLAMA_CONTEXT_LENGTH = int(os.getenv("OLLAMA_CONTEXT_LENGTH", "4096"))
 OLLAMA_MAX_PREDICT = int(os.getenv("OLLAMA_MAX_PREDICT", "384"))
 SCRAPER_AUTO_EMBED = os.getenv("SCRAPER_AUTO_EMBED", "0") == "1"
+
+# Asistente RAG público (POST /api/conocimiento/consultar/). El umbral de
+# distancia coseno y el Top-K se pueden ajustar sin tocar código.
+RAG_TOP_K = int(os.getenv("RAG_TOP_K", "4"))
+RAG_UMBRAL = float(os.getenv("RAG_UMBRAL", "0.65"))
+RAG_MAX_PREGUNTA = int(os.getenv("RAG_MAX_PREGUNTA", "500"))
+if not 1 <= RAG_TOP_K <= 8:
+    raise ImproperlyConfigured("RAG_TOP_K debe estar entre 1 y 8.")
+if not 0 <= RAG_UMBRAL <= 2:
+    raise ImproperlyConfigured("RAG_UMBRAL debe estar entre 0 y 2.")
+if RAG_MAX_PREGUNTA < 1:
+    raise ImproperlyConfigured("RAG_MAX_PREGUNTA debe ser mayor que 0.")
 
 # Logging
 LOGGING = {

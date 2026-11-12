@@ -1,8 +1,10 @@
 # Diagrama de Despliegue — Sistema Turístico La Paz
 
 > Local: 8 servicios (`docker-compose.yml`) con runserver + Vite dev.
-> Producción: 7 servicios (`docker-compose.prod.yml`, sin Flower) con
+> Producción en VPS: 7 servicios (`docker-compose.prod.yml`, sin Flower) con
 > gunicorn + frontend estático. Solo el puerto 80 se publica.
+> Producción en Railway (PaaS): 8 servicios con imágenes GHCR, TLS en el
+> edge y Ollama privado. Ver §PaaS al final.
 
 ```mermaid
 flowchart TB
@@ -58,7 +60,7 @@ flowchart TB
     end
 
     subgraph External["Servicios Externos"]
-        DockerHub[Docker Hub — raisiar/<br/>backend · frontend · proxy · db]
+        GHCR[GHCR — ghcr.io/sajoriara/<br/>backend · frontend · proxy · db]
         Railway[Railway — Staging/Producción]
         GitHub[GitHub Actions — 11 workflows]
     end
@@ -70,7 +72,7 @@ flowchart TB
         Build[Docker Build --no-cache]
         Security[Trivy + CodeQL + Gitleaks<br/>pip-audit + pnpm audit]
         E2E[Smoke E2E<br/>curl / + /api/health/]
-        Push[Docker Hub Push]
+        Push[GHCR Push]
         Deploy[Railway Deploy]
     end
 
@@ -107,7 +109,60 @@ flowchart TB
     Build --> Security
     Security --> E2E
     E2E --> Push
-    Push --> DockerHub
-    DockerHub --> Railway
+    Push --> GHCR
+    GHCR --> Railway
     Railway --> Prod
 ```
+
+## PaaS: Railway
+
+> Topología del despliegue público. Solo `proxy` tiene dominio; el resto usa
+> la red privada `<servicio>.railway.internal` (IPv6 o dual-stack).
+
+```mermaid
+flowchart TB
+    User[Navegador del Turista] -->|HTTPS 443| Edge[Edge de Railway<br/>TLS terminado]
+
+    subgraph Railway["Proyecto Railway — un entorno"]
+        Edge -->|HTTP · $PORT| Proxy[proxy<br/>Nginx · /healthz]
+
+        Proxy -->|/api/*| Backend[backend<br/>Gunicorn :8000]
+        Proxy -->|/*| Frontend[frontend<br/>Nginx :80]
+
+        Backend --> DB[(PostgreSQL + PostGIS + pgvector<br/>:5432 · volumen)]
+        Backend --> Redis[(Redis :6379)]
+        Backend --> Ollama[Ollama :11434<br/>embeddinggemma + qwen3]
+        Backend -->|encola| Redis
+
+        Worker[worker · Celery] --> Redis
+        Worker --> DB
+        Worker --> Ollama
+
+        Beat[beat · Celery Beat] --> Redis
+        Beat --> DB
+    end
+
+    Backend -->|upload| Cloudinary[Cloudinary]
+    Worker -->|upload| Cloudinary
+    Frontend -->|f_auto,q_auto| Cloudinary
+
+    GHCR[GHCR público<br/>backend · frontend · proxy] -->|docker pull| Railway
+```
+
+Notas de despliegue:
+
+- **TLS:** lo termina Railway. No hay certbot ni puerto 443 en Nginx.
+- **Proxy:** escucha en `$PORT`, resuelve `frontend`/`backend` en tiempo de
+  petición con `resolver [fd12::10]` y reenvía `X-Forwarded-For`.
+- **Backend/frontend:** escuchan en dual-stack (`[::]`) para ser alcanzables
+  por la red privada.
+- **Django:** `DJANGO_NUM_PROXIES=2` (edge + proxy),
+  `DJANGO_SECURE_SSL_REDIRECT=0` y `SERVE_DOCS=0`.
+- **Migraciones:** pre-deploy command del servicio `backend`
+  (`python manage.py migrate --noinput`), no en build.
+- **Ollama:** servicio privado con volumen `/root/.ollama`; los modelos se
+  descargan una vez y sobreviven a los redespliegues.
+- **Imágenes:** `ghcr.io/sajoriara/proyecto-de-sistemas-*`; la base de datos
+  usa el template PostGIS + pgvector, no la imagen `db`.
+
+Guía operativa completa: [`deploy/railway/README.md`](../../deploy/railway/README.md).

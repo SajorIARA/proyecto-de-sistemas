@@ -1,28 +1,36 @@
 # Orquestación del monorepo "Sistema turístico de La Paz (Turismo Melgarejo)".
 #
 #   compose project : turismo-melgarejo
-#   Docker Hub      : raisiar/proyecto-de-sistemas-{db,backend,frontend,proxy}
+#   GHCR            : ghcr.io/sajoriara/proyecto-de-sistemas-{db,backend,frontend,proxy}
+#   local (compose) : raisiar/proyecto-de-sistemas-{db,backend,frontend,proxy}
 #
 # Convención de versionado (IMPORTANTE, sincronizada con docker-compose.yml):
 #   - db y proxy: infraestructura estable -> tag `latest`.
 #   - backend: semver (BACKEND_TAG); frontend: semver (FRONTEND_TAG). El tag
 #     por defecto del compose controla qué versión publicada usa cada servicio.
 #   - Al tocar código, bumpear la tag correspondiente AQUÍ y en docker-compose.yml.
+#   - `make push` publica en GHCR; `make push-dockerhub` queda como legado.
 
 COMPOSE ?= docker compose
 DOCKER  ?= docker
 REPO    := raisiar/proyecto-de-sistemas
+GHCR_REPO ?= ghcr.io/sajoriara/proyecto-de-sistemas
 
 BACKEND_CTR  := turismo-melgarejo_backend
-BACKEND_TAG  ?= 1.0.8
-FRONTEND_TAG ?= 1.0.6
+BACKEND_TAG  ?= 1.0.9
+FRONTEND_TAG ?= 1.0.7
 
 BACKEND_IMG  := $(REPO)-backend:$(BACKEND_TAG)
 FRONTEND_IMG := $(REPO)-frontend:$(FRONTEND_TAG)
 DB_IMG       := $(REPO)-db:latest
 PROXY_IMG    := $(REPO)-proxy:latest
 
-.PHONY: help build build-backend build-frontend build-db build-proxy push \
+GHCR_BACKEND_IMG  := $(GHCR_REPO)-backend:$(BACKEND_TAG)
+GHCR_FRONTEND_IMG := $(GHCR_REPO)-frontend:$(FRONTEND_TAG)
+GHCR_DB_IMG       := $(GHCR_REPO)-db:latest
+GHCR_PROXY_IMG    := $(GHCR_REPO)-proxy:latest
+
+.PHONY: help build build-backend build-frontend build-db build-proxy push push-dockerhub \
         test test-backend test-frontend lint migrate seed up down ps logs
 
 help: ## Muestra los objetivos disponibles
@@ -48,7 +56,18 @@ build-proxy: ## proxy:latest (nginx)
 	$(DOCKER) build -t $(PROXY_IMG) -f proxy/Dockerfile proxy
 
 ## -------- Publicación --------
-push: build ## Construye y publica las 4 imágenes en Docker Hub
+push: build ## Construye, etiqueta y publica las 4 imágenes en GHCR
+	@echo "Requisito: docker login ghcr.io (usuario + token con write:packages)"
+	$(DOCKER) tag $(BACKEND_IMG) $(GHCR_BACKEND_IMG)
+	$(DOCKER) tag $(FRONTEND_IMG) $(GHCR_FRONTEND_IMG)
+	$(DOCKER) tag $(DB_IMG) $(GHCR_DB_IMG)
+	$(DOCKER) tag $(PROXY_IMG) $(GHCR_PROXY_IMG)
+	$(DOCKER) push $(GHCR_BACKEND_IMG)
+	$(DOCKER) push $(GHCR_FRONTEND_IMG)
+	$(DOCKER) push $(GHCR_DB_IMG)
+	$(DOCKER) push $(GHCR_PROXY_IMG)
+
+push-dockerhub: build ## Legado: publica las 4 imágenes en Docker Hub
 	$(DOCKER) push $(BACKEND_IMG)
 	$(DOCKER) push $(FRONTEND_IMG)
 	$(DOCKER) push $(DB_IMG)
