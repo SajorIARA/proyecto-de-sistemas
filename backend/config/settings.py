@@ -2,6 +2,7 @@ import os
 import sys
 from datetime import timedelta
 from pathlib import Path
+from typing import Any
 
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
@@ -73,7 +74,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-DATABASES = {
+DATABASES: dict[str, Any] = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": os.getenv("POSTGRES_DB"),
@@ -87,7 +88,7 @@ DATABASES = {
 # Soporte para DATABASE_URL (estándar en servicios como Supabase/Neon/Railway)
 if os.getenv("DATABASE_URL"):
     DATABASES["default"] = dj_database_url.config(
-        default=DATABASES["default"],
+        default=os.getenv("DATABASE_URL") or "",
         conn_max_age=600,
         ssl_require=True if not DEBUG else False,
     )
