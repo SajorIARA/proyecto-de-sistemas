@@ -155,6 +155,28 @@ class PasswordChangeTests(TestCase):
         )
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_cambio_devuelve_par_nuevo_valido(self) -> None:
+        resp = self.cliente.post(
+            self.URL,
+            {
+                "current_password": "clave1234!",
+                "new_password": "nuevaClave99!",
+                "new_password_confirm": "nuevaClave99!",
+            },
+            format="json",
+        )
+
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertIn("access", resp.data)
+        self.assertIn("refresh", resp.data)
+
+        refresco = APIClient().post(
+            "/api/auth/token/refresh/",
+            {"refresh": resp.data["refresh"]},
+            format="json",
+        )
+        self.assertEqual(refresco.status_code, status.HTTP_200_OK)
+
     def test_cambio_invalida_refresh_previo(self) -> None:
         login = APIClient().post(
             "/api/auth/login/",

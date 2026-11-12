@@ -29,7 +29,7 @@ ARG VITE_CLOUDINARY_CLOUD_NAME=
 ENV VITE_CLOUDINARY_CLOUD_NAME=$VITE_CLOUDINARY_CLOUD_NAME
 
 # type-check antes de horneear: un error de tipos no debe llegar a prod
-RUN ./node_modules/.bin/tsc --noEmit && ./node_modules/.bin/vite build
+RUN ./node_modules/.bin/tsc --noEmit -p tsconfig.app.json && ./node_modules/.bin/vite build
 
 # ============================================================
 # STAGE 2: runtime (Nginx sirve el SPA)

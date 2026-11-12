@@ -67,7 +67,7 @@ test-frontend: ## Tests Vitest (frontend) en contenedor node efímero
 ## -------- Calidad --------
 lint: ## ruff + black + makemigrations --check / eslint + tests (backend y frontend)
 	$(DOCKER) run --rm -v "$$(pwd)/backend:/app" -w /app python:3.11-slim sh -c \
-		"pip install -q 'ruff==0.16.9' 'black==26.5.1' && ruff check . && black --check ."
+		"pip install -q 'ruff==0.17.3' 'black==26.10.1' && ruff check . && black --check ."
 	$(DOCKER) run --rm -v "$$(pwd)/backend:/app" -w /app $(BACKEND_IMG) \
 		python manage.py makemigrations --check --dry-run
 	$(DOCKER) run --rm -v "$$(pwd)/frontend:/app" -w /app node:22-alpine \

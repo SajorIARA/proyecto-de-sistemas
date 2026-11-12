@@ -95,7 +95,7 @@ export function getApiFieldErrors(error: unknown): ErroresRegistro {
         if (!campos[campo]) delete campos[campo];
       });
 
-      if (Object.keys(campos).length > 0) {
+      if (Object.keys(campos).length > 0 || general) {
         return { campos, general };
       }
     }

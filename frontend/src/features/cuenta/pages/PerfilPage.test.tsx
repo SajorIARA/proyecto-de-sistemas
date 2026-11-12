@@ -171,7 +171,11 @@ describe("PerfilPage", () => {
   it("envía el cambio de contraseña y confirma con un mensaje", async () => {
     sesion();
 
-    vi.mocked(cuentaApi.cambiarPassword).mockResolvedValue(undefined);
+    vi.mocked(cuentaApi.cambiarPassword).mockResolvedValue({
+      detail: "Contraseña actualizada correctamente.",
+      access: "access-nuevo",
+      refresh: "refresh-nuevo",
+    });
 
     renderPerfil();
 
@@ -229,6 +233,10 @@ describe("PerfilPage", () => {
       new_password: "Nueva12345!",
       new_password_confirm: "Nueva12345!",
     });
+
+    // El backend revocó los refresh: la sesión debe quedarse con el par nuevo.
+    expect(localStorage.getItem("turismo_access_token")).toBe("access-nuevo");
+    expect(localStorage.getItem("turismo_refresh_token")).toBe("refresh-nuevo");
   });
 
   // ----------------------------------------------------------

@@ -147,11 +147,19 @@ export function AdminDestinoFormPage() {
 
     for (let indice = 0; indice < lista.length; indice += 1) {
       const pendiente = lista[indice];
+      // En un reintento `lista` solo trae los fallidos: usar `indice` les
+      // reasignaría el orden desde 0 y podría duplicar el de una foto ya
+      // subida. Se conserva la posición original dentro de la galería.
+      const posicion = archivosPendientes.findIndex(
+        (item) => item.id === pendiente.id,
+      );
+      const orden = posicion >= 0 ? posicion : indice;
+
       actualizarItem(pendiente.id, { estado: "pendiente", porcentaje: 0 });
 
       try {
         await subirFotoDestino(
-          { atractivo: idAtractivo, archivo: pendiente.archivo, orden: indice },
+          { atractivo: idAtractivo, archivo: pendiente.archivo, orden },
           (porcentaje) => actualizarItem(pendiente.id, { porcentaje }),
         );
         actualizarItem(pendiente.id, { estado: "ok", porcentaje: 100 });
