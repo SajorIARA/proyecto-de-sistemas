@@ -3,6 +3,7 @@ import sys
 from datetime import timedelta
 from pathlib import Path
 
+import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -84,12 +85,11 @@ DATABASES = {
 }
 
 # Soporte para DATABASE_URL (estándar en servicios como Supabase/Neon/Railway)
-import dj_database_url
 if os.getenv("DATABASE_URL"):
     DATABASES["default"] = dj_database_url.config(
         default=DATABASES["default"],
         conn_max_age=600,
-        ssl_require=True if not DEBUG else False
+        ssl_require=True if not DEBUG else False,
     )
 
 
