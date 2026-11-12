@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -56,6 +56,9 @@ class UsuarioListSerializer(serializers.ModelSerializer):
             "fecha_creacion",
             "roles",
         ]
+        # Todo el registro es de solo lectura (endpoint de lista admin):
+        # sin read_only_fields, un POST a /api/auth/usuarios/ intentaría
+        # escribir cada campo (password incluso).
         read_only_fields = fields
 
 
@@ -85,19 +88,25 @@ class RegisterSerializer(serializers.Serializer):
     ) -> tuple[Usuario, RefreshToken, RefreshToken]:
         password = validated_data.pop("password")
         validated_data.pop("password_confirm")
-        with transaction.atomic():
-            usuario = Usuario.objects.create_user(
-                email=validated_data["email"],
-                password=password,
-                nombre=validated_data["nombre"],
-            )
-            rol_turista, _ = Rol.objects.get_or_create(
-                codigo="TOURIST",
-                defaults={
-                    "nombre": "Turista",
-                    "descripcion": "Usuario visitante de la plataforma",
-                },
-            )
-            usuario.roles.add(rol_turista)
+        try:
+            with transaction.atomic():
+                usuario = Usuario.objects.create_user(
+                    email=validated_data["email"],
+                    password=password,
+                    nombre=validated_data["nombre"],
+                )
+                rol_turista, _ = Rol.objects.get_or_create(
+                    codigo=Rol.Codes.TOURIST,
+                    defaults={
+                        "nombre": "Turista",
+                        "descripcion": "Usuario visitante de la plataforma",
+                    },
+                )
+                usuario.roles.add(rol_turista)
+        except IntegrityError:
+            # Carrera entre validate() y create(): email duplicado -> 400, no 500.
+            raise serializers.ValidationError(
+                {"email": ["Ya existe un usuario con este email."]}
+            ) from None
         refresh = RefreshToken.for_user(usuario)
         return usuario, refresh, refresh.access_token

@@ -67,9 +67,9 @@ docker compose -f docker-compose.prod.yml up -d --build
 # Backend (tests Django)
 docker compose run --rm backend python manage.py test
 
-# Backend (linters)
-docker compose run --rm backend ruff check .
-docker compose run --rm backend black --check .
+# Backend (linters: ruff/black no están en la imagen prod, se usa python slim)
+docker run --rm -v "$PWD/backend:/app" -w /app python:3.11-slim sh -c \
+  "pip install -q 'ruff==0.17.3' 'black==26.10.1' && ruff check . && black --check ."
 
 # Backend (datos de referencia: roles, categorías, atractivos)
 docker compose run --rm backend python manage.py seed
@@ -103,6 +103,8 @@ Ver `.env.example`. Las claves principales:
 | `DJANGO_DEBUG` | `1` en desarrollo, `0` en producción |
 | `DJANGO_ALLOWED_HOSTS` | Hosts permitidos, separados por coma |
 | `CORS_ALLOWED_ORIGINS` | Orígenes permitidos, separados por coma |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Credenciales de Cloudinary (firma de subidas y CDN). Vacías = medios deshabilitados |
+| `VITE_CLOUDINARY_CLOUD_NAME` | Mismo cloud expuesto al frontend para armar las URLs de las imágenes |
 | `IMAGE_TAG` | Etiqueta de imágenes en producción |
 
 ## CI/CD y Git

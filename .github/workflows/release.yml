@@ -32,10 +32,12 @@ jobs:
           MAJOR="${VER%%.*}"
           MINOR="${VER%.*}"
           SHA="${GITHUB_SHA::12}"
-          echo "semver=$VER" >> "$GITHUB_OUTPUT"
-          echo "major=$MAJOR" >> "$GITHUB_OUTPUT"
-          echo "minor=$MINOR" >> "$GITHUB_OUTPUT"
-          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          {
+            echo "semver=$VER"
+            echo "major=$MAJOR"
+            echo "minor=$MINOR"
+            echo "sha=$SHA"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Login to Docker Hub
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9  # v3.7.0
@@ -67,6 +69,8 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           platforms: linux/amd64
+          build-args: |
+            VITE_CLOUDINARY_CLOUD_NAME=${{ vars.VITE_CLOUDINARY_CLOUD_NAME }}
           tags: |
             ${{ env.IMAGE_PREFIX }}-frontend:${{ steps.meta.outputs.semver }}
             ${{ env.IMAGE_PREFIX }}-frontend:${{ steps.meta.outputs.minor }}

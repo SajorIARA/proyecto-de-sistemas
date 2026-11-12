@@ -138,7 +138,7 @@
       "col": 2,
       "type": "frontend",
       "label": "Checks obligatorios",
-      "sublabel": "backend + frontend + docker",
+      "sublabel": "Ruff · Black · Tests",
       "tag": "requeridos para PR",
       "width": 132
     },
@@ -148,7 +148,7 @@
       "col": 2,
       "type": "security",
       "label": "Security scan",
-      "sublabel": "CodeQL · Gitleaks · Trivy",
+      "sublabel": "CodeQL · Trivy · Gitleaks",
       "tag": "automático",
       "width": 132
     },

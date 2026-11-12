@@ -23,7 +23,7 @@ services:
       retries: 12
 
   backend:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.6}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -32,6 +32,7 @@ services:
     command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./backend:/app
+      - staging_data:/app/staging
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -40,6 +41,12 @@ services:
       POSTGRES_PORT: 5432
       DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ci-placeholder}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      STAGING_DIR: /app/staging
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
     depends_on:
       db:
         condition: service_healthy
@@ -53,13 +60,17 @@ services:
       retries: 12
 
   frontend:
-    image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG:-1.0.5}
+    image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG:-1.0.7}
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
     container_name: turismo-melgarejo_frontend
     restart: always
     command: pnpm dev --host 0.0.0.0 --port 3000
+    environment:
+      # Vite expone al bundle cualquier variable VITE_* presente en el
+      # proceso; el frontend la usa para armar URLs de Cloudinary.
+      VITE_CLOUDINARY_CLOUD_NAME: ${VITE_CLOUDINARY_CLOUD_NAME:-}
     networks:
       - app-network
       - turismo-network
@@ -90,6 +101,115 @@ services:
       - turismo-network
       - app-network
 
+  redis:
+    image: redis:7-alpine
+    container_name: turismo-melgarejo_redis
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  worker:
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
+    container_name: turismo-melgarejo_worker
+    restart: always
+    # Solo el backend migra (evita carreras de CREATE EXTENSION entre
+    # migradores concurrentes); el worker espera a que esté healthy.
+    command: celery -A config worker --loglevel=info --concurrency=2
+    volumes:
+      - ./backend:/app
+      - staging_data:/app/staging
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ci-placeholder}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      STAGING_DIR: /app/staging
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    networks:
+      - app-network
+      - datos-network
+
+  beat:
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
+    container_name: turismo-melgarejo_beat
+    restart: always
+    command: celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - ./backend:/app
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ci-placeholder}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      STAGING_DIR: /app/staging
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    networks:
+      - app-network
+      - datos-network
+
+  flower:
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
+    container_name: turismo-melgarejo_flower
+    restart: always
+    command: celery -A config flower --address=0.0.0.0 --port=5555 --persistent=True --db=/tmp/flower.db
+    volumes:
+      - ./backend:/app
+    environment:
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ci-placeholder}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      STAGING_DIR: /app/staging
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 5555), 2).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
 networks:
   turismo-network:
     driver: bridge
@@ -100,4 +220,8 @@ networks:
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  staging_data:
     driver: local

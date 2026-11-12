@@ -1,6 +1,24 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from rest_framework.permissions import SAFE_METHODS, BasePermission
+
+if TYPE_CHECKING:  # pragma: no cover - solo tipado
+    from usuarios.models import Usuario
+
+
+def es_admin(usuario: Usuario | None) -> bool:
+    """True si el usuario autenticado tiene rol ADMIN (DRY).
+
+    Punto único de verdad para el chequeo de administración; usar en
+    querysets y permisos en vez de repetir el filtro por código.
+    """
+    from usuarios.models import Rol
+
+    if usuario is None or not usuario.is_authenticated:
+        return False
+    return usuario.roles.filter(codigo=Rol.Codes.ADMIN).exists()
 
 
 class HasRole(BasePermission):
@@ -30,14 +48,18 @@ class IsAdmin(HasRole):
     """Atajo: solo usuarios con rol ADMIN."""
 
     def __init__(self) -> None:
-        super().__init__("ADMIN")
+        from usuarios.models import Rol
+
+        super().__init__(Rol.Codes.ADMIN)
 
 
 class IsTurista(HasRole):
     """Atajo: solo usuarios con rol TOURIST."""
 
     def __init__(self) -> None:
-        super().__init__("TOURIST")
+        from usuarios.models import Rol
+
+        super().__init__(Rol.Codes.TOURIST)
 
 
 class IsAdminOrReadOnly(BasePermission):
@@ -47,7 +69,4 @@ class IsAdminOrReadOnly(BasePermission):
     def has_permission(self, request, view) -> bool:
         if request.method in SAFE_METHODS:
             return True
-        user = request.user
-        if not user or not user.is_authenticated:
-            return False
-        return user.roles.filter(codigo="ADMIN").exists()
+        return es_admin(request.user)

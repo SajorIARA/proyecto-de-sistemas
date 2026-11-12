@@ -80,6 +80,12 @@ Ya existen los cuatro repositorios públicos:
 | `DOCKERHUB_TOKEN` | Access token de Docker Hub | Repo secrets |
 | `RAILWAY_TOKEN` | Token del CLI de Railway | Repo secret o por entorno |
 
+### Variables del repositorio (Settings → Secrets and variables → Actions → Variables)
+
+| Nombre | Uso |
+|---|---|
+| `VITE_CLOUDINARY_CLOUD_NAME` | Nombre del cloud de Cloudinary, horneado en la imagen del frontend por `release.yml`. No es secreto; si está vacío, el frontend pinta placeholders. |
+
 ### Secrets por entorno (Settings → Environments)
 
 | Entorno | Uso |
@@ -132,7 +138,10 @@ Railway con CLI (`npx @railway/cli up --service ... --ci`). Se requiere:
 1. Crear proyectos/servicios en Railway (`baraja`), o usar la CLI.
 2. Configurar `RAILWAY_TOKEN` (Settings → Account → Tokens).
 3. Las variables de entorno para el backend en Railway deben incluir
-   `POSTGRES_*`, `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`.
+   `POSTGRES_*`, `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`
+   y las de Cloudinary (`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`,
+   `CLOUDINARY_API_SECRET`). El servicio de frontend necesita
+   `VITE_CLOUDINARY_CLOUD_NAME` (se inyecta como build-arg en el build de Vite).
 
 ### Rollback
 

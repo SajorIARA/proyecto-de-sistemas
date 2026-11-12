@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Catálogo — facetas, filtros y cercanos",
+    "output": "catalogo-filtros.sequence.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "facetas",
+        "label": "Panel de filtros",
+        "focus": [
+          "turista",
+          "spa",
+          "proxy",
+          "api"
+        ],
+        "note": "Las facetas alimentan el panel: categorías con conteo y rango de precios BOB."
+      },
+      {
+        "id": "filtros",
+        "label": "Búsqueda facetada",
+        "focus": [
+          "spa",
+          "api",
+          "db"
+        ],
+        "note": "Filtros combinables q · categoria · zona · precio con paginado de 20."
+      },
+      {
+        "id": "mapa",
+        "label": "Cercanos en el mapa",
+        "focus": [
+          "spa",
+          "api",
+          "db"
+        ],
+        "note": "PostGIS calcula distancias en UTM 19S y Leaflet pinta los pines."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "turista",
+      "type": "external",
+      "label": "Turista",
+      "sublabel": "navegador"
+    },
+    {
+      "id": "spa",
+      "type": "frontend",
+      "label": "SPA React",
+      "sublabel": "React Query + Leaflet"
+    },
+    {
+      "id": "proxy",
+      "type": "cloud",
+      "label": "Nginx",
+      "sublabel": "reverse proxy"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "API Django",
+      "sublabel": "catálogo público"
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "PostGIS"
+    },
+    {
+      "id": "cloudinary",
+      "type": "cloud",
+      "label": "Cloudinary",
+      "sublabel": "CDN imágenes"
+    }
+  ],
+  "segments": [
+    {
+      "from": 130,
+      "to": 300,
+      "label": "Facetas"
+    },
+    {
+      "from": 320,
+      "to": 480,
+      "label": "Filtros"
+    },
+    {
+      "from": 500,
+      "to": 650,
+      "label": "Cercanos"
+    }
+  ],
+  "messages": [
+    {
+      "from": "turista",
+      "to": "spa",
+      "y": 160,
+      "label": "abre /destinos",
+      "variant": "default"
+    },
+    {
+      "from": "spa",
+      "to": "proxy",
+      "y": 205,
+      "label": "GET /atractivos/facetas/",
+      "variant": "emphasis"
+    },
+    {
+      "from": "api",
+      "to": "db",
+      "y": 250,
+      "label": "COUNT + categorías + rango BOB",
+      "variant": "default"
+    },
+    {
+      "from": "api",
+      "to": "spa",
+      "y": 290,
+      "label": "200 {categorias[], precios_bob}",
+      "variant": "return"
+    },
+    {
+      "from": "turista",
+      "to": "spa",
+      "y": 350,
+      "label": "q + categoría + precio",
+      "variant": "default"
+    },
+    {
+      "from": "spa",
+      "to": "api",
+      "y": 395,
+      "label": "GET /atractivos/?q=&categoria=&precio_max=",
+      "variant": "emphasis"
+    },
+    {
+      "from": "api",
+      "to": "db",
+      "y": 435,
+      "label": "SELECT filtrado paginado",
+      "variant": "default"
+    },
+    {
+      "from": "api",
+      "to": "spa",
+      "y": 470,
+      "label": "200 {count, results[]}",
+      "variant": "return"
+    },
+    {
+      "from": "spa",
+      "to": "cloudinary",
+      "y": 505,
+      "label": "carga f_auto,q_auto,w_720",
+      "variant": "default"
+    },
+    {
+      "from": "turista",
+      "to": "spa",
+      "y": 545,
+      "label": "comparte ubicación",
+      "variant": "default"
+    },
+    {
+      "from": "spa",
+      "to": "api",
+      "y": 580,
+      "label": "GET /atractivos/cercanos/?lat=&lon=&radio=",
+      "variant": "emphasis"
+    },
+    {
+      "from": "api",
+      "to": "db",
+      "y": 610,
+      "label": "Distance UTM 19S + radio",
+      "variant": "default"
+    },
+    {
+      "from": "api",
+      "to": "spa",
+      "y": 640,
+      "label": "200 {..., distancia_m}",
+      "variant": "return"
+    }
+  ]
+}

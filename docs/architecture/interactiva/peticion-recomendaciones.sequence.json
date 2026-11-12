@@ -2,7 +2,7 @@
   "schema_version": 1,
   "diagram_type": "sequence",
   "meta": {
-    "title": "Petición de recomendaciones — secuencia",
+    "title": "Petición de recomendaciones — secuencia (diseño Sprint 3)",
     "output": "peticion-recomendaciones.sequence.html",
     "quality_profile": "showcase",
     "visual_preset": "signal-flow",
@@ -21,13 +21,13 @@
       },
       {
         "id": "calculo",
-        "label": "Cálculo del ranking",
+        "label": "Cálculo del ranking (Sprint 3)",
         "focus": [
           "api",
           "reco",
           "db"
         ],
-        "note": "El motor consulta PostGIS y pgvector y devuelve el orden final."
+        "note": "Diseño objetivo: el motor consultará PostGIS y pgvector. Hoy solo se persiste la consulta."
       },
       {
         "id": "respuesta",
@@ -38,7 +38,7 @@
           "spa",
           "usuario"
         ],
-        "note": "La lista top N se pinta en el mapa 3D del frontend."
+        "note": "La lista top N se pintará en el mapa Leaflet del frontend."
       }
     ]
   },
@@ -71,7 +71,7 @@
       "id": "reco",
       "type": "backend",
       "label": "Recomendador",
-      "sublabel": "ranking"
+      "sublabel": "ranking · Sprint 3"
     },
     {
       "id": "db",
@@ -109,7 +109,7 @@
       "from": "spa",
       "to": "proxy",
       "y": 210,
-      "label": "GET /api/recommendations",
+      "label": "POST /api/recomendaciones/consultas/",
       "variant": "emphasis"
     },
     {

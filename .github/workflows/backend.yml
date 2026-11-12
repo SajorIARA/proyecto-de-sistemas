@@ -36,6 +36,7 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements-dev.txt
       - run: pip install -r backend/requirements-dev.txt
+      - run: pip install "coverage[toml]>=7.0"
       - run: ruff check backend
       - run: black --check backend
       - run: mypy backend/config --ignore-missing-imports
@@ -50,4 +51,5 @@ jobs:
         run: |
           python manage.py check
           python manage.py makemigrations --check --dry-run
-          python manage.py test
+          coverage run --source=. manage.py test
+          coverage report --fail-under=90

@@ -74,20 +74,20 @@ class Usuario(AbstractBaseUser):
     def has_perm(self, perm: str, obj: object | None = None) -> bool:
         if not self.activo:
             return False
-        return self.roles.filter(codigo="ADMIN").exists()
+        return self.roles.filter(codigo=Rol.Codes.ADMIN).exists()
 
     def has_module_perms(self, app_label: str) -> bool:
         if not self.activo:
             return False
-        return self.roles.filter(codigo="ADMIN").exists()
+        return self.roles.filter(codigo=Rol.Codes.ADMIN).exists()
 
     @property
     def is_staff(self) -> bool:
-        return self.activo and self.roles.filter(codigo="ADMIN").exists()
+        return self.activo and self.roles.filter(codigo=Rol.Codes.ADMIN).exists()
 
     @property
     def is_superuser(self) -> bool:
-        return self.activo and self.roles.filter(codigo="ADMIN").exists()
+        return self.activo and self.roles.filter(codigo=Rol.Codes.ADMIN).exists()
 
     id_usuario: models.UUIDField[uuid.UUID, uuid.UUID] = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
@@ -121,8 +121,14 @@ class Usuario(AbstractBaseUser):
 
 
 class Rol(models.Model):
+    class Codes(models.TextChoices):
+        ADMIN = "ADMIN", "Administrador"
+        TOURIST = "TOURIST", "Turista"
+
     id_rol: models.SmallAutoField[int, int] = models.SmallAutoField(primary_key=True)
-    codigo: models.CharField[str, str] = models.CharField(max_length=30, unique=True)
+    codigo: models.CharField[str, str] = models.CharField(
+        max_length=30, unique=True, choices=Codes.choices
+    )
     nombre: models.CharField[str, str] = models.CharField(max_length=80)
     descripcion: models.CharField[str | None, str | None] = models.CharField(
         max_length=255, null=True, blank=True

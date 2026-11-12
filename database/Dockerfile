@@ -9,7 +9,10 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         postgresql-17-postgis-3 \
         postgresql-17-pgvector \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -f /usr/local/bin/gosu /usr/bin/gosu
 
 # El esquema (extensiones, tablas, índices) lo crean las migraciones de
 # Django con `manage.py migrate` en el primer arranque del backend.
+
+USER postgres

@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { EncabezadoImagen } from "../../../components/EncabezadoImagen";
+import { FOTO_ACCESO } from "../../../config/imagenesSitio";
 
 export function AuthShell({
   title,
@@ -18,11 +20,12 @@ export function AuthShell({
         ========================================================== */}
         <section className="relative hidden min-h-screen overflow-hidden lg:block">
           {/* Fotografía */}
-          <div
-            className="absolute inset-0 scale-[1.02] bg-cover bg-center"
-            style={{
-              backgroundImage: 'url("/images/illimani-login.webp")',
-            }}
+          <img
+            src={FOTO_ACCESO.src}
+            alt={FOTO_ACCESO.alt}
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full scale-[1.02] object-cover"
           />
 
           {/* Overlay natural */}
@@ -216,14 +219,18 @@ export function AuthShell({
             </div>
 
             {/* Título */}
-            <div className="mb-8">
-              <h2 className="max-w-md text-4xl font-black leading-[0.95] tracking-[-0.045em] text-[#233128] sm:text-5xl">
-                {title}
-              </h2>
+            <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+              <div className="max-w-md">
+                <h2 className="max-w-md text-4xl font-black leading-[0.95] tracking-[-0.045em] text-[#233128] sm:text-5xl">
+                  {title}
+                </h2>
 
-              <p className="mt-5 max-w-md text-sm font-medium leading-7 text-[#514B43] sm:text-base">
-                {subtitle}
-              </p>
+                <p className="mt-5 max-w-md text-sm font-medium leading-7 text-[#514B43] sm:text-base">
+                  {subtitle}
+                </p>
+              </div>
+
+              <EncabezadoImagen className="h-20 w-auto max-w-[38%] shrink-0 sm:h-24" />
             </div>
 
             {/* =====================================================
