@@ -6,8 +6,9 @@
  *
  * - `GET/POST /api/preferences/` y `PATCH/DELETE /api/preferences/:id/`
  *   (`MisPreferenciasViewSet`): el backend asigna el usuario desde el JWT.
- * - `POST /api/recomendaciones/consultas/` (`ConsultaRecomendacionViewSet`):
- *   guarda las restricciones duras del recorrido.
+ * - `GET/POST /api/recomendaciones/consultas/`
+ *   (`ConsultaRecomendacionViewSet`): guarda y lista las restricciones duras
+ *   del recorrido. La más reciente precarga el perfil de recomendaciones.
  *
  * `PreferenciasApiError` conserva el status y los mensajes **por campo** que
  * devuelve DRF, porque el formulario los pinta debajo de cada control.
@@ -211,6 +212,32 @@ export async function sincronizarPreferencias(
   }
 }
 
+/** Marca temporal de la consulta, o 0 si el backend no la envía. */
+function fechaConsulta(consulta: ConsultaRecomendacion): number {
+  const marca = Date.parse(consulta.fecha_consulta ?? "");
+
+  return Number.isFinite(marca) ? marca : 0;
+}
+
+/**
+ * GET /api/recomendaciones/consultas/ → consultas propias, recientes primero.
+ *
+ * `ConsultaRecomendacion` no define `Meta.ordering`, así que el orden se
+ * fija en el cliente para que «la última consulta» sea siempre la misma
+ * independientemente de lo que devuelva PostgreSQL.
+ */
+export async function listarConsultas(): Promise<ConsultaRecomendacion[]> {
+  try {
+    const { data } = await api.get(PREFERENCIAS_ENDPOINTS.consultas);
+
+    return normalizarPagina<ConsultaRecomendacion>(data).results.sort(
+      (a, b) => fechaConsulta(b) - fechaConsulta(a),
+    );
+  } catch (error) {
+    throw aPreferenciasApiError(error);
+  }
+}
+
 /** POST /api/recomendaciones/consultas/ → restricciones duras del recorrido. */
 export async function crearConsulta(
   entrada: ConsultaInput,
@@ -255,6 +282,7 @@ export async function guardarPerfil({
 export const preferenciasApi = {
   listarMisPreferencias,
   sincronizarPreferencias,
+  listarConsultas,
   crearConsulta,
   guardarPerfil,
 };
