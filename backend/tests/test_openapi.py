@@ -24,6 +24,7 @@ class OpenAPITests(TestCase):
         "/api/conocimiento/fragmentos/{id_fragmento}/",
         "/api/conocimiento/fuentes/",
         "/api/conocimiento/fuentes/{id_fuente}/",
+        "/api/conocimiento/consultar/",
         "/api/preferences/",
         "/api/preferences/{id}/",
         "/api/recomendaciones/consultas/",
@@ -62,6 +63,7 @@ class OpenAPITests(TestCase):
         ("get", "/api/conocimiento/fragmentos/{id_fragmento}/"),
         ("get", "/api/conocimiento/fuentes/"),
         ("get", "/api/conocimiento/fuentes/{id_fuente}/"),
+        ("post", "/api/conocimiento/consultar/"),
         ("get", "/api/turismo/atractivos/"),
         ("get", "/api/turismo/atractivos/cercanos/"),
         ("get", "/api/turismo/atractivos/facetas/"),
@@ -92,7 +94,7 @@ class OpenAPITests(TestCase):
             for metodo, operacion in item.items()
             if metodo in self.METODOS_OPENAPI
         ]
-        self.assertEqual(len(operaciones), 82)
+        self.assertEqual(len(operaciones), 83)
         ids = [operacion["operationId"] for operacion in operaciones]
         self.assertEqual(len(ids), len(set(ids)))
 

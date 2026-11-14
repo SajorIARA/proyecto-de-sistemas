@@ -208,9 +208,9 @@ sequenceDiagram
 > `POST /api/recommendations/` (alias `POST /api/recomendaciones/recomendar/`):
 > filtra por costo BOB (`costo_bob <= presupuesto_bob`) y radio espacial
 > (`ST_DistanceSphere(...) <= radio_km`), persiste la consulta y devuelve el
-> Top-K determinista ordenado por afinidad, proximidad y holgura. El ranking
-> con pgvector y el asistente RAG siguen en los issues #28–#29. Este diagrama
-> documenta el contrato actual del endpoint.
+> Top-K determinista ordenado por afinidad, proximidad y holgura. El
+> asistente RAG con pgvector se documenta más abajo (issue #28). Este
+> diagrama documenta el contrato actual del endpoint.
 
 ```mermaid
 sequenceDiagram
@@ -232,4 +232,38 @@ sequenceDiagram
     Recomendador-->>API: Top N atractivos rankeados
     API-->>Frontend: 200 OK {id_consulta, total_activos, total_evaluados, total_recomendaciones, radio_km, top_k, recomendaciones[]}
     Frontend-->>Turista: Mostrar mapa con resultados
+```
+
+# Diagrama de Secuencia — Consulta RAG con pgvector (issue #28)
+
+> El asistente responde en `POST /api/conocimiento/consultar/` con throttle
+> por IP/usuario. La recuperación se hace en PostgreSQL con el operador
+> coseno `<=>` y filtros opcionales por fuente o atractivo. Si no hay
+> fragmentos sobre el umbral, el backend devuelve la negativa estándar sin
+> invocar al modelo.
+
+```mermaid
+sequenceDiagram
+    actor Turista
+    participant Frontend as SPA React
+    participant API as Django REST API
+    participant Ollama as Ollama (embedding)
+    participant DB as PostgreSQL + pgvector
+    participant LLM as Ollama (qwen3)
+
+    Turista->>Frontend: Escribe una pregunta
+    Frontend->>API: POST /api/conocimiento/consultar/ {pregunta, top_k, id_fuente?, id_atractivo?}
+    API->>API: Validar pregunta y throttle
+    API->>Ollama: POST /api/embed (embeddinggemma:300m)
+    Ollama-->>API: vector 768d normalizado
+    API->>DB: SELECT ... ORDER BY embedding <=> vector LIMIT top_k
+    DB-->>API: fragmentos bajo el umbral (o vacío)
+    alt Sin fragmentos
+        API-->>Frontend: 200 {respuesta: negativa estándar, citas: [], recuperados: 0}
+    else Con fragmentos
+        API->>LLM: POST /api/chat (contexto + pregunta)
+        LLM-->>API: respuesta anclada al contexto
+        API-->>Frontend: 200 {respuesta, citas[], recuperados, modelo, generado_en}
+    end
+    Frontend-->>Turista: Mostrar respuesta y fuentes
 ```

@@ -1,5 +1,14 @@
 name: Deploy
 
+# Despliegue manual a Railway.
+#
+# Railway puede desplegar de dos formas:
+#   - image  (recomendado): el servicio ya apunta a una imagen GHCR y solo
+#             se relanza para aplicar variables o re-descargar el tag.
+#   - source (respaldo):    Railway construye desde el código con `railway up`.
+#
+# El despliegue automático por push está desactivado a propósito: publicar
+# una imagen (workflow Release) y desplegarla son decisiones separadas.
 on:
   workflow_dispatch:
     inputs:
@@ -11,61 +20,65 @@ on:
         options:
           - staging
           - production
-  # Solo desplegar si el CI pasó: evita publicar con tests/lint rotos.
-  workflow_run:
-    workflows: ["CI Principal"]
-    types: [completed]
-    branches: [dev, main]
+      strategy:
+        description: "Origen del despliegue"
+        required: true
+        default: "image"
+        type: choice
+        options:
+          - image
+          - source
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ inputs.environment }}
+  cancel-in-progress: false
 
 jobs:
-  gate:
-    name: Verificar CI en verde
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    # En dispatch manual el responsable asume el estado; en automático
-    # solo se despliega si el CI concluyó con éxito.
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    steps:
-      - run: echo "CI OK, procediendo al deploy."
-
   deploy:
-    name: Deploy to Railway (${{ github.ref_name }})
+    name: Deploy to Railway (${{ inputs.environment }} · ${{ inputs.strategy }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [gate]
-    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'production' || 'staging') }}
+    environment: ${{ inputs.environment }}
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
           fetch-depth: 0
 
-      # El token de Railway y el ID de proyecto deben configurarse en
-      # GitHub Secrets (ver docs/plan-integr... / README).
-      - name: Deploy backend
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_SERVICE: turismo-melgarejo-backend
+      - name: Verificar token de Railway
         run: |
           if [ -z "$RAILWAY_TOKEN" ]; then
             echo "::error::RAILWAY_TOKEN no configurado. Deploy no ejecutado."
             exit 1
           fi
-          npx @railway/cli up --service "$RAILWAY_SERVICE" --ci
 
-      - name: Deploy frontend
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_SERVICE: turismo-melgarejo-frontend
+      # Camino recomendado: los servicios ya usan imágenes de GHCR. Este paso
+      # relanza los servicios para aplicar variables o el tag configurado en
+      # Railway. No reconstruye nada desde el código fuente.
+      - name: Redeploy servicios con imagen GHCR
+        if: inputs.strategy == 'image'
         run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "::error::RAILWAY_TOKEN no configurado. Deploy no ejecutado."
-            exit 1
-          fi
-          npx @railway/cli up --service "$RAILWAY_SERVICE" --ci
+          for service in backend worker beat frontend proxy; do
+            echo "::group::Redeploy $service"
+            npx --yes @railway/cli redeploy --service "$service" --yes
+            echo "::endgroup::"
+          done
+
+      # Respaldo: Railway construye desde el repositorio. Útil si todavía no
+      # hay imágenes publicadas o para depurar un cambio sin release.
+      - name: Deploy desde código fuente
+        if: inputs.strategy == 'source'
+        run: |
+          npx --yes @railway/cli up --service backend --ci
+          npx --yes @railway/cli up --service frontend --ci
+
+      - name: Recordatorio post-deploy
+        run: |
+          echo "Verifica:"
+          echo "  curl -fsS https://<dominio-proxy>/healthz"
+          echo "  curl -fsS https://<dominio-proxy>/api/health/"
+          echo "  POST https://<dominio-proxy>/api/conocimiento/consultar/"

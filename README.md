@@ -28,7 +28,7 @@ La documentación de arquitectura (diagramas Mermaid) vive en `docs/`:
 - `docs/architecture/` — diagramas de arquitectura (vista general, frontend,
   backend, motor de recomendación, base de datos, infraestructura, CI/CD)
 - `docs/database/der.md` — diseño del modelo de datos relacional y geoespacial
-- `docs/integracion-ci-cd.md` — configuración de GitHub, Docker Hub y Railway
+- `docs/integracion-ci-cd.md` — configuración de GitHub, GHCR y Railway
 
 Todos los diagramas son archivos `.md` independientes compatibles con GitHub,
 VS Code y cualquier visor que soporte Mermaid.
@@ -165,7 +165,7 @@ Ver `.env.example`. Las claves principales:
 - Los flujos de GitHub Actions validan y prueban el backend y el frontend en cada push/PR.
 - Dependabot mantiene dependencias al día.
 - CodeQL, gitleaks y Trivy aportan seguridad.
-- Al crear un tag `v*.*.*` se publican imágenes a Docker Hub (**requiere los secretos `DOCKERHUB_USERNAME` y `DOCKERHUB_TOKEN`**).
+- Al crear un tag `v*.*.*` (o lanzar el workflow **Release** indicando una versión semver) se publican las cuatro imágenes en GHCR usando `GITHUB_TOKEN`; no requiere secretos adicionales. Tras el primer release, marca cada paquete como **público** en GitHub para que Railway pueda descargarlo.
 
 ## Licencia
 

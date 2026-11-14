@@ -23,9 +23,32 @@ http {
     # Tamaño máximo del cuerpo de las peticiones (subidas de documentos/imágenes)
     client_max_body_size 10m;
 
+    # Resolver de la red privada.
+    #   Docker Compose: 127.0.0.11 (DNS embebido de Docker)
+    #   Railway:        [fd12::10] (DNS interno, IPv6)
+    # Las IPs de los servicios cambian en cada redespliegue; por eso los
+    # upstreams se resuelven en tiempo de petición y no al arrancar Nginx.
+    resolver ${NGINX_RESOLVER} valid=10s ipv6=on;
+    resolver_timeout 5s;
+
+    # Conserva el proto que envía el edge (Railway termina TLS) y cae a
+    # $scheme cuando la petición llega directa (entorno local).
+    map $http_x_forwarded_proto $forwarded_proto {
+        default $http_x_forwarded_proto;
+        ""      $scheme;
+    }
+
+    # Clave de rate limiting: X-Forwarded-For cuando existe (Railway) o la
+    # IP directa en local. El throttle de DRF sigue siendo la protección
+    # principal por usuario/IP.
+    map $http_x_forwarded_for $limit_key {
+        default $http_x_forwarded_for;
+        ""      $binary_remote_addr;
+    }
+
     # Rate limiting por dirección IP (protección básica ante abuso)
-    limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
-    limit_req_zone $binary_remote_addr zone=web_limit:10m rate=30r/s;
+    limit_req_zone $limit_key zone=api_limit:10m rate=10r/s;
+    limit_req_zone $limit_key zone=web_limit:10m rate=30r/s;
     limit_req_status 429;
 
     # Compresión
@@ -34,17 +57,14 @@ http {
     gzip_min_length 256;
     gzip_types text/plain text/css application/json application/javascript application/xml application/xml+rss image/svg+xml text/javascript;
 
-    upstream frontend_svc {
-        server frontend:${FRONTEND_PORT};
-    }
-
-    upstream backend_svc {
-        server backend:${BACKEND_PORT};
-    }
-
     server {
-        listen 80;
+        listen ${PORT};
+        listen [::]:${PORT};
         server_name _;
+
+        # Upstreams resueltos por petición (ver `resolver`).
+        set $frontend_upstream "http://${FRONTEND_HOST}:${FRONTEND_PORT}";
+        set $backend_upstream "http://${BACKEND_HOST}:${BACKEND_PORT}";
 
         # Cabeceras de seguridad
         add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
@@ -63,23 +83,27 @@ http {
         # API -> backend
         location /api/ {
             limit_req zone=api_limit burst=20 nodelay;
-            proxy_pass http://backend_svc;
+            proxy_pass $backend_upstream;
             proxy_http_version 1.1;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $remote_addr;
-            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $forwarded_proto;
+            proxy_set_header X-Forwarded-Host $host;
             proxy_set_header Connection "";
         }
 
         # Aplicación SPA -> frontend
         location / {
-            proxy_pass http://frontend_svc;
+            limit_req zone=web_limit burst=60 nodelay;
+            proxy_pass $frontend_upstream;
             proxy_http_version 1.1;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $remote_addr;
-            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $forwarded_proto;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header Connection "";
         }
     }
 }

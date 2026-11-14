@@ -12,3 +12,5 @@ redis==8.1.0
 django-filter==26.2
 django-celery-beat==2.9.0
 flower==2.2.0
+dj-database-url==2.1.0
+

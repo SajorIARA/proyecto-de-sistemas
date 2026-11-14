@@ -1,6 +1,6 @@
 # Integración continua, release y despliegue
 
-Este documento describe la configuración completa de Git/GitHub, Docker Hub y Railway,
+Este documento describe la configuración completa de Git/GitHub, GHCR y Railway,
 y cómo conectarla con los secrets de GitHub Actions.
 
 ## 1. Ramas del proyecto
@@ -54,21 +54,24 @@ Secret scanning y *push protection* se habilitan en la **UI de GitHub**:
 
 Gitleaks (incluido en `security.yml`) hace un escaneo adicional en CI.
 
-## 4. Repositorios en Docker Hub
+## 4. Paquetes en GitHub Container Registry (GHCR)
 
-Ya existen los cuatro repositorios públicos:
+Las cuatro imágenes se publican como paquetes **públicos** en GHCR:
 
-- `raisiar/proyecto-de-sistemas-backend`
-- `raisiar/proyecto-de-sistemas-frontend`
-- `raisiar/proyecto-de-sistemas-proxy`
-- `raisiar/proyecto-de-sistemas-db`
+- `ghcr.io/sajoriara/proyecto-de-sistemas-backend`
+- `ghcr.io/sajoriara/proyecto-de-sistemas-frontend`
+- `ghcr.io/sajoriara/proyecto-de-sistemas-proxy`
+- `ghcr.io/sajoriara/proyecto-de-sistemas-db`
 
-### Crear un Docker Hub Access Token
+El workflow `release.yml` usa el `GITHUB_TOKEN` del propio repositorio con el
+permiso `packages: write`; no hace falta crear un token de Docker Hub.
 
-1. Entra a https://hub.docker.com/settings/security
-2. **New Access Token** → nombre descriptivo (p. ej. `github-actions`),
-   permiso *Read, Write* (solo escritura a repos ya creados) o *Read, Write, Delete*.
-3. Copia el token **ahora** (no se vuelve a mostrar).
+### Visibilidad pública
+
+GitHub crea los paquetes como privados por defecto. Después del primer
+release, abre cada paquete en **GitHub → Packages → Package settings →
+Danger Zone → Change visibility** y selecciona **Public**. Sin este paso,
+Railway Hobby no puede descargar las imágenes.
 
 ## 5. Secrets requeridos en GitHub
 
@@ -76,9 +79,10 @@ Ya existen los cuatro repositorios públicos:
 
 | Nombre | Uso | Dónde se crea |
 |---|---|---|
-| `DOCKERHUB_USERNAME` | Usuario de Docker Hub (`raisiar`) | Repo secrets |
-| `DOCKERHUB_TOKEN` | Access token de Docker Hub | Repo secrets |
 | `RAILWAY_TOKEN` | Token del CLI de Railway | Repo secret o por entorno |
+
+`GITHUB_TOKEN` lo inyecta GitHub Actions automáticamente; el workflow
+`release.yml` lo usa para publicar en GHCR con `packages: write`.
 
 ### Variables del repositorio (Settings → Secrets and variables → Actions → Variables)
 
@@ -98,18 +102,18 @@ Ya existen los cuatro repositorios públicos:
 ```bash
 cd repos/proyecto-de-sistemas
 
-# Docker Hub (repo)
-echo "tu_usuario"            | gh secret set DOCKERHUB_USERNAME
-echo "tu_access_token"       | gh secret set DOCKERHUB_TOKEN
-
 # Railway (por entorno)
 gh secret set RAILWAY_TOKEN --env staging --body "token_railway_staging"
 gh secret set RAILWAY_TOKEN --env production --body "token_railway_production"
 ```
 
+No se configuran secretos de Docker Hub: GHCR usa `GITHUB_TOKEN`.
+
 ## 6. Versionado de imágenes (SemVer)
 
-El workflow `release.yml` publica imágenes al crear un tag `v*.*.*`:
+El workflow `release.yml` publica imágenes en GHCR al crear un tag
+`v*.*.*` o al lanzarlo manualmente con una versión semver (`workflow_dispatch`
+→ `version`). Rechaza cualquier valor que no sea `X.Y.Z`.
 
 - Tag `v1.2.3` produce `1.2.3`, `1.2`, `1`, `latest` y `<sha12>`.
 
@@ -125,29 +129,43 @@ El workflow más reciente que toque Dockerfiles usa tags por SHA, de modo que
 
 ## 7. Despliegue a Railway
 
-El workflow `deploy.yml` define dos entornos:
+La topología, la matriz de servicios, las variables por servicio, el orden
+de creación y las pruebas de humo están en
+[`deploy/railway/README.md`](../deploy/railway/README.md).
 
-| Entorno | Rama | Trigger |
+El workflow `deploy.yml` es **manual** y admite dos estrategias:
+
+| Estrategia | Qué hace | Cuándo usarla |
 |---|---|---|
-| `production` | `main` | push a `main` |
-| `staging` | `dev` | push a `dev` |
+| `image` (por defecto) | `railway redeploy` de `backend`, `worker`, `beat`, `frontend` y `proxy` | Los servicios ya apuntan a imágenes de GHCR y solo quieres aplicar variables o relanzar el tag configurado |
+| `source` | `railway up --service ... --ci` para backend y frontend | Respaldo: Railway construye desde el repositorio |
 
-Cada servicio de gestión del sistema (backend, frontend) se publica dentro de
-Railway con CLI (`npx @railway/cli up --service ... --ci`). Se requiere:
+No hay despliegue automático por push: publicar una imagen (workflow
+`Release`) y desplegarla son decisiones separadas. En el camino recomendado,
+el origen *Docker Image* y el tag se configuran en Railway; el workflow
+`image` solo relanza los servicios.
 
-1. Crear proyectos/servicios en Railway (`baraja`), o usar la CLI.
-2. Configurar `RAILWAY_TOKEN` (Settings → Account → Tokens).
-3. Las variables de entorno para el backend en Railway deben incluir
-   `POSTGRES_*`, `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`
-   y las de Cloudinary (`CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`,
-   `CLOUDINARY_API_SECRET`). El servicio de frontend necesita
-   `VITE_CLOUDINARY_CLOUD_NAME` (se inyecta como build-arg en el build de Vite).
+Variables mínimas del backend/worker/beat:
+
+- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`,
+  `POSTGRES_PORT`.
+- `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`,
+  `CORS_ALLOWED_ORIGINS`, `DJANGO_NUM_PROXIES=2`,
+  `DJANGO_SECURE_SSL_REDIRECT=0`, `SERVE_DOCS=0`.
+- `CELERY_BROKER_URL`, `CELERY_RESULT_BACKEND`.
+- `OLLAMA_BASE_URL`, `OLLAMA_EMBED_MODEL`, `OLLAMA_LLM_MODEL`,
+  `EMBEDDING_DIM=768`, `RAG_TOP_K`, `RAG_UMBRAL`, `RAG_MAX_PREGUNTA`.
+- Cloudinary: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`,
+  `CLOUDINARY_API_SECRET`.
+- El frontend necesita `VITE_CLOUDINARY_CLOUD_NAME` (build-arg de Vite).
+
+El proxy usa `PORT` (inyectado por Railway), `FRONTEND_HOST`,
+`FRONTEND_PORT`, `BACKEND_HOST`, `BACKEND_PORT` y
+`NGINX_RESOLVER=[fd12::10]`.
 
 ### Rollback
 
-- Deploy instalado por **SHA de imagen**: un tupla de rollback apunta la
-  configuración de Railway a una imagen (o tag) previa.
+- Cada release publica tags por versión y por **SHA de imagen**; apunta la
+  configuración de Railway a un tag anterior para revertir.
 - Railway permite re-deploy de una versión anterior desde el panel
   (Deployments → Re-deploy).
-
-`release.yml` emite tags por SHA para facilitar ese rollback.
