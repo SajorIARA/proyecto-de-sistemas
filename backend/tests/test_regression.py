@@ -551,10 +551,10 @@ class RegressionConocimientoTests(TestCase):
             fuente=fuente,
             numero_fragmento=1,
             contenido="Contenido de prueba.",
-            embedding=[0.1] * 1536,
+            embedding=[0.1] * 768,
         )
         self.assertEqual(fragmento.fuente, fuente)
-        self.assertEqual(len(fragmento.embedding), 1536)
+        self.assertEqual(len(fragmento.embedding), 768)
 
 
 # ═══════════════════════════════════════════════════════════════════════
