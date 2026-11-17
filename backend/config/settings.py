@@ -145,6 +145,18 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API del sistema de recomendación turística de La Paz.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    # Evita que una actualización incompatible de los CDN rompa Swagger/ReDoc.
+    "SWAGGER_UI_DIST": "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.34.1",
+    "SWAGGER_UI_FAVICON_HREF": (
+        "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.34.1/favicon-32x32.png"
+    ),
+    "REDOC_DIST": "https://cdn.jsdelivr.net/npm/redoc@3.1.0",
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": False,
+        "displayRequestDuration": True,
+        "filter": True,
+        "persistAuthorization": True,
+    },
 }
 
 # Docs OpenAPI servidas salvo apagado explícito (SERVE_DOCS=0 en prod
@@ -204,6 +216,41 @@ CELERY_BEAT_SCHEDULE = {
 # (volumen staging_data). La API guarda el temporal y el worker lo
 # consume; fuera de compose usar /tmp local.
 STAGING_DIR = os.getenv("STAGING_DIR", str(BASE_DIR / "staging"))
+
+# Scraping de fuentes para el dominio de conocimiento. La allowlist queda
+# vacía por defecto (fail-closed): cada entorno debe declarar sus fuentes.
+SCRAPER_ALLOWED_DOMAINS = tuple(
+    domain.strip().lower().rstrip(".")
+    for domain in os.getenv("SCRAPER_ALLOWED_DOMAINS", "").split(",")
+    if domain.strip()
+)
+SCRAPER_USER_AGENT = os.getenv(
+    "SCRAPER_USER_AGENT",
+    "TurismoMelgarejoBot/1.0 (+contacto: admin@localhost)",
+)
+SCRAPER_TIMEOUT_SECONDS = float(os.getenv("SCRAPER_TIMEOUT_SECONDS", "15"))
+SCRAPER_MAX_BYTES = int(os.getenv("SCRAPER_MAX_BYTES", str(2 * 1024 * 1024)))
+SCRAPER_MAX_REDIRECTS = int(os.getenv("SCRAPER_MAX_REDIRECTS", "3"))
+SCRAPER_MIN_INTERVAL_SECONDS = float(os.getenv("SCRAPER_MIN_INTERVAL_SECONDS", "1"))
+SCRAPER_CHUNK_CHARS = int(os.getenv("SCRAPER_CHUNK_CHARS", "1200"))
+SCRAPER_CHUNK_OVERLAP_CHARS = int(os.getenv("SCRAPER_CHUNK_OVERLAP_CHARS", "200"))
+
+# Inferencia local aislada (Ollama). En el compose de IA solo el worker de
+# scraping/RAG comparte red con Ollama; el servicio no se publica al host.
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434").rstrip("/")
+OLLAMA_EMBED_MODEL = os.getenv("OLLAMA_EMBED_MODEL", "embeddinggemma:300m")
+OLLAMA_LLM_MODEL = os.getenv("OLLAMA_LLM_MODEL", "qwen3:0.6b")
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIM", "768"))
+if EMBEDDING_DIM != 768:
+    raise ImproperlyConfigured(
+        "EMBEDDING_DIM debe ser 768 para coincidir con VectorField y "
+        "embeddinggemma:300m."
+    )
+OLLAMA_TIMEOUT_SECONDS = float(os.getenv("OLLAMA_TIMEOUT_SECONDS", "60"))
+OLLAMA_RETRIES = int(os.getenv("OLLAMA_RETRIES", "2"))
+OLLAMA_CONTEXT_LENGTH = int(os.getenv("OLLAMA_CONTEXT_LENGTH", "4096"))
+OLLAMA_MAX_PREDICT = int(os.getenv("OLLAMA_MAX_PREDICT", "384"))
+SCRAPER_AUTO_EMBED = os.getenv("SCRAPER_AUTO_EMBED", "0") == "1"
 
 # Logging
 LOGGING = {

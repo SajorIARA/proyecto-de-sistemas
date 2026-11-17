@@ -26,6 +26,7 @@ http {
     # Rate limiting por dirección IP (protección básica ante abuso)
     limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
     limit_req_zone $binary_remote_addr zone=web_limit:10m rate=30r/s;
+    limit_req_status 429;
 
     # Compresión
     gzip on;

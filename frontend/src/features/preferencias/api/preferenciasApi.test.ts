@@ -22,7 +22,7 @@ vi.mock("../../../api/http", () => ({
   },
 }));
 
-import { guardarPerfil, listarMisPreferencias, sincronizarPreferencias } from "./preferenciasApi";
+import { guardarPerfil, listarConsultas, listarMisPreferencias, sincronizarPreferencias } from "./preferenciasApi";
 
 function pagina(results: unknown[]) {
   return { data: { count: results.length, next: null, previous: null, results } };
@@ -140,5 +140,62 @@ describe("guardarPerfil", () => {
     expect(resultado.consulta?.id_consulta).toBe(
       "11111111-1111-1111-1111-111111111111",
     );
+  });
+});
+
+describe("listarConsultas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("ordena las consultas de la más reciente a la más antigua", async () => {
+    mocks.get.mockResolvedValueOnce(
+      pagina([
+        {
+          id_consulta: "vieja",
+          presupuesto_bob: "100.00",
+          tiempo_horas: "4.00",
+          punto_partida: "SRID=4326;POINT (-68.13 -16.49)",
+          macrodistrito: "Centro",
+          fecha_consulta: "2026-01-01T10:00:00-04:00",
+        },
+        {
+          id_consulta: "nueva",
+          presupuesto_bob: "800.00",
+          tiempo_horas: "8.00",
+          punto_partida: "SRID=4326;POINT (-68.14 -16.50)",
+          macrodistrito: "Sopocachi",
+          fecha_consulta: "2026-02-01T10:00:00-04:00",
+        },
+      ]),
+    );
+
+    const consultas = await listarConsultas();
+
+    expect(mocks.get).toHaveBeenCalledWith("/recomendaciones/consultas/");
+    expect(consultas.map((consulta) => consulta.id_consulta)).toEqual([
+      "nueva",
+      "vieja",
+    ]);
+  });
+
+  it("tolera una lista plana sin paginar", async () => {
+    mocks.get.mockResolvedValueOnce({
+      data: [
+        {
+          id_consulta: "unica",
+          presupuesto_bob: 250,
+          tiempo_horas: 6,
+          punto_partida: "SRID=4326;POINT (-68.13 -16.49)",
+          macrodistrito: null,
+          fecha_consulta: "2026-03-01T10:00:00-04:00",
+        },
+      ],
+    });
+
+    const consultas = await listarConsultas();
+
+    expect(consultas).toHaveLength(1);
+    expect(consultas[0].id_consulta).toBe("unica");
   });
 });

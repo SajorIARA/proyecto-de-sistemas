@@ -118,6 +118,24 @@ const TRAZOS = {
       <path d="m16 16 4.5 4.5" />
     </>
   ),
+  chat: (
+    <>
+      <path d="M4.5 5.5h15v10h-9l-4.5 3.5v-3.5h-1.5v-10Z" />
+      <path d="M8 10h8M8 12.8h5" />
+    </>
+  ),
+  enviar: (
+    <>
+      <path d="m4 12 16-8-4.5 16-4-6.5L4 12Z" />
+      <path d="M11.5 13.5 20 4" />
+    </>
+  ),
+  actualizar: (
+    <>
+      <path d="M20 11.5A8 8 0 1 0 17.8 17" />
+      <path d="M20 4.5v7h-7" />
+    </>
+  ),
 } as const satisfies Record<string, ReactNode>;
 
 export type NombreIcono = keyof typeof TRAZOS;

@@ -92,6 +92,58 @@ docker compose run --rm frontend pnpm test
   ./database/restore.sh backups/backup_YYYYMMDD_HHMMSS.dump
   ```
 
+## Scraping de fuentes documentales
+
+El scraper solo descarga URLs explícitas de dominios autorizados. Respeta
+`robots.txt`, limita tamaño/frecuencia/redirecciones y bloquea redes privadas.
+Los fragmentos se guardan con `embedding=NULL` hasta su vectorización.
+
+```bash
+# Ejecución síncrona y allowlist explícita
+docker exec turismo-melgarejo_backend python manage.py scrape_fuentes \
+  --url https://sitio-oficial.bo/destino \
+  --allow-domain sitio-oficial.bo \
+  --atractivo UUID_OPCIONAL
+
+# Ejecución asíncrona (el dominio debe estar en SCRAPER_ALLOWED_DOMAINS)
+docker exec turismo-melgarejo_backend python manage.py scrape_fuentes \
+  --url https://sitio-oficial.bo/destino --enqueue
+```
+
+Después de cambiar `SCRAPER_ALLOWED_DOMAINS` en `.env`, recrea backend y worker:
+
+```bash
+docker compose up -d --force-recreate backend worker
+```
+
+## IA local aislada (Ollama)
+
+El overlay `docker-compose.ollama.yml` instala dos modelos locales:
+
+- `embeddinggemma:300m`: embeddings multilingües de 768 dimensiones.
+- `qwen3:0.6b`: generación breve en español con razonamiento desactivado.
+
+Ollama no publica puertos ni comparte red con frontend/proxy. Solo el worker de
+scraping/RAG accede a Ollama y PostgreSQL. El bootstrap descarga los modelos en
+un volumen y el servicio de inferencia se ejecuta después en una red interna.
+
+```bash
+# Primera instalación (descarga aproximada de modelos: 1.2 GB)
+docker compose -f docker-compose.yml -f docker-compose.ollama.yml \
+  up -d ollama worker
+
+# Estado y modelos instalados
+docker compose -f docker-compose.yml -f docker-compose.ollama.yml ps
+docker exec turismo-melgarejo_ollama ollama list
+
+# Vectorizar fragmentos pendientes de forma manual
+docker compose -f docker-compose.yml -f docker-compose.ollama.yml \
+  exec worker python manage.py vectorizar_fragmentos
+```
+
+El scraper encolado vectoriza automáticamente cuando el overlay define
+`SCRAPER_AUTO_EMBED=1`. El stack principal continúa funcionando sin Ollama.
+
 ## Variables de entorno
 
 Ver `.env.example`. Las claves principales:
@@ -105,6 +157,7 @@ Ver `.env.example`. Las claves principales:
 | `CORS_ALLOWED_ORIGINS` | Orígenes permitidos, separados por coma |
 | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Credenciales de Cloudinary (firma de subidas y CDN). Vacías = medios deshabilitados |
 | `VITE_CLOUDINARY_CLOUD_NAME` | Mismo cloud expuesto al frontend para armar las URLs de las imágenes |
+| `SCRAPER_ALLOWED_DOMAINS` | Dominios autorizados para scraping, separados por coma; vacío bloquea toda descarga |
 | `IMAGE_TAG` | Etiqueta de imágenes en producción |
 
 ## CI/CD y Git

@@ -116,7 +116,7 @@ erDiagram
         uuid id_fuente FK
         integer numero_fragmento
         text contenido
-        vector_1536 embedding
+        vector_768 embedding
         timestamp fecha_creacion
     }
 

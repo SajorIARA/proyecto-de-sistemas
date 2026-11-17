@@ -12,6 +12,7 @@ import { AdminDestinosPage } from "../features/turismo/admin/pages/AdminDestinos
 import { CatalogoPage } from "../features/turismo/pages/CatalogoPage";
 import { DestinoDetailPage } from "../features/turismo/pages/DestinoDetailPage";
 import { PreferenciasPage } from "../features/preferencias/pages/PreferenciasPage";
+import { RecomendacionesPage } from "../features/recomendaciones/pages/RecomendacionesPage";
 import { HomePage } from "../pages/HomePage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 
@@ -57,6 +58,11 @@ export const router = createBrowserRouter([
             // Preferencias y restricciones de viaje: cualquier autenticado.
             path: "mi-cuenta/preferencias",
             element: <PreferenciasPage />,
+          },
+          {
+            // Top-K personalizado y asistente de viaje: cualquier autenticado.
+            path: "mi-cuenta/recomendaciones",
+            element: <RecomendacionesPage />,
           },
           {
             // Panel de administración: exige rol ADMIN.

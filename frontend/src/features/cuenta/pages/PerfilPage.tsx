@@ -1,6 +1,7 @@
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { Icono } from "../../../components/site/Iconos";
 import { useAuth } from "../../auth/context/AuthContext";
 import { PrivateShell } from "../components/PrivateShell";
 import { PasswordForm } from "../components/PasswordForm";
@@ -20,14 +21,14 @@ function AtajoAdmin({
   to: string;
   titulo: string;
   descripcion: string;
-  icono: string;
+  icono: ReactNode;
 }) {
   return (
     <Link
       to={to}
       className="group flex items-center gap-4 rounded-2xl border border-[#E9DFD0] bg-[#FFFCF7] p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#C6923B]/50 hover:bg-white hover:shadow-[0_12px_30px_rgba(60,50,35,0.08)]"
     >
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F1E9DB] text-xl transition-colors group-hover:bg-[#E8D5B5]">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#F1E9DB] text-xl text-[#8D4F32] transition-colors group-hover:bg-[#E8D5B5]">
         <span aria-hidden="true">{icono}</span>
       </div>
 
@@ -186,6 +187,13 @@ export function PerfilPage() {
                 </p>
 
                 <div className="mt-4 space-y-3">
+                  <AtajoAdmin
+                    to="/mi-cuenta/recomendaciones"
+                    titulo="Recomendaciones personalizadas"
+                    descripcion="Top-K por afinidad, costos en BOB y traslados estimados"
+                    icono={<Icono nombre="brujula" className="h-6 w-6" />}
+                  />
+
                   <AtajoAdmin
                     to="/mi-cuenta/preferencias"
                     titulo="Preferencias de viaje"

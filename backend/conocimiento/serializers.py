@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework import serializers
 
 from .models import FragmentoDocumental, FuenteDocumental
@@ -13,19 +14,28 @@ class FuenteDocumentalSerializer(serializers.ModelSerializer):
             "url",
             "tipo",
             "fecha_actualizacion",
+            "hash_contenido",
+            "estado_scraping",
             "fecha_creacion",
         ]
-        read_only_fields = ["id_fuente", "fecha_creacion"]
+        read_only_fields = [
+            "id_fuente",
+            "hash_contenido",
+            "estado_scraping",
+            "fecha_creacion",
+        ]
 
 
 class FragmentoDocumentalSerializer(serializers.ModelSerializer):
     fuente_titulo = serializers.CharField(source="fuente.titulo", read_only=True)
-    # Vector pgvector de 1536 dims: solo escritura, nunca en lectura.
+    # Vector pgvector: solo escritura, nunca en lectura.
     embedding = serializers.ListField(
         child=serializers.FloatField(),
-        min_length=1536,
-        max_length=1536,
+        min_length=settings.EMBEDDING_DIM,
+        max_length=settings.EMBEDDING_DIM,
         write_only=True,
+        required=False,
+        allow_null=True,
     )
 
     class Meta:
@@ -37,6 +47,15 @@ class FragmentoDocumentalSerializer(serializers.ModelSerializer):
             "numero_fragmento",
             "contenido",
             "embedding",
+            "embedding_modelo",
+            "embedding_dimension",
+            "embedding_actualizado",
             "fecha_creacion",
         ]
-        read_only_fields = ["id_fragmento", "fecha_creacion"]
+        read_only_fields = [
+            "id_fragmento",
+            "embedding_modelo",
+            "embedding_dimension",
+            "embedding_actualizado",
+            "fecha_creacion",
+        ]
