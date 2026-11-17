@@ -85,12 +85,28 @@ DATABASES: dict[str, Any] = {
     }
 }
 
-# Soporte para DATABASE_URL (estándar en servicios como Supabase/Neon/Railway)
-if os.getenv("DATABASE_URL"):
-    DATABASES["default"] = dj_database_url.config(
-        default=os.getenv("DATABASE_URL") or "",
-        conn_max_age=600,
-        ssl_require=True if not DEBUG else False,
+# Soporte para DATABASE_URL (Supabase, Neon, Railway u otro PostgreSQL
+# externo). El engine se fija explícitamente a PostGIS: dj-database-url
+# usaría django.db.backends.postgresql y los campos GIS (PointField,
+# ST_DistanceSphere) dejarían de funcionar. conn_health_checks recicla
+# conexiones rotas cuando el pooler corta una sesión inactiva.
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+if DATABASE_URL:
+    try:
+        DB_CONN_MAX_AGE = int(os.getenv("DB_CONN_MAX_AGE") or "600")
+    except ValueError:
+        DB_CONN_MAX_AGE = 600
+    # Supabase exige TLS. En local con DEBUG=1 se puede desactivar, pero
+    # DB_SSL_REQUIRE=1 permite usar el mismo Supabase en desarrollo.
+    DB_SSL_REQUIRE = (
+        os.getenv("DB_SSL_REQUIRE") or ("0" if DEBUG else "1")
+    ) == "1"
+    DATABASES["default"] = dj_database_url.parse(
+        DATABASE_URL,
+        engine="django.contrib.gis.db.backends.postgis",
+        conn_max_age=DB_CONN_MAX_AGE,
+        conn_health_checks=True,
+        ssl_require=DB_SSL_REQUIRE,
     )
 
 

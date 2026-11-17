@@ -23,7 +23,7 @@ services:
       retries: 12
 
   backend:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.1.0}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -68,7 +68,7 @@ services:
       retries: 12
 
   frontend:
-    image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG:-1.0.7}
+    image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG:-1.1.0}
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
@@ -89,7 +89,7 @@ services:
       retries: 12
 
   proxy:
-    image: raisiar/proyecto-de-sistemas-proxy:${IMAGE_TAG:-1.0.4}
+    image: raisiar/proyecto-de-sistemas-proxy:${IMAGE_TAG:-1.1.0}
     build:
       context: ./proxy
       dockerfile: Dockerfile
@@ -131,7 +131,7 @@ services:
       retries: 12
 
   worker:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.1.0}
     container_name: turismo-melgarejo_worker
     restart: always
     # Solo el backend migra (evita carreras de CREATE EXTENSION entre
@@ -174,7 +174,7 @@ services:
       - datos-network
 
   beat:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.1.0}
     container_name: turismo-melgarejo_beat
     restart: always
     command: celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
@@ -206,7 +206,7 @@ services:
       - datos-network
 
   flower:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.1.0}
     container_name: turismo-melgarejo_flower
     restart: always
     command: celery -A config flower --address=0.0.0.0 --port=5555 --persistent=True --db=/tmp/flower.db

@@ -1,0 +1,3781 @@
+openapi: 3.0.3
+info:
+  title: Turismo Melgarejo API
+  version: 1.0.0
+  description: API del sistema de recomendación turística de La Paz.
+paths:
+  /api/:
+    get:
+      operationId: root_retrieve
+      description: Índice de módulos y documentación de la API.
+      tags:
+      - sistema
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: Login con {email, password}. Retorna access+refresh planos y el
+        usuario con sus roles.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: 'Logout: invalida el refresh token (blacklist).'
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Logout'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Logout'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Logout'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/auth/password/change/:
+    post:
+      operationId: auth_password_change_create
+      description: Cambio de contraseña del usuario autenticado.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: Registro público. Crea el usuario con hash PBKDF2, asigna el rol
+        TOURIST y retorna tokens.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: Renovación de access con {refresh}. Retorna {access}.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/usuarios/:
+    get:
+      operationId: auth_usuarios_list
+      description: Lista paginada de usuarios (solo ADMIN).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUsuarioListList'
+          description: ''
+  /api/conocimiento/fragmentos/:
+    get:
+      operationId: conocimiento_fragmentos_list
+      description: CRUD fragmentos documentales. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - conocimiento
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFragmentoDocumentalList'
+          description: ''
+    post:
+      operationId: conocimiento_fragmentos_create
+      description: CRUD fragmentos documentales. Lectura pública, escritura solo ADMIN.
+      tags:
+      - conocimiento
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FragmentoDocumental'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FragmentoDocumental'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FragmentoDocumental'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FragmentoDocumental'
+          description: ''
+  /api/conocimiento/fragmentos/{id_fragmento}/:
+    get:
+      operationId: conocimiento_fragmentos_retrieve
+      description: CRUD fragmentos documentales. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_fragmento
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este fragmento documental.
+        required: true
+      tags:
+      - conocimiento
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FragmentoDocumental'
+          description: ''
+    put:
+      operationId: conocimiento_fragmentos_update
+      description: CRUD fragmentos documentales. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_fragmento
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este fragmento documental.
+        required: true
+      tags:
+      - conocimiento
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FragmentoDocumental'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FragmentoDocumental'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FragmentoDocumental'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FragmentoDocumental'
+          description: ''
+    patch:
+      operationId: conocimiento_fragmentos_partial_update
+      description: CRUD fragmentos documentales. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_fragmento
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este fragmento documental.
+        required: true
+      tags:
+      - conocimiento
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFragmentoDocumental'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFragmentoDocumental'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFragmentoDocumental'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FragmentoDocumental'
+          description: ''
+    delete:
+      operationId: conocimiento_fragmentos_destroy
+      description: CRUD fragmentos documentales. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_fragmento
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este fragmento documental.
+        required: true
+      tags:
+      - conocimiento
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/conocimiento/fuentes/:
+    get:
+      operationId: conocimiento_fuentes_list
+      description: CRUD fuentes documentales. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - conocimiento
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFuenteDocumentalList'
+          description: ''
+    post:
+      operationId: conocimiento_fuentes_create
+      description: CRUD fuentes documentales. Lectura pública, escritura solo ADMIN.
+      tags:
+      - conocimiento
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FuenteDocumental'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FuenteDocumental'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FuenteDocumental'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuenteDocumental'
+          description: ''
+  /api/conocimiento/fuentes/{id_fuente}/:
+    get:
+      operationId: conocimiento_fuentes_retrieve
+      description: CRUD fuentes documentales. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_fuente
+        schema:
+          type: string
+          format: uuid
+        description: Un Cadena UUID que identifique este fuente documental.
+        required: true
+      tags:
+      - conocimiento
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuenteDocumental'
+          description: ''
+    put:
+      operationId: conocimiento_fuentes_update
+      description: CRUD fuentes documentales. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_fuente
+        schema:
+          type: string
+          format: uuid
+        description: Un Cadena UUID que identifique este fuente documental.
+        required: true
+      tags:
+      - conocimiento
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FuenteDocumental'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FuenteDocumental'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FuenteDocumental'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuenteDocumental'
+          description: ''
+    patch:
+      operationId: conocimiento_fuentes_partial_update
+      description: CRUD fuentes documentales. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_fuente
+        schema:
+          type: string
+          format: uuid
+        description: Un Cadena UUID que identifique este fuente documental.
+        required: true
+      tags:
+      - conocimiento
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFuenteDocumental'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFuenteDocumental'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFuenteDocumental'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FuenteDocumental'
+          description: ''
+    delete:
+      operationId: conocimiento_fuentes_destroy
+      description: CRUD fuentes documentales. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_fuente
+        schema:
+          type: string
+          format: uuid
+        description: Un Cadena UUID que identifique este fuente documental.
+        required: true
+      tags:
+      - conocimiento
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/health/:
+    get:
+      operationId: health_retrieve
+      description: Comprueba que el proceso backend está disponible.
+      tags:
+      - sistema
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/preferences/:
+    get:
+      operationId: preferences_list
+      description: |-
+        Preferencias del usuario autenticado (issue #22).
+
+        GET lista las propias, POST crea asignando el JWT, PATCH/DELETE solo
+        sobre las propias. Nunca expone ni acepta otro usuario.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: PK.
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - preferences
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMiPreferenciaList'
+          description: ''
+    post:
+      operationId: preferences_create
+      description: |-
+        Preferencias del usuario autenticado (issue #22).
+
+        GET lista las propias, POST crea asignando el JWT, PATCH/DELETE solo
+        sobre las propias. Nunca expone ni acepta otro usuario.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: PK.
+        required: true
+      tags:
+      - preferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MiPreferencia'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/MiPreferencia'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MiPreferencia'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MiPreferencia'
+          description: ''
+  /api/preferences/{id}/:
+    get:
+      operationId: preferences_retrieve
+      description: |-
+        Preferencias del usuario autenticado (issue #22).
+
+        GET lista las propias, POST crea asignando el JWT, PATCH/DELETE solo
+        sobre las propias. Nunca expone ni acepta otro usuario.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: PK.
+        required: true
+      tags:
+      - preferences
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MiPreferencia'
+          description: ''
+    patch:
+      operationId: preferences_partial_update
+      description: |-
+        Preferencias del usuario autenticado (issue #22).
+
+        GET lista las propias, POST crea asignando el JWT, PATCH/DELETE solo
+        sobre las propias. Nunca expone ni acepta otro usuario.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: PK.
+        required: true
+      tags:
+      - preferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedMiPreferencia'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedMiPreferencia'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedMiPreferencia'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MiPreferencia'
+          description: ''
+    delete:
+      operationId: preferences_destroy
+      description: |-
+        Preferencias del usuario autenticado (issue #22).
+
+        GET lista las propias, POST crea asignando el JWT, PATCH/DELETE solo
+        sobre las propias. Nunca expone ni acepta otro usuario.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: PK.
+        required: true
+      tags:
+      - preferences
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/recomendaciones/consultas/:
+    get:
+      operationId: recomendaciones_consultas_list
+      description: |-
+        Consultas del usuario autenticado (issue #22/#27).
+
+        Cualquier usuario autenticado crea y gestiona **sus** consultas; el
+        ``usuario`` se toma del JWT (nunca del body). ADMIN ve todas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID.
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - recomendaciones
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedConsultaRecomendacionList'
+          description: ''
+    post:
+      operationId: recomendaciones_consultas_create
+      description: |-
+        Consultas del usuario autenticado (issue #22/#27).
+
+        Cualquier usuario autenticado crea y gestiona **sus** consultas; el
+        ``usuario`` se toma del JWT (nunca del body). ADMIN ve todas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID.
+        required: true
+      tags:
+      - recomendaciones
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsultaRecomendacion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConsultaRecomendacion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConsultaRecomendacion'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsultaRecomendacion'
+          description: ''
+  /api/recomendaciones/consultas/{id}/:
+    get:
+      operationId: recomendaciones_consultas_retrieve
+      description: |-
+        Consultas del usuario autenticado (issue #22/#27).
+
+        Cualquier usuario autenticado crea y gestiona **sus** consultas; el
+        ``usuario`` se toma del JWT (nunca del body). ADMIN ve todas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID.
+        required: true
+      tags:
+      - recomendaciones
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsultaRecomendacion'
+          description: ''
+    patch:
+      operationId: recomendaciones_consultas_partial_update
+      description: |-
+        Consultas del usuario autenticado (issue #22/#27).
+
+        Cualquier usuario autenticado crea y gestiona **sus** consultas; el
+        ``usuario`` se toma del JWT (nunca del body). ADMIN ve todas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID.
+        required: true
+      tags:
+      - recomendaciones
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedConsultaRecomendacion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedConsultaRecomendacion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedConsultaRecomendacion'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsultaRecomendacion'
+          description: ''
+    delete:
+      operationId: recomendaciones_consultas_destroy
+      description: |-
+        Consultas del usuario autenticado (issue #22/#27).
+
+        Cualquier usuario autenticado crea y gestiona **sus** consultas; el
+        ``usuario`` se toma del JWT (nunca del body). ADMIN ve todas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID.
+        required: true
+      tags:
+      - recomendaciones
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/recomendaciones/preferencias/:
+    get:
+      operationId: recomendaciones_preferencias_list
+      description: CRUD preferencias. Autenticados ven lo propio; ADMIN todo y escribe.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: PK.
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - recomendaciones
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUsuarioPreferenciaList'
+          description: ''
+    post:
+      operationId: recomendaciones_preferencias_create
+      description: CRUD preferencias. Autenticados ven lo propio; ADMIN todo y escribe.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: PK.
+        required: true
+      tags:
+      - recomendaciones
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioPreferencia'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UsuarioPreferencia'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UsuarioPreferencia'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioPreferencia'
+          description: ''
+  /api/recomendaciones/preferencias/{id}/:
+    get:
+      operationId: recomendaciones_preferencias_retrieve
+      description: CRUD preferencias. Autenticados ven lo propio; ADMIN todo y escribe.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: PK.
+        required: true
+      tags:
+      - recomendaciones
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioPreferencia'
+          description: ''
+    put:
+      operationId: recomendaciones_preferencias_update
+      description: CRUD preferencias. Autenticados ven lo propio; ADMIN todo y escribe.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: PK.
+        required: true
+      tags:
+      - recomendaciones
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioPreferencia'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UsuarioPreferencia'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UsuarioPreferencia'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioPreferencia'
+          description: ''
+    patch:
+      operationId: recomendaciones_preferencias_partial_update
+      description: CRUD preferencias. Autenticados ven lo propio; ADMIN todo y escribe.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: PK.
+        required: true
+      tags:
+      - recomendaciones
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUsuarioPreferencia'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUsuarioPreferencia'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUsuarioPreferencia'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioPreferencia'
+          description: ''
+    delete:
+      operationId: recomendaciones_preferencias_destroy
+      description: CRUD preferencias. Autenticados ven lo propio; ADMIN todo y escribe.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: PK.
+        required: true
+      tags:
+      - recomendaciones
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/recomendaciones/recomendar/:
+    post:
+      operationId: recomendaciones_recomendar_create
+      description: Calcula el ranking Top-K de destinos viables. El costo se compara
+        contra la tarifa mínima vigente en BOB y la distancia se calcula con ST_DistanceSphere.
+        Si no se envían ``preferencias``, se usan las del usuario autenticado.
+      tags:
+      - recomendaciones
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecomendacionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecomendacionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecomendacionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecomendacionResponse'
+          description: ''
+  /api/recommendations/:
+    post:
+      operationId: recommendations_create
+      description: Calcula el ranking Top-K de destinos viables. El costo se compara
+        contra la tarifa mínima vigente en BOB y la distancia se calcula con ST_DistanceSphere.
+        Si no se envían ``preferencias``, se usan las del usuario autenticado.
+      tags:
+      - recommendations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecomendacionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecomendacionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecomendacionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecomendacionResponse'
+          description: ''
+  /api/turismo/admin/atractivos/:
+    get:
+      operationId: turismo_admin_atractivos_list
+      description: |-
+        CRUD de destinos turísticos. Solo usuarios con rol ADMIN.
+
+        Endpoints (bajo /api/turismo/admin/atractivos/):
+        POST crear · GET listar/detalle · PUT/PATCH actualizar ·
+        DELETE baja lógica (activo=false, preserva relacionados).
+        Las coordenadas se reciben como {longitud, latitud} y se persisten
+        como Point SRID 4326 en PostGIS.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - turismo
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAtractivoAdminList'
+          description: ''
+    post:
+      operationId: turismo_admin_atractivos_create
+      description: |-
+        CRUD de destinos turísticos. Solo usuarios con rol ADMIN.
+
+        Endpoints (bajo /api/turismo/admin/atractivos/):
+        POST crear · GET listar/detalle · PUT/PATCH actualizar ·
+        DELETE baja lógica (activo=false, preserva relacionados).
+        Las coordenadas se reciben como {longitud, latitud} y se persisten
+        como Point SRID 4326 en PostGIS.
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtractivoAdmin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AtractivoAdmin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AtractivoAdmin'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AtractivoAdmin'
+          description: ''
+  /api/turismo/admin/atractivos/{id_atractivo}/:
+    get:
+      operationId: turismo_admin_atractivos_retrieve
+      description: |-
+        CRUD de destinos turísticos. Solo usuarios con rol ADMIN.
+
+        Endpoints (bajo /api/turismo/admin/atractivos/):
+        POST crear · GET listar/detalle · PUT/PATCH actualizar ·
+        DELETE baja lógica (activo=false, preserva relacionados).
+        Las coordenadas se reciben como {longitud, latitud} y se persisten
+        como Point SRID 4326 en PostGIS.
+      parameters:
+      - in: path
+        name: id_atractivo
+        schema:
+          type: string
+          format: uuid
+        description: Un Cadena UUID que identifique este atractivo.
+        required: true
+      tags:
+      - turismo
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AtractivoAdmin'
+          description: ''
+    put:
+      operationId: turismo_admin_atractivos_update
+      description: |-
+        CRUD de destinos turísticos. Solo usuarios con rol ADMIN.
+
+        Endpoints (bajo /api/turismo/admin/atractivos/):
+        POST crear · GET listar/detalle · PUT/PATCH actualizar ·
+        DELETE baja lógica (activo=false, preserva relacionados).
+        Las coordenadas se reciben como {longitud, latitud} y se persisten
+        como Point SRID 4326 en PostGIS.
+      parameters:
+      - in: path
+        name: id_atractivo
+        schema:
+          type: string
+          format: uuid
+        description: Un Cadena UUID que identifique este atractivo.
+        required: true
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtractivoAdmin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AtractivoAdmin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AtractivoAdmin'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AtractivoAdmin'
+          description: ''
+    patch:
+      operationId: turismo_admin_atractivos_partial_update
+      description: |-
+        CRUD de destinos turísticos. Solo usuarios con rol ADMIN.
+
+        Endpoints (bajo /api/turismo/admin/atractivos/):
+        POST crear · GET listar/detalle · PUT/PATCH actualizar ·
+        DELETE baja lógica (activo=false, preserva relacionados).
+        Las coordenadas se reciben como {longitud, latitud} y se persisten
+        como Point SRID 4326 en PostGIS.
+      parameters:
+      - in: path
+        name: id_atractivo
+        schema:
+          type: string
+          format: uuid
+        description: Un Cadena UUID que identifique este atractivo.
+        required: true
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAtractivoAdmin'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAtractivoAdmin'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAtractivoAdmin'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AtractivoAdmin'
+          description: ''
+    delete:
+      operationId: turismo_admin_atractivos_destroy
+      description: |-
+        CRUD de destinos turísticos. Solo usuarios con rol ADMIN.
+
+        Endpoints (bajo /api/turismo/admin/atractivos/):
+        POST crear · GET listar/detalle · PUT/PATCH actualizar ·
+        DELETE baja lógica (activo=false, preserva relacionados).
+        Las coordenadas se reciben como {longitud, latitud} y se persisten
+        como Point SRID 4326 en PostGIS.
+      parameters:
+      - in: path
+        name: id_atractivo
+        schema:
+          type: string
+          format: uuid
+        description: Un Cadena UUID que identifique este atractivo.
+        required: true
+      tags:
+      - turismo
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/turismo/admin/fotos/:
+    get:
+      operationId: turismo_admin_fotos_list
+      description: Fotos de un destino (o todas si se omite `atractivo`).
+      parameters:
+      - in: query
+        name: atractivo
+        schema:
+          type: string
+        description: UUID del atractivo; filtra sus fotos.
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - turismo
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFotoList'
+          description: ''
+    post:
+      operationId: turismo_admin_fotos_create
+      description: CRUD de fotos de destinos. Solo ADMIN.
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Foto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Foto'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Foto'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Foto'
+          description: ''
+  /api/turismo/admin/fotos/{id_foto}/:
+    get:
+      operationId: turismo_admin_fotos_retrieve
+      description: CRUD de fotos de destinos. Solo ADMIN.
+      parameters:
+      - in: path
+        name: id_foto
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este foto.
+        required: true
+      tags:
+      - turismo
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Foto'
+          description: ''
+    put:
+      operationId: turismo_admin_fotos_update
+      description: CRUD de fotos de destinos. Solo ADMIN.
+      parameters:
+      - in: path
+        name: id_foto
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este foto.
+        required: true
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Foto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Foto'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Foto'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Foto'
+          description: ''
+    patch:
+      operationId: turismo_admin_fotos_partial_update
+      description: CRUD de fotos de destinos. Solo ADMIN.
+      parameters:
+      - in: path
+        name: id_foto
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este foto.
+        required: true
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedFoto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedFoto'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedFoto'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Foto'
+          description: ''
+    delete:
+      operationId: turismo_admin_fotos_destroy
+      description: CRUD de fotos de destinos. Solo ADMIN.
+      parameters:
+      - in: path
+        name: id_foto
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este foto.
+        required: true
+      tags:
+      - turismo
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/turismo/admin/fotos/{id}/estado/:
+    get:
+      operationId: turismo_admin_fotos_estado_retrieve
+      description: Estado pending/processing/completed/failed de la foto.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - turismo
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/turismo/admin/fotos/firma/:
+    post:
+      operationId: turismo_admin_fotos_firma_create
+      description: Firma una subida directa a Cloudinary.
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FirmaFoto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FirmaFoto'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FirmaFoto'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/turismo/admin/fotos/subir/:
+    post:
+      operationId: turismo_admin_fotos_subir_create
+      description: Recibe el archivo y encola la subida a Cloudinary.
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubirFoto'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SubirFoto'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SubirFoto'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/turismo/atractivos/:
+    get:
+      operationId: turismo_atractivos_list
+      description: |-
+        Catálogo público de atractivos (solo lectura).
+
+        Filtros combinables (ver :class:`turismo.filters.AtractivoFilter`,
+        pensados para buscador con debounce). Ej:
+        ``/api/turismo/atractivos/?q=museo&categoria=Cultura&precio_max=50``.
+      parameters:
+      - in: query
+        name: categoria
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - in: query
+        name: precio_max
+        schema:
+          type: number
+      - in: query
+        name: precio_min
+        schema:
+          type: number
+      - in: query
+        name: q
+        schema:
+          type: string
+      - in: query
+        name: zona
+        schema:
+          type: string
+      tags:
+      - turismo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAtractivoList'
+          description: ''
+  /api/turismo/atractivos/{id}/:
+    get:
+      operationId: turismo_atractivos_retrieve
+      description: |-
+        Catálogo público de atractivos (solo lectura).
+
+        Filtros combinables (ver :class:`turismo.filters.AtractivoFilter`,
+        pensados para buscador con debounce). Ej:
+        ``/api/turismo/atractivos/?q=museo&categoria=Cultura&precio_max=50``.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID.
+        required: true
+      tags:
+      - turismo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Atractivo'
+          description: ''
+  /api/turismo/atractivos/cercanos/:
+    get:
+      operationId: turismo_atractivos_cercanos_retrieve
+      description: Atractivos activos dentro del radio, ordenados por distancia. Cada
+        item incluye distancia_m.
+      parameters:
+      - in: query
+        name: lat
+        schema:
+          type: number
+          format: double
+        description: Latitud del punto de referencia.
+        required: true
+      - in: query
+        name: lon
+        schema:
+          type: number
+          format: double
+        description: Longitud del punto de referencia.
+        required: true
+      - in: query
+        name: radio
+        schema:
+          type: number
+          format: double
+        description: Radio en metros (defecto 2000, máximo 50000).
+      tags:
+      - turismo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Atractivo'
+          description: ''
+  /api/turismo/atractivos/facetas/:
+    get:
+      operationId: turismo_atractivos_facetas_retrieve
+      description: 'Facetas para el panel de filtros: categorías con conteo de atractivos
+        activos y rango de precios BOB.'
+      tags:
+      - turismo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/turismo/categorias/:
+    get:
+      operationId: turismo_categorias_list
+      description: CRUD categorías. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - turismo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoriaList'
+          description: ''
+    post:
+      operationId: turismo_categorias_create
+      description: CRUD categorías. Lectura pública, escritura solo ADMIN.
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Categoria'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Categoria'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Categoria'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Categoria'
+          description: ''
+  /api/turismo/categorias/{id_categoria}/:
+    get:
+      operationId: turismo_categorias_retrieve
+      description: CRUD categorías. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_categoria
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este categoria.
+        required: true
+      tags:
+      - turismo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Categoria'
+          description: ''
+    put:
+      operationId: turismo_categorias_update
+      description: CRUD categorías. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_categoria
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este categoria.
+        required: true
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Categoria'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Categoria'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Categoria'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Categoria'
+          description: ''
+    patch:
+      operationId: turismo_categorias_partial_update
+      description: CRUD categorías. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_categoria
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este categoria.
+        required: true
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoria'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoria'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoria'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Categoria'
+          description: ''
+    delete:
+      operationId: turismo_categorias_destroy
+      description: CRUD categorías. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_categoria
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este categoria.
+        required: true
+      tags:
+      - turismo
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/turismo/horarios/:
+    get:
+      operationId: turismo_horarios_list
+      description: CRUD horarios. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - turismo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHorarioList'
+          description: ''
+    post:
+      operationId: turismo_horarios_create
+      description: CRUD horarios. Lectura pública, escritura solo ADMIN.
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Horario'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Horario'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Horario'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Horario'
+          description: ''
+  /api/turismo/horarios/{id_horario}/:
+    get:
+      operationId: turismo_horarios_retrieve
+      description: CRUD horarios. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_horario
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este horario.
+        required: true
+      tags:
+      - turismo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Horario'
+          description: ''
+    put:
+      operationId: turismo_horarios_update
+      description: CRUD horarios. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_horario
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este horario.
+        required: true
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Horario'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Horario'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Horario'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Horario'
+          description: ''
+    patch:
+      operationId: turismo_horarios_partial_update
+      description: CRUD horarios. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_horario
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este horario.
+        required: true
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedHorario'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedHorario'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedHorario'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Horario'
+          description: ''
+    delete:
+      operationId: turismo_horarios_destroy
+      description: CRUD horarios. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_horario
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este horario.
+        required: true
+      tags:
+      - turismo
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/turismo/tarifas/:
+    get:
+      operationId: turismo_tarifas_list
+      description: CRUD tarifas. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - turismo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTarifaList'
+          description: ''
+    post:
+      operationId: turismo_tarifas_create
+      description: CRUD tarifas. Lectura pública, escritura solo ADMIN.
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tarifa'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tarifa'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tarifa'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarifa'
+          description: ''
+  /api/turismo/tarifas/{id_tarifa}/:
+    get:
+      operationId: turismo_tarifas_retrieve
+      description: CRUD tarifas. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_tarifa
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este tarifa.
+        required: true
+      tags:
+      - turismo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarifa'
+          description: ''
+    put:
+      operationId: turismo_tarifas_update
+      description: CRUD tarifas. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_tarifa
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este tarifa.
+        required: true
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tarifa'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tarifa'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tarifa'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarifa'
+          description: ''
+    patch:
+      operationId: turismo_tarifas_partial_update
+      description: CRUD tarifas. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_tarifa
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este tarifa.
+        required: true
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTarifa'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTarifa'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTarifa'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarifa'
+          description: ''
+    delete:
+      operationId: turismo_tarifas_destroy
+      description: CRUD tarifas. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_tarifa
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este tarifa.
+        required: true
+      tags:
+      - turismo
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/turismo/tipos-tarifa/:
+    get:
+      operationId: turismo_tipos_tarifa_list
+      description: CRUD tipos de tarifa. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - turismo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTipoTarifaList'
+          description: ''
+    post:
+      operationId: turismo_tipos_tarifa_create
+      description: CRUD tipos de tarifa. Lectura pública, escritura solo ADMIN.
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TipoTarifa'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TipoTarifa'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TipoTarifa'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TipoTarifa'
+          description: ''
+  /api/turismo/tipos-tarifa/{id_tipo_tarifa}/:
+    get:
+      operationId: turismo_tipos_tarifa_retrieve
+      description: CRUD tipos de tarifa. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_tipo_tarifa
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este tipo tarifa.
+        required: true
+      tags:
+      - turismo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TipoTarifa'
+          description: ''
+    put:
+      operationId: turismo_tipos_tarifa_update
+      description: CRUD tipos de tarifa. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_tipo_tarifa
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este tipo tarifa.
+        required: true
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TipoTarifa'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TipoTarifa'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TipoTarifa'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TipoTarifa'
+          description: ''
+    patch:
+      operationId: turismo_tipos_tarifa_partial_update
+      description: CRUD tipos de tarifa. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_tipo_tarifa
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este tipo tarifa.
+        required: true
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTipoTarifa'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTipoTarifa'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTipoTarifa'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TipoTarifa'
+          description: ''
+    delete:
+      operationId: turismo_tipos_tarifa_destroy
+      description: CRUD tipos de tarifa. Lectura pública, escritura solo ADMIN.
+      parameters:
+      - in: path
+        name: id_tipo_tarifa
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este tipo tarifa.
+        required: true
+      tags:
+      - turismo
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    Atractivo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 200
+        descripcion:
+          type: string
+        url:
+          nullable: true
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        direccion:
+          type: string
+          nullable: true
+          maxLength: 300
+        duracion_minutos:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          nullable: true
+        ubicacion:
+          type: object
+          additionalProperties:
+            type: number
+            format: double
+          readOnly: true
+        area:
+          type: array
+          items: {}
+          nullable: true
+          readOnly: true
+        categorias:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        imagenes:
+          type: array
+          items:
+            type: string
+          description: |-
+            Solo fotos terminadas y de tipo imagen.
+
+            El frontend arma una URL de Cloudinary con cada ``public_id``; si se
+            incluyeran videos o subidas pendientes/fallidas, el catálogo mostraría
+            imágenes rotas.
+          readOnly: true
+        fuente_origen:
+          type: string
+          maxLength: 100
+        activo:
+          type: boolean
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+        fecha_actualizacion:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - area
+      - categorias
+      - descripcion
+      - fecha_actualizacion
+      - fecha_creacion
+      - id
+      - imagenes
+      - nombre
+      - ubicacion
+    AtractivoAdmin:
+      type: object
+      description: |-
+        Escritura de destinos turísticos (solo ADMIN).
+
+        Acepta ``ubicacion`` como dict ``{"longitud": float, "latitud": float}``
+        y lo persiste como ``Point`` SRID 4326 en PostGIS. ``categorias`` se
+        escribe como lista de IDs de categoría.
+      properties:
+        id_atractivo:
+          type: string
+          format: uuid
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 200
+        descripcion:
+          type: string
+        url:
+          nullable: true
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        direccion:
+          type: string
+          nullable: true
+          maxLength: 300
+        duracion_minutos:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          nullable: true
+        ubicacion:
+          type: object
+          properties:
+            longitud:
+              type: number
+              minimum: -180
+              maximum: 180
+            latitud:
+              type: number
+              minimum: -90
+              maximum: 90
+          required:
+          - longitud
+          - latitud
+        area:
+          type: array
+          items: {}
+          nullable: true
+          readOnly: true
+        categorias:
+          type: array
+          items:
+            type: integer
+        fotos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Foto'
+          readOnly: true
+        fuente_origen:
+          type: string
+          maxLength: 100
+        activo:
+          type: boolean
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+        fecha_actualizacion:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - area
+      - descripcion
+      - fecha_actualizacion
+      - fecha_creacion
+      - fotos
+      - id_atractivo
+      - nombre
+      - ubicacion
+    Categoria:
+      type: object
+      properties:
+        id_categoria:
+          type: integer
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 100
+        descripcion:
+          type: string
+          nullable: true
+        activo:
+          type: boolean
+      required:
+      - id_categoria
+      - nombre
+    ConsultaRecomendacion:
+      type: object
+      properties:
+        id_consulta:
+          type: string
+          format: uuid
+          readOnly: true
+        usuario:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        presupuesto_bob:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        tiempo_horas:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+        punto_partida:
+          type: object
+          properties:
+            coordinates:
+              type: array
+              items:
+                type: number
+              minItems: 2
+              maxItems: 2
+          required:
+          - coordinates
+          example:
+            coordinates:
+            - -68.1486
+            - -16.4966
+        macrodistrito:
+          type: string
+          nullable: true
+          maxLength: 80
+        fecha_consulta:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - fecha_consulta
+      - id_consulta
+      - presupuesto_bob
+      - punto_partida
+      - tiempo_horas
+      - usuario
+    EstadoEnum:
+      enum:
+      - pending
+      - processing
+      - completed
+      - failed
+      type: string
+      description: |-
+        * `pending` - Pendiente
+        * `processing` - Procesando
+        * `completed` - Completada
+        * `failed` - Fallida
+    EstadoScrapingEnum:
+      enum:
+      - pendiente
+      - completado
+      - error
+      type: string
+      description: |-
+        * `pendiente` - Pendiente
+        * `completado` - Completado
+        * `error` - Error
+    FirmaFoto:
+      type: object
+      description: |-
+        Cuerpo documentado de POST /admin/fotos/firma/ (drf-spectacular).
+
+        Solo alimenta el esquema OpenAPI: la vista valida a mano porque el
+        flujo es una firma de Cloudinary con respuestas propias (400/503).
+        Debe mantenerse en paralelo con las validaciones de FirmaFotoView.post.
+      properties:
+        atractivo:
+          type: string
+          format: uuid
+        formato:
+          $ref: '#/components/schemas/FormatoEnum'
+        bytes:
+          type: integer
+          maximum: 10485760
+          minimum: 1
+      required:
+      - atractivo
+      - bytes
+      - formato
+    FormatoEnum:
+      enum:
+      - jpg
+      - jpeg
+      - png
+      - webp
+      type: string
+      description: |-
+        * `jpg` - jpg
+        * `jpeg` - jpeg
+        * `png` - png
+        * `webp` - webp
+    Foto:
+      type: object
+      description: |-
+        Foto/video de un destino.
+
+        Es el serializer de escritura de ``FotoAdminViewSet`` y, a la vez, el
+        serializer anidado de solo lectura que ``AtractivoAdminSerializer``
+        expone en ``fotos``. ``tipo`` y ``estado`` son escribibles para que el
+        flujo de subida directa (firma → Cloudinary → POST del registro) pueda
+        nacer en ``completed``; las subidas pesadas por Celery los reciben del
+        default del modelo.
+      properties:
+        id_foto:
+          type: integer
+          readOnly: true
+        atractivo:
+          type: string
+          format: uuid
+        public_id:
+          type: string
+          maxLength: 300
+        url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        tipo:
+          $ref: '#/components/schemas/FotoTipoEnum'
+        estado:
+          $ref: '#/components/schemas/EstadoEnum'
+        ancho:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        alto:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        orden:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - atractivo
+      - fecha_creacion
+      - id_foto
+      - public_id
+    FotoTipoEnum:
+      enum:
+      - imagen
+      - video
+      type: string
+      description: |-
+        * `imagen` - Imagen
+        * `video` - Video
+    FragmentoDocumental:
+      type: object
+      properties:
+        id_fragmento:
+          type: integer
+          readOnly: true
+        fuente:
+          type: string
+          format: uuid
+        fuente_titulo:
+          type: string
+          readOnly: true
+        numero_fragmento:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        contenido:
+          type: string
+        embedding:
+          type: array
+          items:
+            type: number
+            format: double
+          writeOnly: true
+          nullable: true
+          maxItems: 768
+          minItems: 768
+        embedding_modelo:
+          type: string
+          readOnly: true
+        embedding_dimension:
+          type: integer
+          readOnly: true
+          nullable: true
+        embedding_actualizado:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - contenido
+      - embedding_actualizado
+      - embedding_dimension
+      - embedding_modelo
+      - fecha_creacion
+      - fuente
+      - fuente_titulo
+      - id_fragmento
+      - numero_fragmento
+    FuenteDocumental:
+      type: object
+      properties:
+        id_fuente:
+          type: string
+          format: uuid
+          readOnly: true
+        atractivo:
+          type: string
+          format: uuid
+          nullable: true
+        titulo:
+          type: string
+          maxLength: 250
+        url:
+          type: string
+          nullable: true
+        tipo:
+          type: string
+          nullable: true
+          maxLength: 50
+        fecha_actualizacion:
+          type: string
+          format: date-time
+          nullable: true
+        hash_contenido:
+          type: string
+          readOnly: true
+        estado_scraping:
+          allOf:
+          - $ref: '#/components/schemas/EstadoScrapingEnum'
+          readOnly: true
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - estado_scraping
+      - fecha_creacion
+      - hash_contenido
+      - id_fuente
+      - titulo
+    Horario:
+      type: object
+      properties:
+        id_horario:
+          type: integer
+          readOnly: true
+        atractivo:
+          type: string
+          format: uuid
+        dia_semana:
+          type: integer
+          maximum: 7
+          minimum: 1
+        hora_apertura:
+          type: string
+          format: time
+          nullable: true
+        hora_cierre:
+          type: string
+          format: time
+          nullable: true
+        cerrado:
+          type: boolean
+        vigente_desde:
+          type: string
+          format: date
+          nullable: true
+        vigente_hasta:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - atractivo
+      - dia_semana
+      - id_horario
+    Logout:
+      type: object
+      description: 'Body de logout: el refresh a invalidar.'
+      properties:
+        refresh:
+          type: string
+      required:
+      - refresh
+    MiPreferencia:
+      type: object
+      description: |-
+        Preferencias del usuario autenticado (issue #22).
+
+        El usuario se asigna desde el JWT y no es escribible: cada turista
+        gestiona solo sus propias preferencias y restricciones.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        usuario:
+          type: string
+          format: uuid
+          readOnly: true
+        categoria:
+          type: integer
+        categoria_nombre:
+          type: string
+          readOnly: true
+        nivel_interes:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+        fecha_registro:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - categoria
+      - categoria_nombre
+      - fecha_registro
+      - id
+      - usuario
+    PaginatedAtractivoAdminList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AtractivoAdmin'
+    PaginatedAtractivoList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Atractivo'
+    PaginatedCategoriaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Categoria'
+    PaginatedConsultaRecomendacionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsultaRecomendacion'
+    PaginatedFotoList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Foto'
+    PaginatedFragmentoDocumentalList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FragmentoDocumental'
+    PaginatedFuenteDocumentalList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/FuenteDocumental'
+    PaginatedHorarioList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Horario'
+    PaginatedMiPreferenciaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MiPreferencia'
+    PaginatedTarifaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tarifa'
+    PaginatedTipoTarifaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TipoTarifa'
+    PaginatedUsuarioListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UsuarioList'
+    PaginatedUsuarioPreferenciaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UsuarioPreferencia'
+    PasswordChange:
+      type: object
+      description: Cambio de contraseña autenticado con validación completa.
+      properties:
+        current_password:
+          type: string
+          writeOnly: true
+        new_password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        new_password_confirm:
+          type: string
+          writeOnly: true
+      required:
+      - current_password
+      - new_password
+      - new_password_confirm
+    PatchedAtractivoAdmin:
+      type: object
+      description: |-
+        Escritura de destinos turísticos (solo ADMIN).
+
+        Acepta ``ubicacion`` como dict ``{"longitud": float, "latitud": float}``
+        y lo persiste como ``Point`` SRID 4326 en PostGIS. ``categorias`` se
+        escribe como lista de IDs de categoría.
+      properties:
+        id_atractivo:
+          type: string
+          format: uuid
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 200
+        descripcion:
+          type: string
+        url:
+          nullable: true
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        direccion:
+          type: string
+          nullable: true
+          maxLength: 300
+        duracion_minutos:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          nullable: true
+        ubicacion:
+          type: object
+          properties:
+            longitud:
+              type: number
+              minimum: -180
+              maximum: 180
+            latitud:
+              type: number
+              minimum: -90
+              maximum: 90
+          required:
+          - longitud
+          - latitud
+        area:
+          type: array
+          items: {}
+          nullable: true
+          readOnly: true
+        categorias:
+          type: array
+          items:
+            type: integer
+        fotos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Foto'
+          readOnly: true
+        fuente_origen:
+          type: string
+          maxLength: 100
+        activo:
+          type: boolean
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+        fecha_actualizacion:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedCategoria:
+      type: object
+      properties:
+        id_categoria:
+          type: integer
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 100
+        descripcion:
+          type: string
+          nullable: true
+        activo:
+          type: boolean
+    PatchedConsultaRecomendacion:
+      type: object
+      properties:
+        id_consulta:
+          type: string
+          format: uuid
+          readOnly: true
+        usuario:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        presupuesto_bob:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        tiempo_horas:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+        punto_partida:
+          type: object
+          properties:
+            coordinates:
+              type: array
+              items:
+                type: number
+              minItems: 2
+              maxItems: 2
+          required:
+          - coordinates
+          example:
+            coordinates:
+            - -68.1486
+            - -16.4966
+        macrodistrito:
+          type: string
+          nullable: true
+          maxLength: 80
+        fecha_consulta:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedFoto:
+      type: object
+      description: |-
+        Foto/video de un destino.
+
+        Es el serializer de escritura de ``FotoAdminViewSet`` y, a la vez, el
+        serializer anidado de solo lectura que ``AtractivoAdminSerializer``
+        expone en ``fotos``. ``tipo`` y ``estado`` son escribibles para que el
+        flujo de subida directa (firma → Cloudinary → POST del registro) pueda
+        nacer en ``completed``; las subidas pesadas por Celery los reciben del
+        default del modelo.
+      properties:
+        id_foto:
+          type: integer
+          readOnly: true
+        atractivo:
+          type: string
+          format: uuid
+        public_id:
+          type: string
+          maxLength: 300
+        url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        tipo:
+          $ref: '#/components/schemas/FotoTipoEnum'
+        estado:
+          $ref: '#/components/schemas/EstadoEnum'
+        ancho:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        alto:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          nullable: true
+        orden:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedFragmentoDocumental:
+      type: object
+      properties:
+        id_fragmento:
+          type: integer
+          readOnly: true
+        fuente:
+          type: string
+          format: uuid
+        fuente_titulo:
+          type: string
+          readOnly: true
+        numero_fragmento:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+        contenido:
+          type: string
+        embedding:
+          type: array
+          items:
+            type: number
+            format: double
+          writeOnly: true
+          nullable: true
+          maxItems: 768
+          minItems: 768
+        embedding_modelo:
+          type: string
+          readOnly: true
+        embedding_dimension:
+          type: integer
+          readOnly: true
+          nullable: true
+        embedding_actualizado:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedFuenteDocumental:
+      type: object
+      properties:
+        id_fuente:
+          type: string
+          format: uuid
+          readOnly: true
+        atractivo:
+          type: string
+          format: uuid
+          nullable: true
+        titulo:
+          type: string
+          maxLength: 250
+        url:
+          type: string
+          nullable: true
+        tipo:
+          type: string
+          nullable: true
+          maxLength: 50
+        fecha_actualizacion:
+          type: string
+          format: date-time
+          nullable: true
+        hash_contenido:
+          type: string
+          readOnly: true
+        estado_scraping:
+          allOf:
+          - $ref: '#/components/schemas/EstadoScrapingEnum'
+          readOnly: true
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedHorario:
+      type: object
+      properties:
+        id_horario:
+          type: integer
+          readOnly: true
+        atractivo:
+          type: string
+          format: uuid
+        dia_semana:
+          type: integer
+          maximum: 7
+          minimum: 1
+        hora_apertura:
+          type: string
+          format: time
+          nullable: true
+        hora_cierre:
+          type: string
+          format: time
+          nullable: true
+        cerrado:
+          type: boolean
+        vigente_desde:
+          type: string
+          format: date
+          nullable: true
+        vigente_hasta:
+          type: string
+          format: date
+          nullable: true
+    PatchedMiPreferencia:
+      type: object
+      description: |-
+        Preferencias del usuario autenticado (issue #22).
+
+        El usuario se asigna desde el JWT y no es escribible: cada turista
+        gestiona solo sus propias preferencias y restricciones.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        usuario:
+          type: string
+          format: uuid
+          readOnly: true
+        categoria:
+          type: integer
+        categoria_nombre:
+          type: string
+          readOnly: true
+        nivel_interes:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+        fecha_registro:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedTarifa:
+      type: object
+      properties:
+        id_tarifa:
+          type: integer
+          readOnly: true
+        atractivo:
+          type: string
+          format: uuid
+        tipo_tarifa:
+          type: integer
+        tipo_tarifa_nombre:
+          type: string
+          readOnly: true
+        monto:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        moneda:
+          type: string
+          maxLength: 3
+        vigente_desde:
+          type: string
+          format: date
+          nullable: true
+        vigente_hasta:
+          type: string
+          format: date
+          nullable: true
+        observacion:
+          type: string
+          nullable: true
+          maxLength: 300
+    PatchedTipoTarifa:
+      type: object
+      properties:
+        id_tipo_tarifa:
+          type: integer
+          readOnly: true
+        codigo:
+          type: string
+          maxLength: 30
+        nombre:
+          type: string
+          maxLength: 100
+        descripcion:
+          type: string
+          nullable: true
+          maxLength: 255
+    PatchedUsuarioPreferencia:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        usuario:
+          type: string
+          format: uuid
+        categoria:
+          type: integer
+        categoria_nombre:
+          type: string
+          readOnly: true
+        nivel_interes:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+        fecha_registro:
+          type: string
+          format: date-time
+          readOnly: true
+    RecomendacionItem:
+      type: object
+      description: Un destino del Top-K con su puntaje explicable.
+      properties:
+        id_atractivo:
+          type: string
+        nombre:
+          type: string
+        puntaje:
+          type: number
+          format: double
+        afinidad_categoria:
+          type: number
+          format: double
+        proximidad:
+          type: number
+          format: double
+        holgura_presupuesto:
+          type: number
+          format: double
+        holgura_tiempo:
+          type: number
+          format: double
+        distancia_km:
+          type: number
+          format: double
+        factor_penalizacion:
+          type: number
+          format: double
+        viable:
+          type: boolean
+        motivos:
+          type: array
+          items:
+            type: string
+        categorias:
+          type: array
+          items:
+            type: string
+        costo_bob:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        duracion_horas:
+          type: number
+          format: double
+        latitud:
+          type: number
+          format: double
+        longitud:
+          type: number
+          format: double
+      required:
+      - afinidad_categoria
+      - categorias
+      - costo_bob
+      - distancia_km
+      - duracion_horas
+      - factor_penalizacion
+      - holgura_presupuesto
+      - holgura_tiempo
+      - id_atractivo
+      - latitud
+      - longitud
+      - motivos
+      - nombre
+      - proximidad
+      - puntaje
+      - viable
+    RecomendacionRequest:
+      type: object
+      description: |-
+        Perfil de entrada del motor de recomendación (issue #27).
+
+        ``preferencias`` es opcional: si se omite, la vista usa las
+        preferencias persistidas del usuario autenticado. El mapa permite
+        probar perfiles alternativos sin alterar su perfil guardado:
+        ``{"Cultura": 0.9, "Naturaleza": 0.5}``.
+      properties:
+        presupuesto_bob:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        tiempo_horas:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,2})?$
+        punto_partida:
+          type: object
+          properties:
+            coordinates:
+              type: array
+              items:
+                type: number
+              minItems: 2
+              maxItems: 2
+          required:
+          - coordinates
+          example:
+            coordinates:
+            - -68.1486
+            - -16.4966
+        radio_km:
+          type: number
+          format: double
+          maximum: 50.0
+          minimum: 0.1
+          default: 15.0
+        top_k:
+          type: integer
+          maximum: 50
+          minimum: 1
+          default: 10
+        preferencias:
+          type: object
+          additionalProperties:
+            type: string
+            format: decimal
+            pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+        macrodistrito:
+          type: string
+          nullable: true
+          maxLength: 80
+      required:
+      - presupuesto_bob
+      - punto_partida
+      - tiempo_horas
+    RecomendacionResponse:
+      type: object
+      description: Contrato de ``POST /api/recommendations/``.
+      properties:
+        id_consulta:
+          type: string
+          format: uuid
+          nullable: true
+        generado_en:
+          type: string
+          format: date-time
+        total_activos:
+          type: integer
+        total_evaluados:
+          type: integer
+        total_recomendaciones:
+          type: integer
+        radio_km:
+          type: number
+          format: double
+        top_k:
+          type: integer
+        recomendaciones:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecomendacionItem'
+      required:
+      - generado_en
+      - id_consulta
+      - radio_km
+      - recomendaciones
+      - top_k
+      - total_activos
+      - total_evaluados
+      - total_recomendaciones
+    Register:
+      type: object
+      properties:
+        nombre:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        password_confirm:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - nombre
+      - password
+      - password_confirm
+    RolesEnum:
+      enum:
+      - ADMIN
+      - TOURIST
+      type: string
+      description: |-
+        * `ADMIN` - Administrador
+        * `TOURIST` - Turista
+    SubirFoto:
+      type: object
+      description: |-
+        Validación del POST multipart de subida async (issue medios).
+
+        Todo escalar pasa por DRF: UUID válido, tipo permitido y orden
+        entero >= 0. El archivo se valida por separado (extensión y peso).
+      properties:
+        atractivo:
+          type: string
+          format: uuid
+        tipo:
+          allOf:
+          - $ref: '#/components/schemas/SubirFotoTipoEnum'
+          default: imagen
+        orden:
+          type: integer
+          minimum: 0
+          default: 0
+      required:
+      - atractivo
+    SubirFotoTipoEnum:
+      enum:
+      - imagen
+      - video
+      type: string
+      description: |-
+        * `imagen` - imagen
+        * `video` - video
+    Tarifa:
+      type: object
+      properties:
+        id_tarifa:
+          type: integer
+          readOnly: true
+        atractivo:
+          type: string
+          format: uuid
+        tipo_tarifa:
+          type: integer
+        tipo_tarifa_nombre:
+          type: string
+          readOnly: true
+        monto:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        moneda:
+          type: string
+          maxLength: 3
+        vigente_desde:
+          type: string
+          format: date
+          nullable: true
+        vigente_hasta:
+          type: string
+          format: date
+          nullable: true
+        observacion:
+          type: string
+          nullable: true
+          maxLength: 300
+      required:
+      - atractivo
+      - id_tarifa
+      - monto
+      - tipo_tarifa
+      - tipo_tarifa_nombre
+    TipoTarifa:
+      type: object
+      properties:
+        id_tipo_tarifa:
+          type: integer
+          readOnly: true
+        codigo:
+          type: string
+          maxLength: 30
+        nombre:
+          type: string
+          maxLength: 100
+        descripcion:
+          type: string
+          nullable: true
+          maxLength: 255
+      required:
+      - codigo
+      - id_tipo_tarifa
+      - nombre
+    TokenObtainPair:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - email
+      - password
+      - refresh
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    UsuarioList:
+      type: object
+      properties:
+        id_usuario:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+        nombre:
+          type: string
+          readOnly: true
+        activo:
+          type: boolean
+          readOnly: true
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RolesEnum'
+          readOnly: true
+      required:
+      - activo
+      - email
+      - fecha_creacion
+      - id_usuario
+      - nombre
+      - roles
+    UsuarioPreferencia:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        usuario:
+          type: string
+          format: uuid
+        categoria:
+          type: integer
+        categoria_nombre:
+          type: string
+          readOnly: true
+        nivel_interes:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,1}(?:\.\d{0,2})?$
+        fecha_registro:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - categoria
+      - categoria_nombre
+      - fecha_registro
+      - id
+      - usuario
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

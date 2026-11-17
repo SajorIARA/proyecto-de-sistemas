@@ -3,6 +3,8 @@
 #   compose project : turismo-melgarejo
 #   GHCR            : ghcr.io/sajoriara/proyecto-de-sistemas-{db,backend,frontend,proxy}
 #   local (compose) : raisiar/proyecto-de-sistemas-{db,backend,frontend,proxy}
+#   Supabase/Railway: la BD vive en Supabase; la imagen db no se despliega.
+#                     Ver deploy/supabase/README.md y deploy/railway/README.md.
 #
 # Convención de versionado (IMPORTANTE, sincronizada con docker-compose.yml):
 #   - db y proxy: infraestructura estable -> tag `latest`.
@@ -17,8 +19,8 @@ REPO    := raisiar/proyecto-de-sistemas
 GHCR_REPO ?= ghcr.io/sajoriara/proyecto-de-sistemas
 
 BACKEND_CTR  := turismo-melgarejo_backend
-BACKEND_TAG  ?= 1.0.9
-FRONTEND_TAG ?= 1.0.7
+BACKEND_TAG  ?= 1.1.0
+FRONTEND_TAG ?= 1.1.0
 
 BACKEND_IMG  := $(REPO)-backend:$(BACKEND_TAG)
 FRONTEND_IMG := $(REPO)-frontend:$(FRONTEND_TAG)
@@ -56,7 +58,7 @@ build-proxy: ## proxy:latest (nginx)
 	$(DOCKER) build -t $(PROXY_IMG) -f proxy/Dockerfile proxy
 
 ## -------- Publicación --------
-push: build ## Construye, etiqueta y publica las 4 imágenes en GHCR
+push: build ## Construye, etiqueta y publica las imágenes en GHCR (db solo VPS/local)
 	@echo "Requisito: docker login ghcr.io (usuario + token con write:packages)"
 	$(DOCKER) tag $(BACKEND_IMG) $(GHCR_BACKEND_IMG)
 	$(DOCKER) tag $(FRONTEND_IMG) $(GHCR_FRONTEND_IMG)
