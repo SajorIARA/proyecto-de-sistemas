@@ -264,6 +264,89 @@ describe("PreferenciasPage", () => {
     expect(guardarMock).not.toHaveBeenCalled();
   });
 
+  it("exige completar ambas coordenadas si solo se llena una", async () => {
+    sesion();
+
+    renderPagina();
+
+    await esperarCategorias();
+
+    fireEvent.click(screen.getByTestId("chip-categoria-1"));
+    fireEvent.change(screen.getByTestId("input-latitud"), {
+      target: { value: "-16.4966" },
+    });
+
+    await guardarFormulario();
+
+    expect(
+      await screen.findByText(/completa latitud y longitud/i),
+    ).toBeInTheDocument();
+    expect(guardarMock).not.toHaveBeenCalled();
+  });
+
+  it("rechaza coordenadas que no son numéricas", async () => {
+    sesion();
+
+    renderPagina();
+
+    await esperarCategorias();
+
+    fireEvent.click(screen.getByTestId("chip-categoria-1"));
+    fireEvent.change(screen.getByTestId("input-latitud"), {
+      target: { value: "sur" },
+    });
+    fireEvent.change(screen.getByTestId("input-longitud"), {
+      target: { value: "oeste" },
+    });
+
+    await guardarFormulario();
+
+    expect(
+      await screen.findByText(/usa números válidos/i),
+    ).toBeInTheDocument();
+    expect(guardarMock).not.toHaveBeenCalled();
+  });
+
+  it("acepta un presupuesto de 0 BOB y lo envía al backend", async () => {
+    sesion();
+
+    renderPagina();
+
+    await esperarCategorias();
+
+    fireEvent.click(screen.getByTestId("chip-categoria-1"));
+    fireEvent.change(screen.getByTestId("slider-presupuesto"), {
+      target: { value: "0" },
+    });
+    fireEvent.change(screen.getByTestId("input-latitud"), {
+      target: { value: "-16.4966" },
+    });
+    fireEvent.change(screen.getByTestId("input-longitud"), {
+      target: { value: "-68.1486" },
+    });
+
+    // El resumen refleja el borde inferior sin mensajes de error.
+    expect(screen.getAllByText("Bs 0").length).toBeGreaterThan(0);
+    expect(
+      screen.queryByText(/el presupuesto no puede ser negativo/i),
+    ).not.toBeInTheDocument();
+
+    await guardarFormulario();
+
+    await waitFor(() => {
+      expect(guardarMock).toHaveBeenCalledTimes(1);
+    });
+
+    expect(guardarMock).toHaveBeenCalledWith({
+      categorias: [1],
+      consulta: {
+        presupuesto_bob: 0,
+        tiempo_horas: 4,
+        punto_partida: { coordinates: [-68.1486, -16.4966] },
+      },
+    });
+  });
+
   it("envía la duración en horas y el punto de partida válido", async () => {
     sesion();
 

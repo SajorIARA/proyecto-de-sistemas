@@ -68,7 +68,7 @@ flowchart TB
     subgraph CI["Pipeline CI/CD"]
         Checkout[Código + PR a dev]
         Lint[Ruff + Black + MyPy + ESLint]
-        Tests[Django 248 + Vitest 168<br/>makemigrations --check]
+        Tests[Django 248 + Vitest 235<br/>makemigrations --check]
         Build[Docker Build --no-cache]
         Security[Trivy + CodeQL + Gitleaks<br/>pip-audit + pnpm audit]
         E2E[Smoke E2E<br/>curl / + /api/health/]

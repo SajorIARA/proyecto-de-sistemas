@@ -81,6 +81,10 @@ describe("validarPreferencias", () => {
     ).toMatch(/máximo/i);
   });
 
+  it("acepta 0 BOB porque el backend permite presupuesto >= 0", () => {
+    expect(validarPreferencias(valores({ presupuestoBob: 0 }))).toEqual({});
+  });
+
   it("rechaza duraciones fuera de rango", () => {
     expect(
       validarPreferencias(valores({ duracionValor: 0, duracionUnidad: "horas" }))
