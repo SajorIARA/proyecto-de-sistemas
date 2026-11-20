@@ -139,7 +139,6 @@ export function AsistenteChat({
       const [respuesta] = await Promise.all([
         obtenerRespuestaAsistente({
           pregunta: limpio,
-          mensajes: historial,
           contexto: { recomendaciones, perfil },
         }),
         esperar(ASISTENTE.pausaPensandoMs),
