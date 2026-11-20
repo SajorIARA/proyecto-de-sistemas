@@ -1,24 +1,20 @@
 /**
  * Adaptador del chat del asistente.
  *
- * Si existe `VITE_ASISTENTE_CHAT_URL`, se envía la conversación al endpoint
- * del RAG (`{ mensajes, contexto }`) y se usa su respuesta. Mientras el
- * backend no lo exponga —o si el endpoint falla— se responde con el motor
- * local determinista, de modo que el chat nunca queda bloqueado.
+ * Se consulta el endpoint RAG con la pregunta del usuario y se usa su
+ * respuesta vectorizada. Si el servicio falla momentáneamente, se conserva
+ * el motor local determinista como respaldo para no bloquear el chat.
  *
- * Contrato esperado del endpoint futuro:
+ * Contrato del endpoint RAG:
  *
  *   POST <VITE_ASISTENTE_CHAT_URL>
- *   { mensajes: [{ rol, texto }], contexto: { recomendaciones, perfil } }
- *   → { respuesta: string } | { texto: string } | { message: string }
+ *   { pregunta: string, top_k: number }
+ *   → { respuesta: string, citas: [] }
  */
 
 import { api } from "../../../api/http";
 import { ASISTENTE } from "../../../config/recomendaciones";
-import type {
-  ContextoAsistente,
-  MensajeAsistente,
-} from "../../../types/recomendaciones";
+import type { ContextoAsistente } from "../../../types/recomendaciones";
 import { responderAsistente } from "../utils/asistente";
 
 function extraerTexto(data: unknown): string | null {
@@ -42,33 +38,29 @@ function extraerTexto(data: unknown): string | null {
 /**
  * Resuelve la respuesta del asistente para el último mensaje del usuario.
  *
- * `mensajes` incluye todo el historial (sin el mensaje que se está
- * respondiendo en la UI) y `pregunta` es el texto recién enviado.
+ * `pregunta` es el texto recién enviado. El contexto se conserva para el
+ * respaldo local si el RAG no está disponible.
  */
 export async function obtenerRespuestaAsistente({
   pregunta,
-  mensajes,
   contexto,
 }: {
   pregunta: string;
-  mensajes: MensajeAsistente[];
   contexto: ContextoAsistente;
 }): Promise<string> {
-  if (ASISTENTE.endpoint) {
-    try {
-      const { data } = await api.post(ASISTENTE.endpoint, {
-        mensajes: mensajes.map(({ rol, texto }) => ({ rol, texto })),
-        contexto,
-      });
-      const texto = extraerTexto(data);
+  try {
+    const { data } = await api.post(ASISTENTE.endpoint, {
+      pregunta,
+      top_k: ASISTENTE.topK,
+    });
+    const texto = extraerTexto(data);
 
-      if (texto) {
-        return texto;
-      }
-    } catch {
-      // El motor local mantiene el chat operativo si el endpoint aún no
-      // está desplegado o falla momentáneamente.
+    if (texto) {
+      return texto;
     }
+  } catch {
+    // El motor local mantiene el chat operativo si el RAG falla
+    // momentáneamente.
   }
 
   return responderAsistente(pregunta, contexto);

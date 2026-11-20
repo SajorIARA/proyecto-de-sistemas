@@ -5,10 +5,9 @@
  * endpoint empieza sin el prefijo `/api` y resuelve contra
  * `/api/recomendaciones/recomendar/` en el proxy de nginx.
  *
- * El chat todavía no tiene endpoint propio en el backend (issue #28). La
- * capa del cliente puede apuntar a uno futuro con `VITE_ASISTENTE_CHAT_URL`;
- * mientras no exista, responde un motor local determinista con el contexto
- * del ranking y del perfil.
+ * El asistente consulta el RAG de conocimiento por defecto. Una variable de
+ * entorno permite reemplazar la ruta en despliegues donde el servicio se
+ * publique en otra ubicación.
  */
 
 export const RECOMENDACIONES_ENDPOINTS = {
@@ -47,8 +46,12 @@ export const TRASLADO = {
  * bloquear la interfaz.
  */
 export const ASISTENTE = {
-  /** Endpoint opcional del RAG cuando el backend lo exponga. */
-  endpoint: import.meta.env.VITE_ASISTENTE_CHAT_URL?.trim() || "",
+  /** Endpoint RAG, relativo a `API_BASE_URL` (`/api`). */
+  endpoint:
+    import.meta.env.VITE_ASISTENTE_CHAT_URL?.trim() ||
+    "/conocimiento/consultar/",
+  /** Máximo de fragmentos que el RAG recupera para elaborar la respuesta. */
+  topK: 4,
   pausaPensandoMs: 620,
   velocidadReveladoMs: 16,
   caracteresPorPaso: 3,
