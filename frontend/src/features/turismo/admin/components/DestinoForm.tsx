@@ -280,7 +280,7 @@ export function DestinoForm({
             COORDENADAS
         ========================================================== */}
         <div>
-          <p className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[#8D4F32]">
+          <p className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#8D4F32]">
             Ubicación
             <span className="ml-1 text-[#9A5B3C]" aria-hidden="true">
               *
@@ -342,7 +342,7 @@ export function DestinoForm({
             CATEGORÍAS
         ========================================================== */}
         <fieldset>
-          <legend className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[#8D4F32]">
+          <legend className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#8D4F32]">
             Categorías
           </legend>
 
@@ -359,7 +359,7 @@ export function DestinoForm({
               </p>
             )
           ) : (
-            <div className="mt-3 flex flex-wrap gap-2.5">
+            <div className="mt-3 flex flex-wrap gap-2">
               {categorias.map((categoria) => {
                 const marcada = valores.categorias.includes(categoria.id_categoria);
                 const id = `${idGrupo}-cat-${categoria.id_categoria}`;
@@ -368,10 +368,10 @@ export function DestinoForm({
                   <label
                     key={categoria.id_categoria}
                     htmlFor={id}
-                    className={`cursor-pointer rounded-full border px-4 py-2 text-xs font-black transition ${
+                    className={`cursor-pointer border px-3.5 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition ${
                       marcada
-                        ? "border-[#2F4B3B] bg-[#2F4B3B] text-[#FFFDF8]"
-                        : "border-[#5B3A29]/15 bg-[#F3EBDD]/60 text-[#514B43] hover:border-[#2F4B3B]/40"
+                        ? "border-[#233128] bg-[#233128] text-[#FFFDF8]"
+                        : "border-[#5B3A29]/15 bg-[#FFFDF8] text-[#514B43] hover:border-[#9A5B3C]/45 hover:text-[#8D4F32]"
                     }`}
                   >
                     <input
@@ -436,7 +436,7 @@ export function DestinoForm({
           <div className="flex items-end">
             <label
               htmlFor={`${idGrupo}-activo`}
-              className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[#5B3A29]/15 bg-[#F3EBDD]/60 px-4 py-3.5"
+              className="flex cursor-pointer items-start gap-3 border border-[#5B3A29]/20 bg-[#FFFDF8] px-4 py-3.5"
             >
               <input
                 id={`${idGrupo}-activo`}
@@ -467,7 +467,7 @@ export function DestinoForm({
       {error && (
         <p
           role="alert"
-          className="rounded-2xl border border-[#9A3B2E]/25 bg-[#9A3B2E]/[0.07] px-4 py-3 text-sm font-semibold text-[#9A3B2E]"
+          className="border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-4 py-3 text-sm font-semibold text-[#713A2A]"
         >
           {error}
         </p>
@@ -479,17 +479,18 @@ export function DestinoForm({
         </p>
       )}
 
-      <div className="flex flex-wrap items-center gap-4 border-t border-[#5B3A29]/[0.08] pt-6">
+      <div className="flex flex-wrap items-center gap-4 border-t border-[#5B3A29]/15 pt-6">
         <button
           type="submit"
           disabled={pendiente || pendienteCarga}
-          className="inline-flex items-center gap-2.5 rounded-full bg-[#2F4B3B] px-6 py-3 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128] disabled:cursor-not-allowed disabled:opacity-45"
+          className="inline-flex items-center gap-2.5 bg-[#233128] px-5 py-3.5 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFFDF8] transition hover:bg-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-45"
         >
           {pendiente
             ? "Guardando…"
             : editando
               ? "Guardar cambios"
               : "Crear destino"}
+          <span aria-hidden="true">→</span>
         </button>
 
         <button
@@ -504,7 +505,7 @@ export function DestinoForm({
             }
           }}
           disabled={pendiente}
-          className="rounded-full border border-[#2F4B3B]/25 px-6 py-3 text-sm font-black text-[#2F4B3B] transition hover:border-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-45"
+          className="border border-[#5B3A29]/20 px-5 py-3.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#514B43] transition hover:border-[#9A5B3C]/45 hover:text-[#8D4F32] disabled:cursor-not-allowed disabled:opacity-45"
         >
           Descartar cambios
         </button>

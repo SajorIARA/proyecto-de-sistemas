@@ -257,25 +257,31 @@ export function PreferenciasForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="overflow-hidden rounded-[2rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] shadow-[0_20px_60px_rgba(72,55,38,0.08)]"
+      className="overflow-hidden border border-[#5B3A29]/15 bg-[#FFFDF8]"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#5B3A29]/[0.08] px-6 py-5 sm:px-8">
-        <div className="flex items-center gap-3">
-          <span className="h-px w-8 bg-[#9A5B3C]" aria-hidden="true" />
-          <h2 className="text-lg font-black tracking-tight text-[#233128]">
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#5B3A29]/15 px-5 py-5 sm:px-7">
+        <div>
+          <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9A5B3C]">
+            01 / Perfil de viaje
+          </p>
+
+          <h2 className="mt-1.5 font-display text-2xl font-black tracking-[-0.02em] text-[#233128]">
             Tus preferencias de viaje
           </h2>
         </div>
 
         {/* Indicador de respaldo local */}
-        <p aria-live="polite" className="text-xs font-semibold text-[#746D63]">
+        <p
+          aria-live="polite"
+          className="max-w-sm font-mono text-[8px] uppercase leading-5 tracking-[0.14em] text-[#8A8177] sm:text-right"
+        >
           {hayBorrador && guardadoEn
             ? `Borrador guardado en este navegador a las ${horaCorta(guardadoEn)}.`
             : "Completa el formulario y guarda para aplicarlo a tus recomendaciones."}
         </p>
       </div>
 
-      <div className="space-y-9 px-6 py-7 sm:px-8">
+      <div className="space-y-9 px-5 py-7 sm:px-7">
         {/* 1. Categorías */}
         <section>
           <header className="mb-4">
@@ -346,8 +352,8 @@ export function PreferenciasForm() {
         </section>
 
         {/* Resumen */}
-        <div className="rounded-2xl border border-[#5B3A29]/[0.08] bg-[#F3EBDD]/50 px-5 py-4">
-          <p className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[#8D4F32]">
+        <div className="border border-[#5B3A29]/15 bg-[#F3EBDD]/45 px-5 py-4">
+          <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#8D4F32]">
             Resumen
           </p>
 
@@ -386,7 +392,7 @@ export function PreferenciasForm() {
         {aviso && (
           <p
             role="alert"
-            className="rounded-2xl border border-[#9A3B2E]/25 bg-[#9A3B2E]/[0.07] px-4 py-3 text-sm font-semibold text-[#9A3B2E]"
+            className="border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-4 py-3 text-sm font-semibold leading-6 text-[#713A2A]"
           >
             {aviso}
           </p>
@@ -396,7 +402,7 @@ export function PreferenciasForm() {
         {error && (
           <p
             role="alert"
-            className="rounded-2xl border border-[#9A3B2E]/25 bg-[#9A3B2E]/[0.07] px-4 py-3 text-sm font-semibold text-[#9A3B2E]"
+            className="border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-4 py-3 text-sm font-semibold leading-6 text-[#713A2A]"
           >
             {error}
           </p>
@@ -406,7 +412,7 @@ export function PreferenciasForm() {
         {exito && (
           <p
             role="status"
-            className="rounded-2xl border border-[#2F4B3B]/25 bg-[#2F4B3B]/[0.07] px-4 py-3 text-sm font-semibold text-[#2F4B3B]"
+            className="border-l-2 border-[#2F4B3B]/45 bg-[#EDF2E9] px-4 py-3 text-sm font-semibold leading-6 text-[#304A38]"
           >
             Preferencias guardadas. Tus recomendaciones ya las tienen en cuenta.
           </p>
@@ -417,7 +423,7 @@ export function PreferenciasForm() {
           <div
             role="status"
             aria-live="polite"
-            className="flex items-center gap-3 rounded-2xl border border-[#2F4B3B]/20 bg-[#2F4B3B]/[0.06] px-4 py-3 text-sm font-semibold text-[#2F4B3B]"
+            className="flex items-center gap-3 border-l-2 border-[#2F4B3B]/35 bg-[#EDF2E9]/70 px-4 py-3 text-sm font-semibold text-[#304A38]"
           >
             <span
               aria-hidden="true"
@@ -432,21 +438,22 @@ export function PreferenciasForm() {
           <button
             type="submit"
             disabled={pendiente || Boolean(errorCategorias)}
-            className="inline-flex items-center gap-2.5 rounded-full bg-[#2F4B3B] px-6 py-3 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128] disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex items-center gap-3 bg-[#233128] px-5 py-3.5 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFFDF8] transition hover:bg-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-45"
           >
             {pendiente ? "Guardando…" : "Guardar preferencias"}
+            <span aria-hidden="true">→</span>
           </button>
 
           <button
             type="button"
             onClick={descartarTodo}
             disabled={pendiente || !hayBorrador}
-            className="rounded-full border border-[#5B3A29]/20 px-6 py-3 text-sm font-black text-[#514B43] transition hover:border-[#9A5B3C]/45 hover:text-[#8D4F32] disabled:cursor-not-allowed disabled:opacity-45"
+            className="border border-[#5B3A29]/20 px-5 py-3.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#514B43] transition hover:border-[#9A5B3C]/45 hover:text-[#8D4F32] disabled:cursor-not-allowed disabled:opacity-45"
           >
             Descartar borrador
           </button>
 
-          {hayErrores && (
+          {hayErrores && tocados.size > 0 && (
             <p className="text-xs font-semibold text-[#9A3B2E]">
               Faltan datos por corregir.
             </p>

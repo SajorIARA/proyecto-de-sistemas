@@ -78,16 +78,22 @@ export function PasswordForm() {
   }
 
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] shadow-[0_20px_60px_rgba(72,55,38,0.08)]">
-      <div className="flex items-center gap-3 border-b border-[#5B3A29]/[0.08] px-6 py-5 sm:px-8">
-        <span className="h-px w-8 bg-[#9A5B3C]" aria-hidden="true" />
+    <section className="overflow-hidden border border-[#5B3A29]/20 bg-[#FFFDF8]">
+      <div className="border-b border-[#5B3A29]/15 px-5 py-5 pr-16 sm:px-7 sm:pr-16">
+        <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9A5B3C]">
+          Formulario · Seguridad
+        </p>
 
-        <h2 className="text-lg font-black tracking-tight text-[#233128]">
+        <h2 className="mt-1.5 font-display text-2xl font-black tracking-[-0.02em] text-[#233128]">
           Seguridad de la cuenta
         </h2>
       </div>
 
-      <form onSubmit={handleSubmit} noValidate className="space-y-6 px-6 py-7 sm:px-8">
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="space-y-6 px-5 py-6 sm:px-7"
+      >
         {CAMPOS.map((campo) => {
           const mensajes = apiError?.mensajesDe(campo.name) ?? [];
           const idError = `${campo.name}-error`;
@@ -96,7 +102,7 @@ export function PasswordForm() {
             <div key={campo.name}>
               <label
                 htmlFor={campo.name}
-                className="block text-[0.65rem] font-black uppercase tracking-[0.18em] text-[#8D4F32]"
+                className="mb-2 block font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-[#5C574E]"
               >
                 {campo.label}
               </label>
@@ -112,24 +118,29 @@ export function PasswordForm() {
                 }
                 aria-invalid={mensajes.length > 0}
                 aria-describedby={mensajes.length > 0 ? idError : undefined}
-                className={`mt-2.5 w-full rounded-2xl border bg-[#F3EBDD]/60 px-4 py-3 text-sm text-[#263029] transition placeholder:text-[#8A8177] ${
+                className={`w-full rounded-none border bg-[#FFFDF8] px-3.5 py-3 text-[0.95rem] font-medium text-[#242B25] caret-[#9A5B3C] outline-none transition placeholder:font-normal placeholder:text-[#968C7E] ${
                   mensajes.length > 0
-                    ? "border-[#9A5B3C] focus:border-[#9A5B3C]"
-                    : "border-[#5B3A29]/15 focus:border-[#2F4B3B]"
+                    ? "border-[#9A5B3C]/60 focus:border-[#9A5B3C] focus:ring-1 focus:ring-[#9A5B3C]/20"
+                    : "border-[#5B3A29]/25 hover:border-[#2F4B3B]/55 focus:border-[#2F4B3B] focus:ring-1 focus:ring-[#2F4B3B]/25"
                 }`}
               />
 
               {campo.hint && mensajes.length === 0 && (
-                <p className="mt-2 text-xs text-[#746D63]">{campo.hint}</p>
+                <p className="mt-1.5 text-[11px] leading-5 text-[#8A8177]">
+                  {campo.hint}
+                </p>
               )}
 
               {mensajes.length > 0 && (
                 <ul
                   id={idError}
-                  className="mt-2 space-y-1 text-xs font-semibold text-[#9A3B2E]"
+                  className="mt-2 border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-3 py-2 text-[11px] font-semibold leading-5 text-[#713A2A]"
                 >
                   {mensajes.map((mensaje) => (
-                    <li key={mensaje}>{mensaje}</li>
+                    <li key={mensaje} className="flex items-start gap-1.5">
+                      <span aria-hidden="true">!</span>
+                      {mensaje}
+                    </li>
                   ))}
                 </ul>
               )}
@@ -141,8 +152,9 @@ export function PasswordForm() {
         {error && (
           <p
             role="alert"
-            className="rounded-2xl border border-[#9A3B2E]/25 bg-[#9A3B2E]/[0.07] px-4 py-3 text-sm font-semibold text-[#9A3B2E]"
+            className="flex items-start gap-2 border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-3 py-2.5 text-xs font-semibold leading-6 text-[#713A2A]"
           >
+            <span aria-hidden="true">!</span>
             {error}
           </p>
         )}
@@ -151,23 +163,30 @@ export function PasswordForm() {
         {exito && (
           <p
             role="status"
-            className="rounded-2xl border border-[#2F4B3B]/25 bg-[#2F4B3B]/[0.07] px-4 py-3 text-sm font-semibold text-[#2F4B3B]"
+            className="flex items-start gap-2 border-l-2 border-[#2F4B3B]/45 bg-[#EDF2E9] px-3 py-2.5 text-xs font-semibold leading-6 text-[#304A38]"
           >
+            <span aria-hidden="true">✓</span>
             Contraseña actualizada. Tu sesión sigue activa.
           </p>
         )}
 
-        <div className="flex flex-wrap items-center gap-4 pt-1">
+        <div className="border-t border-[#5B3A29]/15 pt-5">
           <button
             type="submit"
             disabled={pendiente || vacio}
-            className="inline-flex items-center gap-2.5 rounded-full bg-[#2F4B3B] px-6 py-3 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128] disabled:cursor-not-allowed disabled:opacity-45"
+            className="group flex w-full items-center justify-between gap-4 bg-[#233128] px-5 py-4 text-left font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFFDF8] transition hover:bg-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-45"
           >
             {pendiente ? "Guardando…" : "Actualizar contraseña"}
+            <span
+              aria-hidden="true"
+              className="font-display text-base transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none"
+            >
+              {pendiente ? "…" : "→"}
+            </span>
           </button>
 
           {vacio && (
-            <p className="text-xs text-[#746D63]">
+            <p className="mt-3 font-mono text-[8px] uppercase tracking-[0.16em] text-[#968C7E]">
               Completa los tres campos para continuar.
             </p>
           )}

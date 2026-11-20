@@ -3,9 +3,9 @@
  *
  * Cuatro fotografías se alternan en crossfade (nunca video) con un
  * avance automático que se pausa al interactuar y se desactiva si el
- * usuario prefiere menos movimiento. El titular se mantiene estable
- * para conservar el mensaje de marca; lo que cambia es la imagen y la
- * etiqueta de la experiencia activa.
+ * usuario prefiere menos movimiento. La composición imita la cabecera
+ * de una guía impresa: línea de datos, titular a sangre y un índice
+ * numerado para recorrer las escenas.
  */
 
 import { useEffect, useState } from "react";
@@ -71,7 +71,7 @@ export function HeroPrincipal() {
     <section
       id="inicio"
       aria-label="Presentación de Turismo La Paz"
-      className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-[#121A14] text-[#FFFDF8]"
+      className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-[#0F150F] text-[#FFFDF8]"
     >
       <div className="absolute inset-0 -z-10">
         {DIAPOSITIVAS.map((item, indice) => (
@@ -97,55 +97,78 @@ export function HeroPrincipal() {
           </div>
         ))}
 
-        <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(9,14,10,0.94)_0%,rgba(9,14,10,0.76)_38%,rgba(9,14,10,0.3)_72%,rgba(9,14,10,0.62)_100%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[#0B110C] via-[#0B110C]/50 to-transparent" />
+        <div className="absolute inset-0 bg-[linear-gradient(105deg,rgba(10,15,11,0.92)_0%,rgba(10,15,11,0.68)_42%,rgba(10,15,11,0.14)_78%,rgba(10,15,11,0.55)_100%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0B110C] via-[#0B110C]/55 to-transparent" />
       </div>
 
-      <div className="contenedor-sitio flex flex-1 flex-col justify-end pb-10 pt-32 sm:pt-36 lg:pb-14">
-        <div className="max-w-4xl">
-          <p className="portada-aparece inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[0.62rem] font-black uppercase tracking-[0.24em] text-[#F1D79D] backdrop-blur-md">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#E8C16A]" />
-            La Paz · Bolivia
-          </p>
+      <p className="pointer-events-none absolute right-5 top-1/2 hidden -translate-y-1/2 [writing-mode:vertical-rl] font-mono text-[9px] uppercase tracking-[0.42em] text-[#FFFDF8]/35 lg:block">
+        Altiplano boliviano · 3.640 m
+      </p>
 
-          <h1 className="portada-aparece font-display mt-6 text-[clamp(2.9rem,7.2vw,6.6rem)] font-black leading-[0.92] tracking-[-0.045em] [animation-delay:80ms]">
-            Explora{" "}
-            <em className="font-editorial font-normal italic text-[#E8C16A]">
-              La Paz
-            </em>{" "}
-            como nunca antes.
-          </h1>
+      <div className="contenedor-sitio relative flex flex-1 flex-col">
+        <div className="mt-[86px] flex items-center justify-between gap-6 border-b border-white/15 pb-4 font-mono text-[9px] uppercase tracking-[0.18em] text-[#FFFDF8]/55 sm:text-[10px] sm:tracking-[0.26em] lg:mt-[104px]">
+          <span>
+            <span className="hidden sm:inline">Guía de ciudad · </span>
+            La Paz, Bolivia
+          </span>
+          <span className="hidden md:inline">16°30′ S · 68°09′ O</span>
+          <span className="hidden text-[#E8C16A] sm:inline">
+            3.640 m s. n. m.
+          </span>
+          <span className="text-[#E8C16A] sm:hidden">3.640 m</span>
+        </div>
 
-          <p className="portada-aparece mt-6 max-w-xl text-base leading-7 text-[#F3EBDD]/75 [animation-delay:160ms] sm:text-lg">
-            Cultura, miradores, gastronomía y paisajes de altura en una ciudad
-            donde los Andes, la historia y la vida cotidiana se encuentran.
-          </p>
+        <div className="flex flex-1 flex-col justify-end pb-14 pt-20 sm:pb-16">
+          <div className="max-w-5xl">
+            <p className="portada-aparece font-mono text-[10px] uppercase tracking-[0.32em] text-[#E8C16A]">
+              Bienvenido a la hoyada
+            </p>
 
-          <div className="portada-aparece mt-9 flex flex-wrap items-center gap-3 [animation-delay:240ms]">
-            <Link
-              to={isAuthenticated ? "/mi-cuenta" : "/registro"}
-              className="group inline-flex items-center gap-3 rounded-full bg-[#E8C16A] px-6 py-3.5 text-sm font-black text-[#1B241D] transition hover:bg-[#F3D68F]"
-            >
-              Comenzar ahora
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1B241D] text-[#E8C16A] transition-transform group-hover:translate-x-0.5">
-                <Icono nombre="flecha" className="h-4 w-4" />
+            <h1 className="portada-aparece font-display mt-5 text-[clamp(3rem,8vw,7rem)] font-black leading-[0.88] tracking-[-0.05em] [animation-delay:80ms]">
+              La Paz no se visita,{" "}
+              <span className="block">
+                <em className="font-editorial font-normal italic text-[#E8C16A]">
+                  se sube.
+                </em>
               </span>
-            </Link>
+            </h1>
 
-            <Link
-              to="/destinos"
-              className="inline-flex items-center gap-2.5 rounded-full border border-white/25 bg-white/5 px-6 py-3.5 text-sm font-bold text-[#FFFDF8] backdrop-blur-md transition hover:bg-white/15"
-            >
-              <Icono nombre="brujula" className="h-4 w-4" />
-              Explorar catálogo
-            </Link>
+            <div className="portada-aparece mt-9 grid gap-8 border-t border-white/15 pt-7 [animation-delay:160ms] lg:grid-cols-[minmax(0,30rem)_auto] lg:items-end lg:justify-between">
+              <p className="text-base leading-7 text-[#F3EBDD]/75 sm:text-lg">
+                Museos coloniales, mercados de altura y miradores sobre la
+                ciudad. Elige por zona, categoría o precio y arma tu ruta.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-x-7 gap-y-4">
+                <Link
+                  to={isAuthenticated ? "/mi-cuenta" : "/registro"}
+                  className="group inline-flex items-center gap-3 rounded-full bg-[#E8C16A] px-6 py-3.5 text-sm font-black text-[#1B241D] transition hover:bg-[#F3D68F]"
+                >
+                  Comenzar ahora
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1B241D] text-[#E8C16A] transition-transform group-hover:translate-x-0.5">
+                    <Icono nombre="flecha" className="h-4 w-4" />
+                  </span>
+                </Link>
+
+                <Link
+                  to="/destinos"
+                  className="group inline-flex items-center gap-2 border-b border-white/35 pb-1 text-sm font-bold text-[#FFFDF8] transition hover:border-[#E8C16A] hover:text-[#E8C16A]"
+                >
+                  Ver el catálogo
+                  <Icono
+                    nombre="flecha"
+                    className="h-4 w-4 transition-transform group-hover:translate-x-1"
+                  />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="relative border-t border-white/10 bg-[#0B110C]/45 backdrop-blur-md">
-        <div className="contenedor-sitio flex flex-col gap-5 py-5 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[0.62rem] font-black uppercase tracking-[0.22em] text-[#FFFDF8]/55">
+      <div className="relative border-t border-white/15 bg-[#0B110C]/55 backdrop-blur-md">
+        <div className="contenedor-sitio grid gap-4 py-5 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-10">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#FFFDF8]/50">
             <span className="text-[#E8C16A]">
               {String(activa + 1).padStart(2, "0")}
             </span>{" "}
@@ -154,7 +177,7 @@ export function HeroPrincipal() {
           </p>
 
           <ul
-            className="sin-scrollbar flex gap-2 overflow-x-auto"
+            className="sin-scrollbar grid grid-cols-2 gap-x-6 gap-y-4 sm:flex sm:items-center sm:justify-end sm:gap-5"
             onMouseEnter={() => setPausado(true)}
             onMouseLeave={() => setPausado(false)}
             onFocus={() => setPausado(true)}
@@ -164,7 +187,7 @@ export function HeroPrincipal() {
               const seleccionada = indice === activa;
 
               return (
-                <li key={item.id} className="min-w-[8.5rem] flex-1">
+                <li key={item.id} className="min-w-0 sm:min-w-[7.5rem]">
                   <button
                     type="button"
                     onClick={() => setActiva(indice)}
@@ -173,7 +196,17 @@ export function HeroPrincipal() {
                   >
                     <span
                       className={[
-                        "block text-xs font-bold transition",
+                        "block font-mono text-[9px] tracking-[0.2em] transition",
+                        seleccionada
+                          ? "text-[#E8C16A]"
+                          : "text-[#FFFDF8]/35 group-hover:text-[#FFFDF8]/60",
+                      ].join(" ")}
+                    >
+                      {String(indice + 1).padStart(2, "0")}
+                    </span>
+                    <span
+                      className={[
+                        "mt-1 block text-xs font-bold transition",
                         seleccionada
                           ? "text-[#FFFDF8]"
                           : "text-[#FFFDF8]/50 group-hover:text-[#FFFDF8]/80",
@@ -181,10 +214,10 @@ export function HeroPrincipal() {
                     >
                       {item.etiqueta}
                     </span>
-                    <span className="mt-2 block h-[2px] w-full overflow-hidden rounded-full bg-white/15">
+                    <span className="mt-2 block h-px w-full overflow-hidden bg-white/15">
                       <span
                         className={[
-                          "block h-full rounded-full transition-all duration-500",
+                          "block h-full transition-all duration-500",
                           seleccionada
                             ? "w-full bg-[#E8C16A]"
                             : "w-0 bg-white/40 group-hover:w-1/3",

@@ -9,6 +9,7 @@
  */
 
 import { useState } from "react";
+import { Icono } from "../../../components/site/Iconos";
 import {
   anguloDe,
   gradienteDe,
@@ -62,13 +63,13 @@ export function DestinoImagen({
         />
 
         <span
-          className="pointer-events-none absolute inset-0 flex items-center justify-center text-[clamp(2.5rem,9cqw,4.5rem)] font-black text-white/25"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center text-white/25"
           aria-hidden="true"
         >
-          ⛰
+          <Icono nombre="montana" className="h-[clamp(2.5rem,9cqw,4.5rem)] w-[clamp(2.5rem,9cqw,4.5rem)]" />
         </span>
 
-        <span className="relative z-10 w-full bg-gradient-to-t from-black/55 to-transparent px-5 pb-4 pt-14 text-[0.6rem] font-black uppercase tracking-[0.22em] text-white/75">
+        <span className="relative z-10 w-full bg-gradient-to-t from-[#101710]/60 to-transparent px-5 pb-4 pt-14 font-mono text-[9px] uppercase tracking-[0.22em] text-[#F3EBDD]/75">
           Fotografía pendiente
         </span>
       </div>

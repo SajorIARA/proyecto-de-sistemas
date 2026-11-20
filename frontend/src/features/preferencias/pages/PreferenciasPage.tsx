@@ -12,9 +12,11 @@ import { PreferenciasForm } from "../components/PreferenciasForm";
 
 function Pista({ titulo, detalle }: { titulo: string; detalle: string }) {
   return (
-    <li className="rounded-2xl border border-[#5B3A29]/[0.08] bg-[#F3EBDD]/50 px-4 py-3.5">
-      <p className="text-xs font-black text-[#233128]">{titulo}</p>
-      <p className="mt-1 text-xs leading-6 text-[#746D63]">{detalle}</p>
+    <li className="border-l-2 border-[#C6923B]/50 bg-[#F3EBDD]/45 px-4 py-3.5">
+      <p className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[#233128]">
+        {titulo}
+      </p>
+      <p className="mt-1.5 text-xs leading-6 text-[#746D63]">{detalle}</p>
     </li>
   );
 }
@@ -29,10 +31,13 @@ export function PreferenciasPage() {
       <div className="grid gap-6 lg:grid-cols-[1.55fr_0.85fr] lg:items-start">
         <PreferenciasForm />
 
-        <aside className="space-y-4 rounded-[2rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] px-6 py-7 shadow-[0_20px_60px_rgba(72,55,38,0.08)] sm:px-7">
-          <div className="flex items-center gap-3">
-            <span className="h-px w-8 bg-[#9A5B3C]" aria-hidden="true" />
-            <h2 className="text-lg font-black tracking-tight text-[#233128]">
+        <aside className="space-y-5 border border-[#5B3A29]/15 bg-[#FFFDF8] px-5 py-6 sm:px-7">
+          <div>
+            <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9A5B3C]">
+              02 / Notas al margen
+            </p>
+
+            <h2 className="mt-1.5 font-display text-2xl font-black tracking-[-0.02em] text-[#233128]">
               Cómo lo usamos
             </h2>
           </div>
@@ -64,12 +69,12 @@ export function PreferenciasPage() {
 
           <Link
             to="/mi-cuenta/recomendaciones"
-            className="group flex items-center justify-between gap-3 rounded-2xl bg-[#2F4B3B] px-5 py-4 text-sm font-black text-[#FFFDF8] transition hover:bg-[#3C5C48] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#2F4B3B]"
+            className="group flex items-center justify-between gap-3 bg-[#233128] px-5 py-4 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFFDF8] transition hover:bg-[#2F4B3B] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#233128]"
           >
             Ver mis recomendaciones
             <span
               aria-hidden="true"
-              className="transition-transform group-hover:translate-x-1"
+              className="font-display text-base transition-transform group-hover:translate-x-1"
             >
               →
             </span>

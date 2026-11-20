@@ -35,18 +35,18 @@ function Esqueleto() {
         <div
           key={indice}
           aria-hidden="true"
-          className="rounded-[1.75rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] p-6"
+          className="border border-[#5B3A29]/15 bg-[#FFFDF8] p-6"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="w-full space-y-3">
-              <div className="h-5 w-20 animate-pulse rounded-full bg-[#E9DFC9]" />
-              <div className="h-7 w-3/5 animate-pulse rounded-lg bg-[#E9DFC9]" />
-              <div className="h-4 w-2/5 animate-pulse rounded-full bg-[#F0E7D8]" />
+              <div className="h-5 w-20 animate-pulse bg-[#E9DFC9]" />
+              <div className="h-7 w-3/5 animate-pulse bg-[#E9DFC9]" />
+              <div className="h-4 w-2/5 animate-pulse bg-[#F0E7D8]" />
             </div>
-            <div className="h-24 w-24 shrink-0 animate-pulse rounded-full bg-[#F0E7D8]" />
+            <div className="h-24 w-24 shrink-0 animate-pulse bg-[#F0E7D8]" />
           </div>
 
-          <div className="mt-6 h-24 animate-pulse rounded-2xl bg-[#F3EBDD]" />
+          <div className="mt-6 h-24 animate-pulse bg-[#F3EBDD]" />
         </div>
       ))}
     </div>
@@ -75,9 +75,9 @@ export function ListaRecomendaciones({
     return (
       <div
         role="alert"
-        className="rounded-[1.75rem] border border-[#9A5B3C]/25 bg-[#9A5B3C]/[0.06] px-6 py-8 text-center"
+        className="border border-[#9A5B3C]/25 border-t-2 border-t-[#9A5B3C] bg-[#FFFDF8] px-6 py-8 text-center"
       >
-        <p className="text-base font-black text-[#8D4F32]">
+        <p className="font-display text-xl font-black tracking-[-0.02em] text-[#8D4F32]">
           No pudimos calcular tus recomendaciones
         </p>
         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#6F655B]">
@@ -88,7 +88,7 @@ export function ListaRecomendaciones({
           type="button"
           onClick={onActualizar}
           disabled={pendiente}
-          className="mt-5 rounded-full bg-[#2F4B3B] px-6 py-3 text-sm font-black text-[#FFFDF8] transition hover:bg-[#3C5C48] disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-5 bg-[#233128] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFFDF8] transition hover:bg-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-55"
         >
           {pendiente ? "Reintentando…" : "Reintentar"}
         </button>
@@ -102,8 +102,8 @@ export function ListaRecomendaciones({
 
   if (!resultado) {
     return (
-      <div className="rounded-[1.75rem] border border-dashed border-[#5B3A29]/20 bg-[#FFFDF8]/60 px-6 py-10 text-center">
-        <p className="text-base font-black text-[#233128]">
+      <div className="border border-dashed border-[#5B3A29]/20 bg-[#FFFDF8]/60 px-6 py-10 text-center">
+        <p className="font-display text-xl font-black tracking-[-0.02em] text-[#233128]">
           Todavía no calculamos tu ranking
         </p>
         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#746D63]">
@@ -120,15 +120,19 @@ export function ListaRecomendaciones({
     <section aria-labelledby="titulo-top-k" className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
+          <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9A5B3C]">
+            02 / Resultados
+          </p>
+
           <h2
             id="titulo-top-k"
-            className="text-xl font-black tracking-tight text-[#233128]"
+            className="mt-1 font-display text-2xl font-black tracking-[-0.02em] text-[#233128]"
           >
             Tu Top-K personalizado
           </h2>
 
           <p
-            className="mt-1 text-xs font-semibold text-[#746D63]"
+            className="mt-1 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-[#8A8177]"
             aria-live="polite"
           >
             {recomendaciones.length === 0
@@ -144,12 +148,12 @@ export function ListaRecomendaciones({
 
         {pendiente && (
           <p
-            className="inline-flex items-center gap-2 rounded-full border border-[#6F8064]/30 bg-[#F1F6F0] px-3 py-1.5 text-[0.65rem] font-black uppercase tracking-[0.12em] text-[#496454]"
+            className="inline-flex items-center gap-2 border border-[#2F4B3B]/25 bg-[#EDF2E9] px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-[#304A38]"
             role="status"
           >
             <span
               aria-hidden="true"
-              className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#6F8064]/30 border-t-[#496454]"
+              className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#2F4B3B]/25 border-t-[#2F4B3B]"
             />
             Actualizando ranking
           </p>
@@ -157,8 +161,8 @@ export function ListaRecomendaciones({
       </div>
 
       {recomendaciones.length === 0 ? (
-        <div className="rounded-[1.75rem] border border-dashed border-[#5B3A29]/20 bg-[#FFFDF8]/70 px-6 py-10 text-center">
-          <p className="text-base font-black text-[#233128]">
+        <div className="border border-dashed border-[#5B3A29]/20 bg-[#FFFDF8]/70 px-6 py-10 text-center">
+          <p className="font-display text-xl font-black tracking-[-0.02em] text-[#233128]">
             No encontramos destinos dentro de estos límites
           </p>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#746D63]">
@@ -171,7 +175,7 @@ export function ListaRecomendaciones({
               type="button"
               onClick={onAmpliarRadio}
               disabled={pendiente}
-              className="rounded-full bg-[#2F4B3B] px-6 py-3 text-sm font-black text-[#FFFDF8] transition hover:bg-[#3C5C48] disabled:cursor-not-allowed disabled:opacity-60"
+              className="bg-[#233128] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#FFFDF8] transition hover:bg-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-55"
             >
               Ampliar radio a {siguienteRadioKm} km
             </button>
@@ -180,7 +184,7 @@ export function ListaRecomendaciones({
               type="button"
               onClick={onActualizar}
               disabled={pendiente}
-              className="rounded-full border border-[#5B3A29]/20 bg-[#FFFDF8] px-6 py-3 text-sm font-black text-[#2F4B3B] transition hover:border-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-60"
+              className="border border-[#5B3A29]/20 bg-[#FFFDF8] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#2F4B3B] transition hover:border-[#233128] disabled:cursor-not-allowed disabled:opacity-55"
             >
               Reintentar
             </button>

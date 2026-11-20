@@ -1,9 +1,9 @@
 /**
  * Medidor de seguridad de la contraseña.
  *
- * Muestra una barra de cuatro tramos y la lista de requisitos reales del
- * backend mientras el usuario escribe. Es informativo: el envío se bloquea
- * con los mensajes de `evaluarContrasena`, no con el puntaje.
+ * Cuatro tramos y la lista de requisitos reales del backend mientras el
+ * usuario escribe. Es informativo: el envío se bloquea con los mensajes de
+ * `evaluarContrasena`, no con el puntaje.
  */
 
 import {
@@ -20,30 +20,27 @@ export function PasswordStrength({
 
   return (
     <div
-      className="rounded-[1.15rem] border border-[#5B3A29]/15 bg-[#FFFDF8]/75 px-3.5 py-3"
+      className="border border-[#5B3A29]/15 bg-[#F3EBDD]/50 px-3.5 py-3"
       aria-live="polite"
     >
       <div className="flex items-center justify-between gap-3">
-        <span className="text-[0.58rem] font-black uppercase tracking-[0.2em] text-[#81796F]">
-          Seguridad
+        <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#8A8177]">
+          Seguridad de la clave
         </span>
 
-        <span
-          className="text-xs font-black"
-          style={{ color: nivel.color }}
-        >
+        <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em]" style={{ color: nivel.color }}>
           {nivel.etiqueta}
         </span>
       </div>
 
-      <div className="mt-2 flex gap-1.5" aria-hidden="true">
+      <div className="mt-2 flex gap-1" aria-hidden="true">
         {[0, 1, 2, 3].map((tramo) => (
           <span
             key={tramo}
-            className="h-1.5 flex-1 rounded-full transition-colors duration-300"
+            className="h-1 flex-1 transition-colors duration-300"
             style={{
               backgroundColor:
-                tramo < evaluacion.puntaje ? nivel.color : "#E6DDCE",
+                tramo < evaluacion.puntaje ? nivel.color : "#E3D9C8",
             }}
           />
         ))}
@@ -54,20 +51,20 @@ export function PasswordStrength({
           <li
             key={requisito.id}
             className={[
-              "flex items-start gap-2 text-[0.7rem] font-semibold leading-5",
+              "flex items-start gap-2 text-[10px] font-medium leading-5",
               requisito.cumple ? "text-[#2F4B3B]" : "text-[#8B8174]",
             ].join(" ")}
           >
             <span
               aria-hidden="true"
               className={[
-                "mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.6rem] font-black",
+                "mt-px flex h-3.5 w-3.5 shrink-0 items-center justify-center border text-[9px] font-black",
                 requisito.cumple
-                  ? "bg-[#2F4B3B]/12 text-[#2F4B3B]"
-                  : "bg-[#5B3A29]/8 text-[#9B9184]",
+                  ? "border-[#2F4B3B]/45 bg-[#2F4B3B]/10 text-[#2F4B3B]"
+                  : "border-[#5B3A29]/20 text-[#9B9184]",
               ].join(" ")}
             >
-              {requisito.cumple ? "✓" : "·"}
+              {requisito.cumple ? "✓" : ""}
             </span>
 
             {requisito.etiqueta}

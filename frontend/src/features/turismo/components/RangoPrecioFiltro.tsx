@@ -42,18 +42,18 @@ export function RangoPrecioFiltro({
   const idEtiqueta = useId();
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <span
+    <div>
+      <p
         id={idEtiqueta}
-        className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[#8A8177]"
+        className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#8A8177]"
       >
         Precio (BOB)
-      </span>
+      </p>
 
       <div
         role="group"
         aria-labelledby={idEtiqueta}
-        className="flex flex-wrap items-center gap-2"
+        className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1"
       >
         {RANGOS_PRECIO_BOB.map((rangoPrecio) => {
           const activo =
@@ -68,12 +68,12 @@ export function RangoPrecioFiltro({
               aria-pressed={activo}
               data-testid={`rango-precio-${rangoPrecio.id}`}
               className={[
-                "inline-flex min-h-11 items-center rounded-full border px-3.5 py-2 text-xs font-black transition duration-200",
+                "inline-flex min-h-9 items-center border-b py-1 text-xs font-semibold transition",
                 "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]",
                 "disabled:cursor-not-allowed disabled:opacity-55",
                 activo
-                  ? "border-[#9A5B3C] bg-[#9A5B3C] text-[#FFFDF8] shadow-[0_8px_22px_rgba(154,91,60,0.25)]"
-                  : "border-[#5B3A29]/15 bg-[#FFFDF8]/90 text-[#514B43] hover:border-[#9A5B3C]/45 hover:text-[#8D4F32]",
+                  ? "border-[#9A5B3C] text-[#9A5B3C]"
+                  : "border-transparent text-[#514B43] hover:border-[#2F4B3B]/25 hover:text-[#233128]",
               ].join(" ")}
             >
               {rangoPrecio.etiqueta}
@@ -83,14 +83,14 @@ export function RangoPrecioFiltro({
       </div>
 
       {rango && (rango.min !== null || rango.max !== null) && (
-        <p className="text-xs font-semibold text-[#8A8177]" aria-live="polite">
+        <p className="mt-2 text-[11px] leading-5 text-[#8A8177]" aria-live="polite">
           El catálogo va de {formatearLimite(rango.min)} a{" "}
           {formatearLimite(rango.max)}
         </p>
       )}
 
       {!rango && tienePrecio && (
-        <p className="text-xs font-semibold text-[#8A8177]">
+        <p className="mt-2 text-[11px] leading-5 text-[#8A8177]">
           {formatearLimite(precioMin)} – {formatearLimite(precioMax)}
         </p>
       )}

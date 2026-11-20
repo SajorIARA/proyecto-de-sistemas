@@ -174,91 +174,93 @@ export function LocationSelector({
   };
 
   return (
-    <div className="w-full rounded-[1.25rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] p-4 shadow-[0_8px_30px_rgba(72,55,38,0.06)]">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-black uppercase tracking-[0.18em] text-[#8D4F32]">
-            Ubicación
-          </span>
-          <span className="inline-flex items-center rounded-full border border-[#2F4B3B]/20 bg-[#2F4B3B]/[0.06] px-3 py-1 text-[0.7rem] font-bold text-[#2F4B3B]">
-            {obtenerEtiquetaActiva()}
-          </span>
-        </div>
-        {ubicacionActiva && (
-          <button
-            type="button"
-            onClick={handleLimpiarUbicacion}
-            className="text-xs font-bold text-[#8D4F32] underline-offset-4 hover:underline"
-          >
-            Limpiar ubicación / Ver todos
-          </button>
-        )}
+    <div>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#8A8177]">
+          Cerca de mí
+        </p>
+
+        <span className="max-w-full truncate text-[10px] font-semibold text-[#746D63]">
+          {obtenerEtiquetaActiva()}
+        </span>
       </div>
 
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-        <button
-          type="button"
-          onClick={handleUsarUbicacionActual}
-          disabled={loading}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-[#2F4B3B] px-5 py-2.5 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128] disabled:cursor-not-allowed disabled:opacity-55"
-        >
-          {loading ? (
-            <>
-              <svg
-                className="h-4 w-4 animate-spin"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Ubicando…
-            </>
-          ) : (
-            <>
-              <svg
-                className="h-4 w-4"
-                fill="none"
+      <p className="mt-2 text-[11px] leading-5 text-[#8A8177]">
+        Resultados en un radio aproximado de 2 km.
+      </p>
+
+      <button
+        type="button"
+        onClick={handleUsarUbicacionActual}
+        disabled={loading}
+        className="mt-3 inline-flex min-h-10 items-center gap-2 border-b border-[#233128]/30 pb-0.5 text-[10px] font-black uppercase tracking-[0.14em] text-[#233128] transition hover:border-[#9A5B3C] hover:text-[#8D4F32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C6923B] disabled:cursor-not-allowed disabled:opacity-55"
+      >
+        {loading ? (
+          <>
+            <svg
+              className="h-3.5 w-3.5 animate-spin"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
                 stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-              Usar mi ubicación actual
-            </>
-          )}
-        </button>
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            Ubicando…
+          </>
+        ) : (
+          <>
+            <svg
+              className="h-3.5 w-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            Usar mi ubicación actual
+          </>
+        )}
+      </button>
+
+      <div className="mt-4">
+        <label
+          htmlFor="macrodistrito-catalogo"
+          className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#8A8177]"
+        >
+          Macrodistrito
+        </label>
 
         <select
+          id="macrodistrito-catalogo"
           value={macrodistritoSeleccionado}
           onChange={(e) => handleSeleccionarMacrodistrito(e.target.value)}
-          className="flex-1 rounded-full border border-[#5B3A29]/15 bg-[#FFFDF8] px-4 py-2.5 text-sm font-semibold text-[#514B43] transition hover:border-[#2F4B3B]/40 focus:border-[#2F4B3B] focus:outline-none"
+          className="mt-1 min-h-11 w-full border-0 border-b border-[#5B3A29]/25 bg-transparent py-2.5 pl-0 pr-2 text-sm font-semibold text-[#233128] transition hover:border-[#2F4B3B]/40 focus:border-[#2F4B3B] focus:outline-none focus:ring-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C6923B]"
         >
-          <option value="">Seleccionar macrodistrito manualmente</option>
+          <option value="">Elegir manualmente</option>
           {MACRODISTRITOS_LA_PAZ.map((macrodistrito: Macrodistrito) => (
             <option key={macrodistrito.id} value={macrodistrito.nombre}>
               {macrodistrito.nombre}
@@ -267,8 +269,18 @@ export function LocationSelector({
         </select>
       </div>
 
+      {ubicacionActiva && (
+        <button
+          type="button"
+          onClick={handleLimpiarUbicacion}
+          className="mt-3 text-[9px] font-black uppercase tracking-[0.16em] text-[#8D4F32] underline decoration-[#8D4F32]/35 underline-offset-4 hover:decoration-[#8D4F32]"
+        >
+          Quitar ubicación
+        </button>
+      )}
+
       {error && errorMessage && (
-        <div className="mt-3 rounded-2xl border border-[#9A5B3C]/30 bg-[#9A5B3C]/[0.06] p-3 text-xs font-semibold text-[#8D4F32]">
+        <div className="mt-3 border-l-2 border-[#9A5B3C] pl-3 text-[11px] font-semibold leading-5 text-[#8D4F32]">
           <p>{errorMessage}</p>
         </div>
       )}
