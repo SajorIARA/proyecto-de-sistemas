@@ -177,21 +177,25 @@ export function AsistenteChat({
     <section
       aria-labelledby="titulo-asistente"
       data-testid="asistente-chat"
-      className="flex flex-col overflow-hidden rounded-[1.75rem] border border-[#5B3A29]/[0.1] bg-[#FFFDF8] shadow-[0_20px_60px_rgba(72,55,38,0.1)]"
+      className="flex flex-col overflow-hidden border border-[#5B3A29]/15 bg-[#FFFDF8]"
     >
-      <header className="flex items-start gap-3 border-b border-[#EEE5D8] bg-[#233128] px-5 py-4 text-[#F3EBDD]">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#E9DFC9]/25 bg-[#F5EFE4]/10 text-[#E8C16A]">
+      <header className="flex items-start gap-3 border-b border-[#F3EBDD]/15 bg-[#233128] px-5 py-4 text-[#F3EBDD]">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-[#E8C16A]/35 bg-transparent text-[#E8C16A]">
           <Icono nombre="chat" className="h-5 w-5" />
         </span>
 
         <div className="min-w-0 flex-1">
+          <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#E8C16A]">
+            03 / Consejo de campo
+          </p>
+
           <h2
             id="titulo-asistente"
-            className="text-base font-black tracking-tight text-[#FFFDF8]"
+            className="mt-1 font-display text-lg font-black tracking-[-0.02em] text-[#FFFDF8]"
           >
             Asistente de viaje
           </h2>
-          <p className="mt-0.5 text-[0.65rem] leading-5 text-[#F5EFE4]/65">
+          <p className="mt-0.5 font-mono text-[7.5px] uppercase leading-4 tracking-[0.1em] text-[#F5EFE4]/60">
             {recomendaciones.length > 0
               ? `Contexto: ${recomendaciones.length} ${
                   recomendaciones.length === 1 ? "destino" : "destinos"
@@ -202,7 +206,7 @@ export function AsistenteChat({
 
         <span
           aria-hidden="true"
-          className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-[#8FB37F] shadow-[0_0_0_4px_rgba(143,179,127,0.16)]"
+          className="mt-1 h-2 w-2 shrink-0 bg-[#8FB37F]"
         />
       </header>
 
@@ -214,7 +218,7 @@ export function AsistenteChat({
         aria-label="Conversación con el asistente"
         aria-busy={enviando}
         data-testid="asistente-registro"
-        className="min-h-[280px] flex-1 space-y-4 overflow-y-auto bg-[#FBF6EC]/60 px-4 py-5 sm:px-5"
+        className="min-h-[280px] flex-1 space-y-4 overflow-y-auto bg-[#FFFDF8] px-4 py-5 sm:px-5"
       >
         {mensajes.map((mensaje) => {
           const esUsuario = mensaje.rol === "usuario";
@@ -227,7 +231,7 @@ export function AsistenteChat({
               {!esUsuario && (
                 <span
                   aria-hidden="true"
-                  className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#E7EFE7] text-[#2F4B3B]"
+                  className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center border border-[#2F4B3B]/20 bg-[#EDF2E9] text-[#2F4B3B]"
                 >
                   <Icono nombre="montana" className="h-4 w-4" />
                 </span>
@@ -235,10 +239,10 @@ export function AsistenteChat({
 
               <div
                 className={[
-                  "max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm",
+                  "max-w-[85%] px-4 py-3 text-sm leading-6",
                   esUsuario
-                    ? "rounded-br-sm bg-[#2F4B3B] text-[#FFFDF8]"
-                    : "rounded-bl-sm border border-[#5B3A29]/[0.08] bg-[#FFFDF8] text-[#3C3A35]",
+                    ? "bg-[#233128] text-[#FFFDF8]"
+                    : "border border-[#5B3A29]/15 bg-[#F3EBDD]/45 text-[#3C3A35]",
                 ].join(" ")}
               >
                 <p className="sr-only">
@@ -261,11 +265,11 @@ export function AsistenteChat({
         {enviando && (
           <p
             role="status"
-            className="flex items-center gap-2.5 text-xs font-bold text-[#746D63]"
+            className="flex items-center gap-2.5 font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-[#8A8177]"
           >
             <span
               aria-hidden="true"
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-[#E7EFE7] text-[#2F4B3B]"
+              className="flex h-8 w-8 items-center justify-center border border-[#2F4B3B]/20 bg-[#EDF2E9] text-[#2F4B3B]"
             >
               <span className="flex gap-1">
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#6F8064] [animation-delay:-0.2s]" />
@@ -278,7 +282,7 @@ export function AsistenteChat({
         )}
       </div>
 
-      <div className="border-t border-[#EEE5D8] bg-[#FFFDF8] px-4 py-4 sm:px-5">
+      <div className="border-t border-[#5B3A29]/15 bg-[#F3EBDD]/30 px-4 py-4 sm:px-5">
         <div
           className="flex flex-wrap gap-2"
           aria-label="Preguntas sugeridas"
@@ -289,7 +293,7 @@ export function AsistenteChat({
               type="button"
               disabled={enviando}
               onClick={() => void responder(sugerencia)}
-              className="rounded-full border border-[#5B3A29]/15 bg-[#F7F1E6] px-3 py-1.5 text-[0.68rem] font-bold text-[#6F655B] transition hover:border-[#9A5B3C]/45 hover:text-[#8D4F32] disabled:cursor-not-allowed disabled:opacity-55"
+              className="border border-[#5B3A29]/20 bg-[#FFFDF8] px-3 py-1.5 text-[0.68rem] font-semibold text-[#6F655B] transition hover:border-[#9A5B3C]/45 hover:text-[#8D4F32] disabled:cursor-not-allowed disabled:opacity-55"
             >
               {sugerencia}
             </button>
@@ -299,7 +303,7 @@ export function AsistenteChat({
         {error && (
           <p
             role="alert"
-            className="mt-3 rounded-xl border border-[#9A5B3C]/25 bg-[#9A5B3C]/[0.06] px-3 py-2 text-xs font-semibold text-[#8D4F32]"
+            className="mt-3 border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-3 py-2 text-xs font-semibold text-[#713A2A]"
           >
             {error}
           </p>
@@ -324,7 +328,7 @@ export function AsistenteChat({
                 }
               }}
               placeholder="Pregunta por costos, tiempos o traslados…"
-              className="w-full resize-none rounded-2xl border border-[#5B3A29]/15 bg-[#FFFDF8] px-3.5 py-2.5 text-sm text-[#233128] placeholder:text-[#9C9286] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9A5B3C] disabled:opacity-60"
+              className="w-full resize-none border border-[#5B3A29]/25 bg-[#FFFDF8] px-3.5 py-2.5 text-sm text-[#233128] placeholder:text-[#9C9286] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9A5B3C] disabled:opacity-60"
             />
           </div>
 
@@ -332,13 +336,13 @@ export function AsistenteChat({
             type="submit"
             disabled={enviando || pregunta.trim() === ""}
             aria-label="Enviar pregunta"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#9A5B3C] text-[#FFFDF8] transition hover:bg-[#8D4F32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9A5B3C] disabled:cursor-not-allowed disabled:opacity-45"
+            className="flex h-11 w-11 shrink-0 items-center justify-center bg-[#233128] text-[#FFFDF8] transition hover:bg-[#9A5B3C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9A5B3C] disabled:cursor-not-allowed disabled:opacity-45"
           >
             <Icono nombre="enviar" className="h-5 w-5" />
           </button>
         </form>
 
-        <p className="mt-3 text-[0.62rem] leading-5 text-[#91877B]">
+        <p className="mt-3 font-mono text-[7.5px] leading-4 tracking-[0.06em] text-[#8A8177]">
           Respuestas basadas en tu perfil y tu Top-K. Los costos de traslado
           son estimaciones referenciales en bolivianos.
         </p>

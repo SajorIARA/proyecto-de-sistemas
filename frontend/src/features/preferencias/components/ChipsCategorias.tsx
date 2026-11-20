@@ -41,11 +41,11 @@ function Chip({
       aria-pressed={activo}
       data-testid={`chip-categoria-${categoria.id_categoria}`}
       className={[
-        "inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-black transition duration-200",
+        "inline-flex items-center gap-2 border px-3.5 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.12em] transition duration-200",
         "disabled:cursor-not-allowed disabled:opacity-55",
         activo
-          ? "border-[#2F4B3B] bg-[#2F4B3B] text-[#FFFDF8] shadow-[0_8px_22px_rgba(47,75,59,0.28)]"
-          : "border-[#5B3A29]/15 bg-[#FFFDF8]/80 text-[#514B43] hover:border-[#2F4B3B]/40 hover:bg-[#FFFDF8] hover:text-[#233128]",
+          ? "border-[#233128] bg-[#233128] text-[#FFFDF8]"
+          : "border-[#5B3A29]/15 bg-[#FFFDF8] text-[#514B43] hover:border-[#9A5B3C]/45 hover:text-[#8D4F32]",
       ].join(" ")}
     >
       <span aria-hidden="true" className="text-sm leading-none">
@@ -54,11 +54,15 @@ function Chip({
 
       {categoria.nombre}
 
-      {activo && (
-        <span aria-hidden="true" className="text-[0.65rem] leading-none">
-          ✓
-        </span>
-      )}
+      <span
+        aria-hidden="true"
+        className={[
+          "text-[0.6rem] leading-none text-[#E8C16A] transition-opacity",
+          activo ? "opacity-100" : "opacity-0",
+        ].join(" ")}
+      >
+        ✓
+      </span>
     </button>
   );
 }
@@ -74,7 +78,7 @@ export function ChipsCategorias({
 }: ChipsCategoriasProps) {
   if (cargando) {
     return (
-      <p className="text-sm font-semibold text-[#746D63]">
+      <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#8A8177]">
         Cargando categorías…
       </p>
     );
@@ -84,7 +88,7 @@ export function ChipsCategorias({
     return (
       <p
         role="alert"
-        className="rounded-2xl border border-[#9A3B2E]/25 bg-[#9A3B2E]/[0.07] px-4 py-3 text-sm font-semibold text-[#9A3B2E]"
+        className="border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-4 py-3 text-sm font-semibold leading-6 text-[#713A2A]"
       >
         {errorCarga}
       </p>
@@ -96,8 +100,14 @@ export function ChipsCategorias({
       <div
         role="group"
         aria-label="Categorías temáticas de interés"
-        className="flex flex-wrap gap-2.5"
+        className="flex flex-wrap gap-2"
       >
+        {categorias.length === 0 && (
+          <p className="border border-dashed border-[#5B3A29]/20 px-4 py-4 text-sm text-[#746D63]">
+            Aún no hay categorías publicadas en el catálogo.
+          </p>
+        )}
+
         {categorias.map((categoria) => (
           <Chip
             key={categoria.id_categoria}
@@ -109,7 +119,10 @@ export function ChipsCategorias({
         ))}
       </div>
 
-      <p aria-live="polite" className="mt-3 text-xs font-semibold text-[#746D63]">
+      <p
+        aria-live="polite"
+        className="mt-3 font-mono text-[8px] uppercase tracking-[0.16em] text-[#8A8177]"
+      >
         {seleccionadas.length === 0
           ? "Ninguna categoría seleccionada todavía."
           : `${seleccionadas.length} ${

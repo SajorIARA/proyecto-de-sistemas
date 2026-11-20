@@ -1,7 +1,9 @@
 /**
- * Chip de categoría sobre la fotografía de la card.
- * Usa los colores de identidad de `index.css` (ochre/terracotta) y una
- * insignia por categoría para reforzar la lectura visual.
+ * Etiqueta de categoría sobre la fotografía de la ficha.
+ *
+ * Se resuelve como una pequeña estampa de papel (crema sobre la foto) en
+ * lugar de una píldora: mantiene la lectura editorial del catálogo y
+ * funciona igual sobre imágenes claras u oscuras.
  */
 
 interface CategoriaBadgeProps {
@@ -21,9 +23,9 @@ export const INSIGNIA_CATEGORIA: Record<string, string> = {
 export function CategoriaBadge({ categoria, className = "" }: CategoriaBadgeProps) {
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-full border border-[#F3EBDD]/35 bg-[#263029]/55 px-3 py-1.5 text-[0.58rem] font-black uppercase tracking-[0.18em] text-[#F3EBDD] backdrop-blur-md ${className}`}
+      className={`inline-flex items-center gap-2 bg-[#F3EBDD]/95 px-2.5 py-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-[#233128] backdrop-blur-sm ${className}`}
     >
-      <span aria-hidden="true">{INSIGNIA_CATEGORIA[categoria] ?? "📍"}</span>
+      <span className="h-1.5 w-1.5 shrink-0 bg-[#9A5B3C]" aria-hidden="true" />
       {categoria}
     </span>
   );

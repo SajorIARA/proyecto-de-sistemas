@@ -1,15 +1,14 @@
 /**
- * Tarjeta de destino del catálogo.
+ * Ficha fotográfica de un destino del catálogo.
  *
- * Contenido según lo definido por el Product Owner:
- * imagen · categoría · nombre · ubicación · descripción corta ·
- * botón "Ver detalle".
+ * Cada resultado se presenta como una lámina de guía impresa: fotografía
+ * grande, número de ficha y categoría sobre la imagen, y un pie con el
+ * nombre, la dirección, una descripción breve y el acceso al detalle. El
+ * catálogo decide el ancho y la proporción de cada ficha para romper la
+ * cuadrícula uniforme.
  *
- * La duración de visita se muestra como dato secundario porque SÍ viaja en
- * el payload de la lista. La tarifa base NO se muestra aquí a propósito:
- * `AtractivoSerializer` no incluye tarifas, y pedirlas por tarjeta
- * dispararía N peticiones extra contra un backend con AnonRateThrottle de
- * 100 req/hora. La tarifa se muestra en la vista de detalle.
+ * La tarifa base no se consulta aquí: `AtractivoSerializer` no la incluye y
+ * pedirla por ficha dispararía el `AnonRateThrottle`. Se muestra en el detalle.
  */
 
 import { useMemo } from "react";
@@ -30,95 +29,134 @@ interface DestinoCardProps {
    * filtros. Opcional: sin él, el enlace apunta al catálogo limpio.
    */
   busqueda?: string;
+  /** Posición de la ficha dentro del catálogo (base 0). */
+  indice?: number;
+  /** Total de fichas visibles, para el rótulo "Ficha 01 / 08". */
+  total?: number;
+  /** Clases responsive de la proporción de la fotografía. */
+  aspecto?: string;
+  /** La primera ficha del índice recibe un titular de mayor escala. */
+  destacada?: boolean;
 }
 
-export function DestinoCard({ atractivo, busqueda = "" }: DestinoCardProps) {
+function numeroFicha(valor: number): string {
+  return String(valor).padStart(2, "0");
+}
+
+const SIZES =
+  "(min-width: 1280px) 42vw, (min-width: 1024px) 48vw, (min-width: 640px) 44vw, 92vw";
+
+export function DestinoCard({
+  atractivo,
+  busqueda = "",
+  indice,
+  total,
+  aspecto = "aspect-[4/3]",
+  destacada = false,
+}: DestinoCardProps) {
   const categoria = atractivo.categorias[0] ?? null;
   const ubicacion = atractivo.direccion?.trim();
   const descripcion = recortar(atractivo.descripcion);
   const duracion = formatearDuracion(atractivo.duracion_minutos);
   const detalle = `/destinos/${atractivo.id}${busqueda ? `?${busqueda}` : ""}`;
   const imagenes = useMemo(() => imagenesDe(atractivo), [atractivo]);
+  const rotulo = typeof indice === "number" ? numeroFicha(indice + 1) : null;
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-[1.85rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] shadow-[0_16px_40px_rgba(72,55,38,0.09)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_56px_rgba(72,55,38,0.15)] focus-within:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0">
-      {/* Barra cultural superior */}
-      <div className="flex h-[3px] shrink-0 overflow-hidden" aria-hidden="true">
-        <span className="flex-1 bg-[#2F4B3B]" />
-        <span className="flex-1 bg-[#C6923B]" />
-        <span className="flex-1 bg-[#9A5B3C]" />
-        <span className="flex-1 bg-[#6F8064]" />
-      </div>
-
-      {/* Fotografía: si el destino tiene varias, se alternan solas. */}
-      <div className="relative aspect-[4/3] shrink-0 overflow-hidden bg-[#E9DFC9]">
+    <article
+      className="ficha-aparece group flex min-w-0 flex-col"
+      style={{
+        animationDelay: `${Math.min(indice ?? 0, 8) * 55}ms`,
+      }}
+    >
+      <div className={`relative shrink-0 overflow-hidden bg-[#233128] ${aspecto}`}>
         <CarruselImagenes
           imagenes={imagenes}
           alt={atractivo.nombre}
           prioritaria
-          sizes="(min-width: 1536px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          className="h-full w-full transition duration-700 group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+          sizes={SIZES}
+          className="h-full w-full transition-transform duration-700 group-hover:scale-[1.035] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           fallback={
             <DestinoImagen
               atractivo={atractivo}
               categoria={categoria}
               prioritaria
-              sizes="(min-width: 1536px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-              className="h-full w-full transition duration-700 group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+              sizes={SIZES}
+              className="h-full w-full transition-transform duration-700 group-hover:scale-[1.035] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             />
           }
         />
 
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#263029]/78 via-[#263029]/8 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#101710]/55 via-transparent to-[#101710]/15" />
 
         {categoria && (
-          <div className="absolute left-4 top-4">
+          <div className="absolute left-3 top-3 sm:left-4 sm:top-4">
             <CategoriaBadge categoria={categoria} />
           </div>
         )}
 
+        {rotulo && (
+          <span
+            className="absolute right-3 top-2 font-display text-[clamp(2rem,4.5vw,3.6rem)] font-black leading-none tracking-[-0.06em] text-[#FFFDF8]/90 [text-shadow:0_1px_3px_rgba(16,23,16,0.45),0_16px_40px_rgba(16,23,16,0.55)] sm:right-4"
+            aria-hidden="true"
+          >
+            {rotulo}
+          </span>
+        )}
+
         {atractivo.duracion_minutos ? (
-          <span className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-full border border-[#F3EBDD]/25 bg-[#263029]/55 px-3 py-1.5 text-[0.62rem] font-bold text-[#F3EBDD]/95 backdrop-blur-md">
+          <span className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 bg-[#101710]/60 px-2.5 py-1 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-[#F3EBDD] backdrop-blur-sm sm:bottom-4 sm:right-4">
             <Icono nombre="reloj" className="h-3 w-3" aria-hidden="true" />
-            <span>{duracion}</span>
+            {duracion}
           </span>
         ) : null}
       </div>
 
-      {/* Cuerpo */}
-      <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <h3 className="text-[1.2rem] font-black leading-tight tracking-[-0.02em] text-[#233128] sm:text-xl">
+      <div className="flex flex-1 flex-col border-b border-[#5B3A29]/20 pb-6 pt-4">
+        <h3
+          className={[
+            "font-display font-black leading-[0.96] tracking-[-0.04em] text-[#233128]",
+            destacada
+              ? "text-[2rem] sm:text-[2.4rem] lg:text-[2.9rem]"
+              : "text-[1.55rem] sm:text-[1.75rem] lg:text-[2rem]",
+          ].join(" ")}
+        >
           <Link
             to={detalle}
-            className="rounded-sm underline-offset-4 transition hover:text-[#8D4F32] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]"
+            className="decoration-[#9A5B3C]/40 decoration-2 underline-offset-[6px] transition hover:text-[#8D4F32] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C6923B]"
           >
             {atractivo.nombre}
           </Link>
         </h3>
 
-        <p className="mt-2.5 flex items-start gap-2 text-xs font-semibold leading-5 text-[#7A4A31] sm:text-[0.8rem]">
-          <span className="mt-0.5 shrink-0 text-[#8D4F32]" aria-hidden="true">
+        <p className="mt-2 flex items-start gap-2 font-mono text-[9px] uppercase leading-5 tracking-[0.16em] text-[#8A8177]">
+          <span className="mt-0.5 shrink-0 text-[#9A5B3C]" aria-hidden="true">
             <Icono nombre="ubicacion" className="h-3.5 w-3.5" />
           </span>
           <span>{ubicacion || "Ubicación no registrada"}</span>
         </p>
 
-        <p className="mt-4 text-sm leading-6 text-[#514B43]">
+        <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#514B43]">
           {descripcion || "Sin descripción disponible por el momento."}
         </p>
 
-        <div className="mt-auto pt-6">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
+          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#8A8177]">
+            {rotulo
+              ? `Ficha ${rotulo}${total ? ` / ${numeroFicha(total)}` : ""}`
+              : "Ficha de viaje"}
+          </span>
+
           <Link
             to={detalle}
-            className="inline-flex min-h-12 w-full items-center justify-center gap-2.5 rounded-full bg-[#2F4B3B] px-5 py-3.5 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B] motion-reduce:transition-none"
+            className="group/enlace inline-flex items-center gap-2 border-b border-[#9A5B3C]/40 pb-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#233128] transition hover:border-[#9A5B3C] hover:text-[#8D4F32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C6923B]"
           >
             Ver detalle
-            <span
-              className="transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+            <Icono
+              nombre="flecha"
+              className="h-3.5 w-3.5 transition-transform duration-300 group-hover/enlace:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover/enlace:translate-x-0"
               aria-hidden="true"
-            >
-              <Icono nombre="flecha" className="h-4 w-4" />
-            </span>
+            />
           </Link>
         </div>
       </div>

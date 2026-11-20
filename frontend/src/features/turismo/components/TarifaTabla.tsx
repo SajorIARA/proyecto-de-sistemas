@@ -23,16 +23,17 @@ export function TarifaTabla({ destinoId }: TarifaTablaProps) {
   return (
     <section
       aria-labelledby="costos-destino"
-      className="overflow-hidden rounded-[1.85rem] border border-[#5B3A29]/10 bg-[#FFFDF8]"
+      className="overflow-hidden border border-[#5B3A29]/15 bg-[#FFFDF8]"
     >
-      <header className="border-b border-[#5B3A29]/[0.08] px-6 py-5">
-        <p className="text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#9A5B3C]">
-          Información práctica
+      <header className="border-b border-[#5B3A29]/15 px-6 py-5">
+        <p className="flex items-center justify-between gap-3 font-mono text-[9px] uppercase tracking-[0.24em] text-[#9A5B3C]">
+          <span>04 / Información práctica</span>
+          <span className="text-[#8A8177]">BOB</span>
         </p>
 
         <h3
           id="costos-destino"
-          className="mt-1 text-lg font-black tracking-tight text-[#233128]"
+          className="font-display mt-2 text-xl font-black tracking-[-0.03em] text-[#233128]"
         >
           Costos oficiales
         </h3>
@@ -42,8 +43,8 @@ export function TarifaTabla({ destinoId }: TarifaTablaProps) {
         {isPending && (
           <div role="status" aria-live="polite">
             <span className="sr-only">Cargando tarifas…</span>
-            <div className="h-12 w-full animate-pulse rounded-2xl bg-[#5B3A29]/[0.07]" />
-            <div className="mt-3 h-12 w-full animate-pulse rounded-2xl bg-[#5B3A29]/[0.07]" />
+            <div className="h-12 w-full animate-pulse bg-[#5B3A29]/[0.07]" />
+            <div className="mt-2 h-12 w-full animate-pulse bg-[#5B3A29]/[0.07]" />
           </div>
         )}
 
@@ -54,31 +55,31 @@ export function TarifaTabla({ destinoId }: TarifaTablaProps) {
         )}
 
         {!isPending && !isError && data && data.length === 0 && (
-          <div>
-            <p className="text-sm leading-6 text-[#514B43]">
+          <div className="border-l-2 border-[#2F4B3B]/45 bg-[#EDF2E9] px-4 py-4">
+            <p className="text-sm leading-6 text-[#304A38]">
               Este destino no tiene tarifas registradas. El ingreso es libre.
             </p>
 
-            <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#2F4B3B]/10 px-4 py-2 text-xs font-black text-[#2F4B3B]">
+            <span className="mt-3 inline-flex items-center gap-2 bg-[#2F4B3B] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-[#FFFDF8]">
               Entrada gratuita
             </span>
           </div>
         )}
 
         {!isPending && !isError && base && (
-          <ul className="space-y-2.5">
+          <ul className="space-y-2">
             {[base, ...resto].map((tarifa, indice) => (
               <li
                 key={tarifa.id_tarifa}
                 className={[
-                  "flex items-center justify-between gap-4 rounded-2xl px-4 py-3.5 transition",
+                  "flex items-center justify-between gap-4 px-4 py-3.5 transition",
                   indice === 0
-                    ? "bg-[#2F4B3B] text-[#FFFDF8]"
-                    : "bg-[#5B3A29]/[0.04] text-[#263029]",
+                    ? "bg-[#233128] text-[#FFFDF8]"
+                    : "border border-[#5B3A29]/12 bg-[#FFFDF8] text-[#263029]",
                 ].join(" ")}
               >
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-black">
+                  <p className="truncate font-mono text-[10px] font-semibold uppercase tracking-[0.14em]">
                     {tarifa.tipo_tarifa_nombre}
                   </p>
 

@@ -92,7 +92,7 @@ export function RecomendacionesPage() {
           {consulta.isError && (
             <p
               role="status"
-              className="rounded-2xl border border-[#C6923B]/25 bg-[#C6923B]/[0.08] px-4 py-3 text-xs leading-6 text-[#7A5A1E]"
+              className="border-l-2 border-[#C6923B]/55 bg-[#FBF0D9]/70 px-4 py-3 text-xs leading-6 text-[#664717]"
             >
               No pudimos leer tu última consulta guardada. Partimos de tu
               borrador local; podés ajustar el perfil arriba y recalcular.
@@ -102,20 +102,20 @@ export function RecomendacionesPage() {
           {errorDePerfil && (
             <p
               role="alert"
-              className="rounded-2xl border border-[#9A5B3C]/25 bg-[#9A5B3C]/[0.06] px-4 py-3 text-xs leading-6 text-[#8D4F32]"
+              className="border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-4 py-3 text-xs leading-6 text-[#713A2A]"
             >
               {errorDePerfil}
             </p>
           )}
 
           {resultado && (
-            <p className="rounded-2xl border border-[#5B3A29]/[0.08] bg-[#FFFDF8]/70 px-4 py-3 text-xs leading-6 text-[#746D63]">
+            <p className="border border-[#5B3A29]/15 bg-[#F3EBDD]/35 px-4 py-3 font-mono text-[8px] uppercase leading-5 tracking-[0.1em] text-[#746D63]">
               Revisamos{" "}
-              <strong className="font-black text-[#233128]">
+              <strong className="font-bold tabular-nums text-[#233128]">
                 {resultado.total_evaluados}
               </strong>{" "}
               atractivos activos en un radio de{" "}
-              <strong className="font-black text-[#233128]">
+              <strong className="font-bold tabular-nums text-[#233128]">
                 {resultado.radio_km} km
               </strong>{" "}
               desde {perfil.macrodistrito || "tu punto de partida"}.

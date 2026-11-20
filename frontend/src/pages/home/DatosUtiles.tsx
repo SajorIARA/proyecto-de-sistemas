@@ -1,9 +1,9 @@
 /**
  * Datos útiles para planificar la visita.
  *
- * Información referencial y estable (no depende de la API): altitud,
- * clima, transporte y moneda. Aporta el bloque de "información general"
- * que la referencia municipal también resuelve en la portada.
+ * La información estable (altitud, clima, transporte y moneda) se
+ * presenta como la ficha de un cuaderno de viaje: una tabla de líneas
+ * finas y un sello circular, sin tarjetas ni iconos enmarcados.
  */
 
 import { Icono, type NombreIcono } from "../../components/site/Iconos";
@@ -46,51 +46,67 @@ export function DatosUtiles() {
   return (
     <section id="datos" className="scroll-mt-24 bg-[#FFFDF8] py-20 sm:py-28">
       <div className="contenedor-sitio">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <p className="text-[0.62rem] font-black uppercase tracking-[0.26em] text-[#9A5B3C]">
+        <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+          <header className="lg:col-span-4">
+            <p className="font-mono text-[10px] uppercase tracking-[0.26em] text-[#9A5B3C]">
               Información general
             </p>
 
-            <h2 className="font-display mt-5 text-[clamp(2.4rem,5vw,4.2rem)] font-black leading-[0.98] tracking-[-0.045em] text-[#233128]">
-              Lo que conviene saber{" "}
-              <span className="font-editorial font-normal italic text-[#9A5B3C]">
-                antes de llegar
-              </span>
-              .
+            <h2 className="font-display mt-5 text-[clamp(2.4rem,4vw,3.4rem)] font-black leading-[0.96] tracking-[-0.045em] text-[#233128]">
+              La letra pequeña del viaje.
             </h2>
-          </div>
 
-          <p className="max-w-md text-sm leading-7 text-[#5C574E] sm:text-base">
-            Cuatro datos que conviene tener a mano. Son referenciales y no
-            reemplazan las recomendaciones oficiales de cada atractivo.
-          </p>
-        </div>
+            <p className="mt-5 max-w-sm text-sm leading-7 text-[#5C574E]">
+              Lo que conviene saber antes de subir: altitud, clima, transporte
+              y moneda. Son datos referenciales, no reemplazan las
+              recomendaciones de cada atractivo.
+            </p>
 
-        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {DATOS.map((dato) => (
-            <li
-              key={dato.titulo}
-              className="flex h-full flex-col rounded-[1.4rem] border border-[#5B3A29]/10 bg-[#F3EBDD]/60 p-6"
+            <div
+              aria-hidden="true"
+              className="mt-8 flex h-28 w-28 -rotate-6 items-center justify-center rounded-full border border-dashed border-[#9A5B3C]/45 text-center"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#2F4B3B] text-[#F3EBDD]">
-                <Icono nombre={dato.icono} className="h-5 w-5" />
+              <span className="font-mono text-[9px] uppercase leading-5 tracking-[0.22em] text-[#9A5B3C]">
+                La Paz
+                <br />
+                3.640 m
+                <br />
+                Bolivia
               </span>
+            </div>
+          </header>
 
-              <h3 className="mt-6 text-[0.68rem] font-black uppercase tracking-[0.2em] text-[#9A5B3C]">
-                {dato.titulo}
-              </h3>
+          <div className="lg:col-span-8">
+            <dl className="grid border-l border-t border-[#5B3A29]/15 sm:grid-cols-2">
+              {DATOS.map((dato) => (
+                <div
+                  key={dato.titulo}
+                  className="border-b border-r border-[#5B3A29]/15 p-6 sm:p-8"
+                >
+                  <dt className="flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.22em] text-[#9A5B3C]">
+                    <span>{dato.titulo}</span>
+                    <Icono
+                      nombre={dato.icono}
+                      className="h-4 w-4 text-[#2F4B3B]"
+                    />
+                  </dt>
 
-              <p className="font-display mt-2 text-xl font-black tracking-[-0.02em] text-[#233128]">
-                {dato.valor}
-              </p>
+                  <dd className="font-display mt-4 text-2xl font-black tracking-[-0.03em] text-[#233128] sm:text-[1.7rem]">
+                    {dato.valor}
+                  </dd>
 
-              <p className="mt-3 text-sm leading-6 text-[#746D63]">
-                {dato.detalle}
-              </p>
-            </li>
-          ))}
-        </ul>
+                  <dd className="mt-2 text-sm leading-6 text-[#746D63]">
+                    {dato.detalle}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+
+            <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.2em] text-[#746D63]">
+              Datos referenciales · Verifica horarios y tarifas en cada destino
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );

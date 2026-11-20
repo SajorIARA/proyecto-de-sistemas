@@ -32,7 +32,7 @@ describe("HomePage", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: /Explora La Paz\s*como nunca antes\./i,
+        name: /La Paz no se visita,\s*se sube\./i,
       }),
     ).toBeInTheDocument();
 
