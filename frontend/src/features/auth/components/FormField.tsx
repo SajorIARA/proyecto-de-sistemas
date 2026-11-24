@@ -39,7 +39,7 @@ export function FormField({
       <label
         htmlFor={id}
         className={[
-          "mb-2.5 block text-sm font-black tracking-[-0.01em] text-[#26342B]",
+          "mb-2 block font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-[#5C574E]",
           required
             ? "after:ml-1 after:text-[#9A5B3C] after:content-['*']"
             : "",
@@ -49,63 +49,23 @@ export function FormField({
       </label>
 
       <div className="relative">
-        {/* brillo interior sutil */}
-        <div className="pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-white/90 to-transparent" />
-
         <input
           id={id}
           required={required}
           aria-invalid={Boolean(error)}
           aria-describedby={describedBy}
-          className={`
-            w-full
-            rounded-[1.15rem]
-            border
-            bg-[#FFFDF8]
-            px-4
-            py-3.5
-            ${trailing ? "pr-[6.2rem]" : ""}
-            text-sm
-            font-semibold
-            text-[#242B25]
-            caret-[#9A5B3C]
-            outline-none
-
-            shadow-[0_8px_24px_rgba(91,58,41,0.06)]
-
-            transition
-            duration-300
-
-            placeholder:font-medium
-            placeholder:text-[#857C70]
-
-            hover:border-[#6F8064]/45
-
-            focus:bg-white
-            focus:shadow-[0_12px_34px_rgba(47,75,59,0.11)]
-            focus:ring-4
-            focus:ring-[#2F4B3B]/10
-
-            disabled:cursor-not-allowed
-            disabled:bg-[#EFE9DE]
-            disabled:text-[#8B8174]
-            disabled:opacity-70
-
-            ${
-              error
-                ? `
-                  border-[#9A5B3C]/55
-                  focus:border-[#9A5B3C]
-                  focus:ring-[#9A5B3C]/10
-                `
-                : `
-                  border-[#5B3A29]/20
-                  focus:border-[#2F4B3B]/75
-                `
-            }
-
-            ${className}
-          `}
+          className={[
+            "w-full rounded-none border bg-[#FFFDF8] px-3.5 py-3 text-[0.95rem] font-medium text-[#242B25] caret-[#9A5B3C] outline-none transition",
+            trailing ? "pr-[5.5rem]" : "",
+            "placeholder:font-normal placeholder:text-[#968C7E]",
+            "hover:border-[#2F4B3B]/55",
+            "focus:border-[#2F4B3B] focus:ring-1 focus:ring-[#2F4B3B]/25",
+            "disabled:cursor-not-allowed disabled:bg-[#EFE9DE] disabled:text-[#8B8174]",
+            error
+              ? "border-[#9A5B3C]/60 focus:border-[#9A5B3C] focus:ring-[#9A5B3C]/20"
+              : "border-[#5B3A29]/30",
+            className,
+          ].join(" ")}
           {...props}
         />
 
@@ -122,12 +82,9 @@ export function FormField({
         <span
           id={`${id}-error`}
           role="alert"
-          className="mt-2 flex items-center gap-2 text-xs font-bold text-[#7B3F2D]"
+          className="mt-1.5 flex items-center gap-1.5 text-[11px] font-semibold leading-5 text-[#7B3F2D]"
         >
-          <span
-            aria-hidden="true"
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#9A5B3C]/10 text-[0.65rem] font-black"
-          >
+          <span aria-hidden="true" className="font-black">
             !
           </span>
 
@@ -136,7 +93,7 @@ export function FormField({
       ) : hint ? (
         <span
           id={`${id}-hint`}
-          className="mt-2 block text-xs font-medium leading-5 text-[#81796F]"
+          className="mt-1.5 block text-[11px] leading-5 text-[#81796F]"
         >
           {hint}
         </span>

@@ -37,7 +37,7 @@ export function EncabezadoImagen({
       alt={alt}
       loading={prioritaria ? "eager" : "lazy"}
       decoding="async"
-      className={`rounded-2xl object-cover shadow-lg ring-1 ring-black/10 ${className}`}
+      className={`object-cover ${className}`}
       data-testid="encabezado-imagen"
     />
   );

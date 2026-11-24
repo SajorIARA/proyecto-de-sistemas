@@ -1,9 +1,10 @@
 /**
  * Buscador de texto del catálogo (nombre, palabra clave o dirección).
  *
- * Es un input controlado: el valor lo posee el llamador, que lo debouncea antes
- * de tocar la URL. Incluye un botón para limpiar cuando hay texto, de modo que
- * volver al catálogo completo sea un solo clic.
+ * Es un input controlado: el valor lo posee el llamador, que lo debouncea
+ * antes de tocar la URL. Visualmente se integra en el riel de filtros como
+ * una línea de escritura, no como una caja: la búsqueda es el primer gesto
+ * de la guía.
  */
 
 import { useId } from "react";
@@ -26,16 +27,16 @@ export function BuscadorCatalogo({
   const hayTexto = valor.trim() !== "";
 
   return (
-    <div className="relative w-full">
+    <div className="relative">
       <label htmlFor={id} className="sr-only">
         Buscar destinos por nombre, palabra clave o dirección
       </label>
 
       <span
-        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#746D63]"
+        className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-[#9A5B3C]"
         aria-hidden="true"
       >
-        <Icono nombre="buscar" className="h-[1.15rem] w-[1.15rem]" />
+        <Icono nombre="buscar" className="h-[1.1rem] w-[1.1rem]" />
       </span>
 
       <input
@@ -46,8 +47,8 @@ export function BuscadorCatalogo({
         disabled={disabled}
         autoComplete="off"
         spellCheck={false}
-        placeholder="Buscar por nombre, palabra clave o dirección…"
-        className="min-h-12 w-full rounded-full border border-[#5B3A29]/15 bg-[#FFFDF8] py-3 pl-11 pr-[6.5rem] text-[0.95rem] text-[#263029] shadow-[0_10px_30px_rgba(72,55,38,0.06)] transition placeholder:text-[#8A8177] focus:border-[#2F4B3B] focus:outline-none focus:ring-2 focus:ring-[#2F4B3B]/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B] disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm"
+        placeholder="Nombre, calle o palabra clave…"
+        className="w-full border-0 border-b border-[#5B3A29]/25 bg-transparent py-3 pl-7 pr-16 text-[0.95rem] font-semibold text-[#233128] transition placeholder:font-normal placeholder:text-[#8A8177] focus:border-[#2F4B3B] focus:outline-none focus:ring-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C6923B] disabled:cursor-not-allowed disabled:opacity-55"
       />
 
       {hayTexto && (
@@ -55,7 +56,7 @@ export function BuscadorCatalogo({
           type="button"
           onClick={onLimpiar}
           aria-label="Limpiar búsqueda"
-          className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex min-h-10 items-center rounded-full bg-[#5B3A29]/[0.08] px-3.5 py-2 text-xs font-black text-[#514B43] transition hover:bg-[#5B3A29]/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]"
+          className="absolute right-0 top-1/2 -translate-y-1/2 pb-0.5 text-[9px] font-black uppercase tracking-[0.18em] text-[#8D4F32] underline decoration-[#8D4F32]/35 underline-offset-4 transition hover:decoration-[#8D4F32] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C6923B]"
         >
           Limpiar
         </button>

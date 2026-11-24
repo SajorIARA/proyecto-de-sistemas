@@ -69,19 +69,22 @@ export function GaleriaNueva({
   }
 
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] shadow-[0_20px_60px_rgba(72,55,38,0.08)]">
-      <div className="flex items-center gap-3 border-b border-[#5B3A29]/[0.08] px-6 py-5 sm:px-8">
-        <span className="h-px w-8 bg-[#9A5B3C]" aria-hidden="true" />
-        <h2 className="text-lg font-black tracking-tight text-[#233128]">
+    <section className="overflow-hidden border border-[#5B3A29]/15 bg-[#FFFDF8]">
+      <div className="border-b border-[#5B3A29]/15 px-5 py-5 sm:px-8">
+        <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9A5B3C]">
+          02 / Medios
+        </p>
+
+        <h2 className="mt-1.5 font-display text-2xl font-black tracking-[-0.02em] text-[#233128]">
           Fotografías y videos
         </h2>
       </div>
 
-      <div className="space-y-6 px-6 py-7 sm:px-8">
+      <div className="space-y-6 px-5 py-7 sm:px-8">
         {sinCloudinary && (
           <p
             role="status"
-            className="rounded-2xl border border-[#C6923B]/40 bg-[#C6923B]/[0.12] px-4 py-3 text-xs font-semibold text-[#7A5618]"
+            className="border-l-2 border-[#C6923B]/55 bg-[#FBF0D9]/70 px-4 py-3 text-xs font-semibold leading-5 text-[#664717]"
           >
             Cloudinary no está configurado en el frontend
             (`VITE_CLOUDINARY_CLOUD_NAME`). No se pueden agregar imágenes
@@ -93,10 +96,10 @@ export function GaleriaNueva({
         <div>
           <label
             htmlFor="nuevo-destino-archivos"
-            className={`inline-flex items-center gap-2.5 rounded-full bg-[#2F4B3B] px-6 py-3 text-sm font-black text-[#FFFDF8] transition ${
+            className={`inline-flex items-center gap-2.5 bg-[#233128] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#FFFDF8] transition ${
               bloqueado
                 ? "cursor-not-allowed opacity-45"
-                : "cursor-pointer hover:bg-[#233128]"
+                : "cursor-pointer hover:bg-[#2F4B3B]"
             }`}
           >
             <span aria-hidden="true">＋</span>
@@ -123,7 +126,7 @@ export function GaleriaNueva({
         {errores.length > 0 && (
           <ul
             role="alert"
-            className="space-y-1 rounded-2xl border border-[#9A3B2E]/25 bg-[#9A3B2E]/[0.07] px-4 py-3 text-xs font-semibold text-[#9A3B2E]"
+            className="space-y-1 border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-4 py-3 text-xs font-semibold text-[#713A2A]"
           >
             {errores.map((mensaje) => (
               <li key={mensaje}>{mensaje}</li>
@@ -133,7 +136,7 @@ export function GaleriaNueva({
 
         {/* Listado de pendientes */}
         {archivos.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-[#5B3A29]/20 px-4 py-8 text-center text-sm font-semibold text-[#746D63]">
+          <p className="border border-dashed border-[#5B3A29]/20 px-4 py-8 text-center text-sm font-semibold text-[#746D63]">
             Todavía no agregaste archivos. Podés cargarlos ahora y se subirán
             solos al guardar el destino.
           </p>
@@ -142,7 +145,7 @@ export function GaleriaNueva({
             {archivos.map((item, indice) => (
               <li
                 key={item.id}
-                className="group relative overflow-hidden rounded-2xl border border-[#5B3A29]/12 bg-[#F3EBDD]/50"
+                className="group relative overflow-hidden border border-[#5B3A29]/15 bg-[#F3EBDD]/50"
               >
                 <div className="relative aspect-[4/3]">
                   {item.previewUrl ? (
@@ -162,7 +165,7 @@ export function GaleriaNueva({
                     </div>
                   )}
 
-                  <span className="absolute left-2 top-2 rounded-full bg-[#233128]/85 px-2.5 py-1 text-[0.58rem] font-black uppercase tracking-[0.12em] text-[#FFFDF8]">
+                  <span className="absolute left-2 top-2 bg-[#233128]/90 px-2 py-1 font-mono text-[7px] font-bold uppercase tracking-[0.14em] text-[#FFFDF8]">
                     Sin subir
                   </span>
 
@@ -171,13 +174,13 @@ export function GaleriaNueva({
                     onClick={() => onQuitar(item.id)}
                     disabled={deshabilitado}
                     aria-label={`Quitar el archivo ${indice + 1}`}
-                    className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#9A3B2E] text-sm font-black text-[#FFFDF8] opacity-0 transition focus:opacity-100 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center bg-[#9A3B2E] text-sm font-black text-[#FFFDF8] opacity-0 transition focus:opacity-100 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     ×
                   </button>
                 </div>
 
-                <p className="truncate px-3 py-2 text-[0.62rem] font-semibold text-[#746D63]">
+                <p className="truncate px-3 py-2 font-mono text-[7.5px] uppercase tracking-[0.06em] text-[#746D63]">
                   {indice === 0 ? "Portada · " : ""}
                   {item.archivo.name}
                 </p>

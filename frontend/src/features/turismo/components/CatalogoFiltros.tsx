@@ -1,20 +1,23 @@
 /**
- * Panel de filtros combinados del catálogo.
+ * Riel de filtros combinados del catálogo.
  *
- * La barra visible reúne el buscador y las categorías. Los filtros menos
- * frecuentes (zona y precio) viven en un desplegable «Más filtros», de modo
- * que la primera pantalla del catálogo queda limpia y el usuario decide
- * cuándo profundizar. Si la URL llega con zona o precio activos, el panel se
+ * Reúne búsqueda, categorías, zona y presupuesto en una columna de guía.
+ * Los controles son "tontos": reciben el estado y emiten cambios; el debounce
+ * del texto vive en `useFiltrosCatalogo`. Así la cuadrícula no se re-renderiza
+ * por cada pulsación.
+ *
+ * Las secciones llevan un índice numérico y una línea fina en lugar de tarjetas
+ * redondeadas, para que el panel se lea como el índice de una publicación.
+ *
+ * En celular (por debajo de `sm`) zona y precio se agrupan en «Más filtros»
+ * plegable para no robarle campo a la búsqueda. En tablet y monitor permanecen
+ * siempre visibles. Si la URL llega con zona o precio activos, el panel se
  * abre solo para que el estado sea visible.
- *
- * El componente es "tonto": no conoce la API ni el debounce; recibe el estado y
- * emite cambios. Así el buscador puede teclear sin re-renderizar toda la
- * cuadrícula y el debounce vive en un único sitio (`useFiltrosCatalogo`).
  */
 
-import { useId, useState } from "react";
-import { RANGOS_PRECIO_BOB } from "../../../config/turismo";
+import { useId, useState, type ReactNode } from "react";
 import { Icono } from "../../../components/site/Iconos";
+import { RANGOS_PRECIO_BOB } from "../../../config/turismo";
 import type { Facetas, FiltrosCatalogo } from "../../../types/turismo";
 import { BuscadorCatalogo } from "./BuscadorCatalogo";
 import { CategoriaFiltros } from "./CategoriaFiltros";
@@ -70,10 +73,10 @@ export function CatalogoFiltros({
   const panelId = useId();
   const hayZona = filtros.zona !== null;
   const hayPrecio = filtros.precioMin !== null || filtros.precioMax !== null;
+  const avanzados = (hayZona ? 1 : 0) + (hayPrecio ? 1 : 0);
 
-  // Visible por defecto para preservar accesibilidad, pruebas y descubribilidad;
-  // se mantiene plegable como mejora de diseño.
-  const [abierto, setAbierto] = useState(true);
+  // Plegable solo en celular; en tablet y monitor `sm:grid` lo fuerza visible.
+  const [abierto, setAbierto] = useState(hayZona || hayPrecio);
 
   const conteos = facetas
     ? Object.fromEntries(
@@ -118,92 +121,95 @@ export function CatalogoFiltros({
     });
   }
 
-  const avanzados = (hayZona ? 1 : 0) + (hayPrecio ? 1 : 0);
-
   return (
-    <div className="rounded-[1.75rem] border border-[#5B3A29]/12 bg-[#FFFDF8]/78 p-3 shadow-[0_16px_40px_rgba(72,55,38,0.06)] sm:p-4">
-      <BuscadorCatalogo
-        valor={borrador}
-        onChange={onBuscar}
-        onLimpiar={onLimpiarTexto}
-        disabled={disabled}
-      />
+    <div>
+      <div className="flex items-end justify-between gap-4 border-b border-[#5B3A29]/20 pb-4">
+        <h2 className="font-display text-2xl font-black tracking-[-0.035em] text-[#233128]">
+          Filtrar la guía
+        </h2>
 
-      <div className="mt-3">
-        <CategoriaFiltros
-          seleccionada={filtros.categoria}
-          onChange={onCategoria}
-          conteos={conteos}
-          disabled={disabled}
-        />
+        <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#8A8177]">
+          {typeof facetas?.total_atractivos === "number"
+            ? `${String(facetas.total_atractivos).padStart(2, "0")} fichas`
+            : "Catálogo"}
+        </p>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-[#5B3A29]/10 pt-3">
-        <button
-          type="button"
-          onClick={() => setAbierto((valor) => !valor)}
-          aria-expanded={abierto}
-          aria-controls={panelId}
-          className={[
-            "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-xs font-black transition",
-            "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]",
-            abierto
-              ? "border-[#2F4B3B]/35 bg-[#2F4B3B]/10 text-[#2F4B3B]"
-              : "border-[#5B3A29]/15 bg-transparent text-[#514B43] hover:border-[#2F4B3B]/35 hover:text-[#2F4B3B]",
-          ].join(" ")}
-        >
-          Más filtros
+      <section className="mt-6">
+        <EtiquetaFiltro numero="01">Buscar</EtiquetaFiltro>
+        <BuscadorCatalogo
+          valor={borrador}
+          onChange={onBuscar}
+          onLimpiar={onLimpiarTexto}
+          disabled={disabled}
+        />
+      </section>
+
+      <section className="mt-7 border-t border-[#5B3A29]/12 pt-5">
+        <EtiquetaFiltro numero="02">Categoría</EtiquetaFiltro>
+
+        <div className="mt-1">
+          <CategoriaFiltros
+            seleccionada={filtros.categoria}
+            onChange={onCategoria}
+            conteos={conteos}
+            conteoTotal={facetas?.total_atractivos}
+            disabled={disabled}
+          />
+        </div>
+      </section>
+
+      <button
+        type="button"
+        onClick={() => setAbierto((valor) => !valor)}
+        aria-expanded={abierto}
+        aria-controls={panelId}
+        className="mt-7 flex w-full items-center justify-between gap-3 border-t border-[#5B3A29]/12 pt-5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B] sm:hidden"
+      >
+        <span className="flex items-baseline gap-3">
+          <span className="font-mono text-[9px] tracking-[0.18em] text-[#9A5B3C]">
+            03–04
+          </span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#8A8177]">
+            Más filtros
+          </span>
 
           {avanzados > 0 && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#9A5B3C] px-1.5 text-[0.65rem] font-black text-[#FFFDF8]">
+            <span className="flex h-4 min-w-4 items-center justify-center bg-[#9A5B3C] px-1 text-[9px] font-black text-[#FFFDF8]">
               {avanzados}
             </span>
           )}
+        </span>
 
-          <Icono
-            nombre="flecha"
-            className={`h-3.5 w-3.5 transition-transform ${abierto ? "-rotate-90" : "rotate-90"}`}
-            aria-hidden="true"
-          />
-        </button>
+        <Icono
+          nombre="flecha"
+          className={`h-3.5 w-3.5 shrink-0 text-[#8D4F32] transition-transform ${
+            abierto ? "-rotate-90" : "rotate-90"
+          }`}
+        />
+      </button>
 
-        {chips.length > 0 && (
-          <button
-            type="button"
-            onClick={onLimpiar}
-            className="inline-flex min-h-11 items-center rounded-full px-3 py-2 text-xs font-black text-[#8D4F32] underline-offset-4 transition hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]"
-          >
-            Limpiar
-          </button>
-        )}
-      </div>
-
-      {abierto && (
-        <div
-          id={panelId}
-          className="mt-4 grid gap-5 border-t border-[#5B3A29]/10 pt-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.4fr)]"
-        >
-          <div>
-            <p className="mb-2 flex items-center gap-2 text-[0.62rem] font-black uppercase tracking-[0.18em] text-[#8A8177]">
-              <Icono nombre="ubicacion" className="h-3.5 w-3.5" aria-hidden="true" />
-              Zona
-            </p>
-            <p className="mb-2 text-xs leading-5 text-[#746D63]">Filtra por área o referencia geográfica.</p>
-
+      <div
+        id={panelId}
+        className={[
+          "gap-6 sm:mt-7 sm:grid sm:grid-cols-2 sm:border-t sm:border-[#5B3A29]/12 sm:pt-5 lg:grid-cols-1",
+          abierto ? "mt-5 grid" : "hidden",
+        ].join(" ")}
+      >
+        <section>
+          <EtiquetaFiltro numero="03">Dónde</EtiquetaFiltro>
+          <div className="mt-2">
             <ZonaFiltro
               seleccionada={filtros.zona}
               onChange={onZona}
               disabled={disabled}
             />
           </div>
+        </section>
 
-          <div>
-            <p className="mb-2 flex items-center gap-2 text-[0.62rem] font-black uppercase tracking-[0.18em] text-[#8A8177]">
-              <Icono nombre="moneda" className="h-3.5 w-3.5" aria-hidden="true" />
-              Precio
-            </p>
-            <p className="mb-2 text-xs leading-5 text-[#746D63]">Elige un rango en bolivianos para acotar resultados.</p>
-
+        <section>
+          <EtiquetaFiltro numero="04">Cuánto</EtiquetaFiltro>
+          <div className="mt-2">
             <RangoPrecioFiltro
               precioMin={filtros.precioMin}
               precioMax={filtros.precioMax}
@@ -212,12 +218,33 @@ export function CatalogoFiltros({
               disabled={disabled}
             />
           </div>
+        </section>
+      </div>
+
+      {chips.length > 0 && (
+        <div className="mt-7 border-t border-[#5B3A29]/12 pt-5">
+          <FiltrosActivos chips={chips} onLimpiar={onLimpiar} />
         </div>
       )}
-
-      <div className="mt-3">
-        <FiltrosActivos chips={chips} onLimpiar={onLimpiar} />
-      </div>
     </div>
+  );
+}
+
+function EtiquetaFiltro({
+  numero,
+  children,
+}: {
+  numero: string;
+  children: ReactNode;
+}) {
+  return (
+    <p className="flex items-baseline gap-3">
+      <span className="font-mono text-[9px] tracking-[0.18em] text-[#9A5B3C]">
+        {numero}
+      </span>
+      <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#8A8177]">
+        {children}
+      </span>
+    </p>
   );
 }

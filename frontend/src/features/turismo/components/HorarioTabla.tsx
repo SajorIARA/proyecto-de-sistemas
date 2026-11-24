@@ -19,16 +19,17 @@ export function HorarioTabla({ destinoId }: HorarioTablaProps) {
   return (
     <section
       aria-labelledby="horario-destino"
-      className="overflow-hidden rounded-[1.85rem] border border-[#5B3A29]/10 bg-[#FFFDF8]"
+      className="overflow-hidden border border-[#5B3A29]/15 bg-[#FFFDF8]"
     >
-      <header className="border-b border-[#5B3A29]/[0.08] px-6 py-5">
-        <p className="text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#9A5B3C]">
-          Planifica tu visita
+      <header className="border-b border-[#5B3A29]/15 px-6 py-5">
+        <p className="flex items-center justify-between gap-3 font-mono text-[9px] uppercase tracking-[0.24em] text-[#9A5B3C]">
+          <span>03 / Planifica tu visita</span>
+          <span className="text-[#8A8177]">Lun — Dom</span>
         </p>
 
         <h3
           id="horario-destino"
-          className="mt-1 text-lg font-black tracking-tight text-[#233128]"
+          className="font-display mt-2 text-xl font-black tracking-[-0.03em] text-[#233128]"
         >
           Horario de atención
         </h3>
@@ -63,11 +64,11 @@ export function HorarioTabla({ destinoId }: HorarioTablaProps) {
 
                   <span
                     className={[
-                      "rounded-full px-3 py-1.5 text-xs font-black tabular-nums",
+                      "px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] tabular-nums",
                       horario.cerrado
-                        ? "bg-[#9A5B3C]/12 text-[#8D4F32]"
+                        ? "bg-[#F6E8DF] text-[#8D4F32]"
                         : horario.hora_apertura
-                          ? "bg-[#2F4B3B]/10 text-[#2F4B3B]"
+                          ? "bg-[#EDF2E9] text-[#304A38]"
                           : "bg-[#5B3A29]/[0.06] text-[#8A8177]",
                     ].join(" ")}
                   >
@@ -99,8 +100,8 @@ function TablaSkeleton({ filas }: { filas: number }) {
           key={indice}
           className="flex items-center justify-between gap-4 border-b border-[#5B3A29]/[0.05] py-3 last:border-0"
         >
-          <div className="h-3.5 w-24 animate-pulse rounded-full bg-[#5B3A29]/[0.09]" />
-          <div className="h-6 w-28 animate-pulse rounded-full bg-[#5B3A29]/[0.09]" />
+          <div className="h-3.5 w-24 animate-pulse bg-[#5B3A29]/[0.09]" />
+          <div className="h-6 w-28 animate-pulse bg-[#5B3A29]/[0.09]" />
         </div>
       ))}
     </div>

@@ -1,10 +1,11 @@
 /**
  * Portada del sitio.
  *
- * Composición inspirada en las portadas turísticas municipales
- * (hero fotográfico, accesos rápidos, categorías, zonas, gastronomía e
- * información general) pero con la identidad andina del proyecto:
- * verde profundo, terracota, ocre y crema.
+ * La composición sigue el ritmo de una guía impresa: cabecera
+ * fotográfica con datos de edición, franja de accesos, índice de
+ * categorías, friso tipográfico, itinerario de zonas, carta
+ * gastronómica, ficha del viajero y postal de cierre. Alterna fondos
+ * oscuros y claros para que cada sección respire distinto.
  *
  * No hay video: el hero rota fotografías. Tampoco se consulta la API en
  * la portada; el catálogo real se abre a un clic y así se evita gastar
@@ -17,6 +18,7 @@ import { AccesosRapidos } from "./home/AccesosRapidos";
 import { CtaFinal } from "./home/CtaFinal";
 import { DatosUtiles } from "./home/DatosUtiles";
 import { DescubreCategorias } from "./home/DescubreCategorias";
+import { FrisoCiudad } from "./home/FrisoCiudad";
 import { GastronomiaBanner } from "./home/GastronomiaBanner";
 import { HeroPrincipal } from "./home/HeroPrincipal";
 import { ZonasSection } from "./home/ZonasSection";
@@ -37,6 +39,7 @@ export function HomePage() {
         <HeroPrincipal />
         <AccesosRapidos />
         <DescubreCategorias />
+        <FrisoCiudad />
         <ZonasSection />
         <GastronomiaBanner />
         <DatosUtiles />

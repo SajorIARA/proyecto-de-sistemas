@@ -30,23 +30,23 @@ export function MapaDestino({ ubicacion, nombreDestino }: MapaDestinoProps) {
   return (
     <section
       aria-labelledby="mapa-destino"
-      className="overflow-hidden rounded-[1.85rem] border border-[#5B3A29]/10 bg-[#FFFDF8]"
+      className="overflow-hidden border border-[#5B3A29]/15 bg-[#FFFDF8]"
     >
-      <header className="flex items-center justify-between gap-4 border-b border-[#5B3A29]/[0.08] px-6 py-5">
+      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-[#5B3A29]/15 px-6 py-5">
         <div>
-          <p className="text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#9A5B3C]">
-            Ubicación
+          <p className="font-mono text-[9px] uppercase tracking-[0.24em] text-[#9A5B3C]">
+            02 / Ubicación
           </p>
 
           <h3
             id="mapa-destino"
-            className="mt-1 text-lg font-black tracking-tight text-[#233128]"
+            className="font-display mt-2 text-xl font-black tracking-[-0.03em] text-[#233128]"
           >
             Cómo llegar
           </h3>
         </div>
 
-        <span className="shrink-0 rounded-full border border-[#6F8064]/25 bg-[#EDF2E9] px-3 py-1.5 text-[0.58rem] font-black uppercase tracking-[0.16em] text-[#304A38]">
+        <span className="shrink-0 border border-[#2F4B3B]/25 bg-[#EDF2E9] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-[#304A38]">
           Mapa interactivo
         </span>
       </header>
@@ -89,7 +89,11 @@ export function MapaDestino({ ubicacion, nombreDestino }: MapaDestinoProps) {
       )}
 
       {/* Coordenadas reales del backend */}
-      <div className="flex items-center justify-center border-t border-[#5B3A29]/[0.08] px-6 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#5B3A29]/15 px-6 py-4">
+        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#8A8177]">
+          Coordenada PostGIS
+        </p>
+
         <p className="font-mono text-sm font-bold tabular-nums text-[#233128]">
           {formatearCoordenadas(ubicacion)}
         </p>

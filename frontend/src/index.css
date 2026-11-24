@@ -48,11 +48,12 @@
    RESET BASE
 ========================================================= */
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
 html {
   min-width: 320px;
@@ -147,7 +148,6 @@ img,
 picture,
 svg,
 video {
-  display: block;
   max-width: 100%;
 }
 
@@ -158,6 +158,7 @@ video {
 ::selection {
   background: rgba(198, 146, 59, 0.3);
   color: var(--color-andes-deep);
+}
 }
 
 /* =========================================================
@@ -264,6 +265,52 @@ video {
 }
 
 /* =========================================================
+   CONTROLES DE RANGO · GUÍA DE CAMPO
+   El pulgar hereda `currentColor`, así cada slider elige su
+   tinta (terracota para presupuesto, andes para duración).
+========================================================= */
+
+.rango-editorial {
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+
+.rango-editorial::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 3px solid var(--color-ivory);
+  border-radius: 0;
+  background: currentColor;
+  box-shadow: 0 0 0 1px rgba(91, 58, 41, 0.38);
+  cursor: pointer;
+}
+
+.rango-editorial::-moz-range-thumb {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 3px solid var(--color-ivory);
+  border-radius: 0;
+  background: currentColor;
+  box-shadow: 0 0 0 1px rgba(91, 58, 41, 0.38);
+  cursor: pointer;
+}
+
+.rango-editorial::-moz-range-track {
+  background: transparent;
+}
+
+.rango-editorial:disabled::-webkit-slider-thumb {
+  cursor: not-allowed;
+}
+
+.rango-editorial:disabled::-moz-range-thumb {
+  cursor: not-allowed;
+}
+
+/* =========================================================
    SITIO PÚBLICO · TIPOGRAFÍA EDITORIAL
    La portada usa una display geométrica para los titulares y
    una serif de sistema para los acentos, sin depender de
@@ -357,6 +404,34 @@ video {
 }
 
 /* =========================================================
+   FRISO DE CIUDAD
+   Cinta tipográfica entre secciones. Se pausa al pasar el cursor
+   y se detiene por completo con movimiento reducido.
+========================================================= */
+
+@keyframes friso-desplaza {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.friso-ciudad {
+  animation: friso-desplaza 56s linear infinite;
+}
+
+.friso-ciudad:hover {
+  animation-play-state: paused;
+}
+
+/* Aparición escalonada de las fichas del catálogo. */
+.ficha-aparece {
+  animation: portada-aparece 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* =========================================================
    MOTION ACCESSIBILITY
 ========================================================= */
 
@@ -369,8 +444,14 @@ video {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .friso-ciudad {
+    animation: none !important;
+    transform: translateX(0) !important;
   }
 }
