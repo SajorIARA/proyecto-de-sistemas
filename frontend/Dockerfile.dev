@@ -1,6 +1,6 @@
 # Desarrollo offline-first: la imagen publicada/local ya contiene Node, pnpm
 # y node_modules. Este build solo actualiza el código de la aplicación.
-ARG BASE_IMAGE=raisiar/proyecto-de-sistemas-frontend:1.1.0
+ARG BASE_IMAGE=raisiar/proyecto-de-sistemas-frontend:1.0.7
 FROM ${BASE_IMAGE}
 
 USER root

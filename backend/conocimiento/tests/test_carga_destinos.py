@@ -4,11 +4,14 @@ from django.test import TestCase
 
 from conocimiento.carga_destinos import cargar_destinos
 from conocimiento.destinos_listado import DESTINOS_SOLICITADOS
-from conocimiento.fichas_oficiales import extraer_secciones, texto_para_rag, valor_seccion
+from conocimiento.fichas_oficiales import (
+    extraer_secciones,
+    texto_para_rag,
+    valor_seccion,
+)
 from conocimiento.imagenes_destinos import obtener_imagen
 from conocimiento.models import FragmentoDocumental, FuenteDocumental
 from turismo.models import Atractivo, Foto
-
 
 FICHA = """
 <html><body><main>

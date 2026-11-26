@@ -1,6 +1,10 @@
 ARG BASE_IMAGE=ghcr.io/sajoriara/proyecto-de-sistemas-proxy:1.0.10
 FROM ${BASE_IMAGE}
 
+# Refresca los paquetes del sistema para incorporar parches publicados después
+# de construir la base; la configuración de Nginx no cambia.
+RUN apk upgrade --no-cache
+
 COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
 
 ENV PORT=80

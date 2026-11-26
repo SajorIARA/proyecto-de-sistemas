@@ -1,9 +1,13 @@
-# Build offline-first: la base ya contiene Python, GDAL, GEOS, PROJ y las
-# dependencias instaladas. No se ejecutan apt ni pip durante cada build.
+# La base ya contiene Python, GDAL, GEOS, PROJ y las dependencias instaladas:
+# no se ejecuta pip. Solo se refrescan los paquetes del sistema para incorporar
+# parches de seguridad publicados después de construir la base.
 ARG BASE_IMAGE=ghcr.io/sajoriara/proyecto-de-sistemas-backend:1.0.10
 FROM ${BASE_IMAGE}
 
 USER root
+RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --chown=appuser:appuser . .
 RUN mkdir -p /app/staticfiles /app/logs /app/staging \

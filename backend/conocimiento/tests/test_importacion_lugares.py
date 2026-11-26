@@ -22,7 +22,10 @@ from conocimiento.services import (
     encolar_vectorizacion,
     rechazar_lugar_candidato,
 )
-from conocimiento.tasks import importar_lugares_abiertos_task, vectorizar_importacion_task
+from conocimiento.tasks import (
+    importar_lugares_abiertos_task,
+    vectorizar_importacion_task,
+)
 from turismo.models import Atractivo
 from usuarios.models import Rol, Usuario
 
@@ -98,7 +101,7 @@ class ImportacionServiceTests(TestCase):
                 "conocimiento.tasks.vectorizar_importacion_task.delay"
             ) as encolar,
         ):
-            resultado = aprobar_lugar_candidato(
+            aprobar_lugar_candidato(
                 candidato, categoria="Compras", duracion_minutos=45
             )
 

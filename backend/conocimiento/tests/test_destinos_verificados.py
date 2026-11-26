@@ -1,6 +1,9 @@
 from django.test import TestCase
 
-from conocimiento.destinos_verificados import DESTINOS_LA_PAZ, ingestar_destinos_verificados
+from conocimiento.destinos_verificados import (
+    DESTINOS_LA_PAZ,
+    ingestar_destinos_verificados,
+)
 from conocimiento.models import FuenteDocumental
 from turismo.models import Atractivo
 

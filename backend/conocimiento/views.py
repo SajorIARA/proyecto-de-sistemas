@@ -24,8 +24,8 @@ from .models import (
 from .ollama import ClienteOllama, OllamaError, OllamaNoDisponible
 from .rag import (
     recuperar_fragmentos,
-    responder_con_contexto,
     resolver_atractivo_en_pregunta,
+    responder_con_contexto,
 )
 from .serializers import (
     AprobarCandidatoSerializer,

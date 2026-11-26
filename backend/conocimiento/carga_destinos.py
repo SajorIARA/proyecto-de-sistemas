@@ -17,7 +17,12 @@ from django.db import transaction
 from turismo.models import Atractivo, Categoria
 
 from .destinos_listado import DESTINOS_SOLICITADOS, DestinoSolicitado
-from .fichas_oficiales import NO_VERIFICADO, extraer_secciones, texto_para_rag, valor_seccion
+from .fichas_oficiales import (
+    NO_VERIFICADO,
+    extraer_secciones,
+    texto_para_rag,
+    valor_seccion,
+)
 from .imagenes_destinos import enriquecer_con_imagen
 from .models import FragmentoDocumental, FuenteDocumental
 from .salida_proxy import solicitar

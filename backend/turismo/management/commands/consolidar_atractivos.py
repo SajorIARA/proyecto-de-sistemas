@@ -3,7 +3,6 @@ from django.db import transaction
 
 from turismo.models import Atractivo
 
-
 FUSIONES = {
     "Basílica de San Francisco": "Basílica Menor de San Francisco",
     "Valle de la Luna": "Valle de la Luna",
