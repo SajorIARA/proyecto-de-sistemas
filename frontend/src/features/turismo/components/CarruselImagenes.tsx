@@ -136,7 +136,7 @@ export function CarruselImagenes({
             <span
               key={url}
               className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === indiceActual ? "w-4 bg-white" : "w-1.5 bg-white/50"
+                i === indiceActual ? "w-4 bg-[var(--color-surface)]" : "w-1.5 bg-white/50"
               }`}
             />
           ))}

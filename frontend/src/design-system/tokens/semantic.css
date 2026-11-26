@@ -1,0 +1,12 @@
+:root {
+  /* Los colores semánticos viven solo en tema-oscuro.css. */
+
+  --font-ui:
+    "Public Sans", "Segoe UI Variable", "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-display: "Libre Bodoni", Georgia, "Times New Roman", serif;
+  --font-data: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  --content-wide: 92rem;
+  --content-reading: 76rem;
+}

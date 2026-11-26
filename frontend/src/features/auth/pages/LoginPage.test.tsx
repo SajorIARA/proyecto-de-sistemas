@@ -14,13 +14,14 @@ vi.mock("../api/authApi", () => ({
   },
 }));
 
-function renderLogin() {
+function renderLogin(entrada = "/login") {
   return render(
-    <MemoryRouter initialEntries={["/login"]}>
+    <MemoryRouter initialEntries={[entrada]}>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/mi-cuenta" element={<h1>Área privada</h1>} />
+          <Route path="/destinos" element={<h1>Constructor recuperado</h1>} />
         </Routes>
       </AuthProvider>
     </MemoryRouter>,
@@ -82,5 +83,39 @@ describe("LoginPage", () => {
       email: "jordan@example.com",
       password: "secreto123",
     });
+  });
+
+  it("regresa al planificador indicado por un redirect interno", async () => {
+    vi.mocked(authApi.login).mockResolvedValue({
+      raw: {},
+      tokens: {
+        access: "access-test",
+        refresh: "refresh-test",
+      },
+      user: {
+        id: 1,
+        nombre: "Jordan",
+        email: "jordan@example.com",
+      },
+    });
+
+    renderLogin(
+      "/login?redirect=%2Fdestinos%3Fvista%3Darmar%26paso%3D3",
+    );
+
+    fireEvent.change(
+      screen.getByRole("textbox", { name: /correo electrónico/i }),
+      { target: { value: "jordan@example.com" } },
+    );
+    fireEvent.change(screen.getByLabelText(/contraseña/i), {
+      target: { value: "secreto123" },
+    });
+    fireEvent.click(
+      screen.getByRole("button", { name: /iniciar sesión/i }),
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: /constructor recuperado/i }),
+    ).toBeInTheDocument();
   });
 });

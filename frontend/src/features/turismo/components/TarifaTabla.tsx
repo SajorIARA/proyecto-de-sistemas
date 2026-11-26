@@ -23,16 +23,16 @@ export function TarifaTabla({ destinoId }: TarifaTablaProps) {
   return (
     <section
       aria-labelledby="costos-destino"
-      className="overflow-hidden rounded-[1.85rem] border border-[#5B3A29]/10 bg-[#FFFDF8]"
+      className="chuki-info-panel overflow-hidden rounded-[1.85rem] border border-[var(--color-border)] bg-[var(--color-surface)]"
     >
-      <header className="border-b border-[#5B3A29]/[0.08] px-6 py-5">
-        <p className="text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#9A5B3C]">
+      <header className="border-b border-[var(--color-border)]/[0.08] px-6 py-5">
+        <p className="text-[0.6rem] font-black uppercase tracking-[0.24em] text-[var(--color-brand)]">
           Información práctica
         </p>
 
         <h3
           id="costos-destino"
-          className="mt-1 text-lg font-black tracking-tight text-[#233128]"
+          className="mt-1 text-lg font-black tracking-tight text-[var(--color-text)]"
         >
           Costos oficiales
         </h3>
@@ -42,24 +42,24 @@ export function TarifaTabla({ destinoId }: TarifaTablaProps) {
         {isPending && (
           <div role="status" aria-live="polite">
             <span className="sr-only">Cargando tarifas…</span>
-            <div className="h-12 w-full animate-pulse rounded-2xl bg-[#5B3A29]/[0.07]" />
-            <div className="mt-3 h-12 w-full animate-pulse rounded-2xl bg-[#5B3A29]/[0.07]" />
+            <div className="h-12 w-full animate-pulse rounded-2xl bg-[var(--color-surface-muted)]/[0.07]" />
+            <div className="mt-3 h-12 w-full animate-pulse rounded-2xl bg-[var(--color-surface-muted)]/[0.07]" />
           </div>
         )}
 
         {!isPending && isError && (
-          <p className="text-sm text-[#8D4F32]">
+          <p className="text-sm text-[var(--color-brand)]">
             No pudimos cargar las tarifas de este destino.
           </p>
         )}
 
         {!isPending && !isError && data && data.length === 0 && (
           <div>
-            <p className="text-sm leading-6 text-[#514B43]">
+            <p className="text-sm leading-6 text-[var(--color-text-muted)]">
               Este destino no tiene tarifas registradas. El ingreso es libre.
             </p>
 
-            <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#2F4B3B]/10 px-4 py-2 text-xs font-black text-[#2F4B3B]">
+            <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-[var(--color-route-strong)] px-4 py-2 text-xs font-black text-[var(--color-text)]">
               Entrada gratuita
             </span>
           </div>
@@ -73,8 +73,8 @@ export function TarifaTabla({ destinoId }: TarifaTablaProps) {
                 className={[
                   "flex items-center justify-between gap-4 rounded-2xl px-4 py-3.5 transition",
                   indice === 0
-                    ? "bg-[#2F4B3B] text-[#FFFDF8]"
-                    : "bg-[#5B3A29]/[0.04] text-[#263029]",
+                    ? "bg-[var(--color-route-strong)] text-[var(--color-text)]"
+                    : "bg-[var(--color-surface-muted)]/[0.04] text-[var(--color-text)]",
                 ].join(" ")}
               >
                 <div className="min-w-0">
@@ -86,7 +86,7 @@ export function TarifaTabla({ destinoId }: TarifaTablaProps) {
                     <p
                       className={[
                         "mt-0.5 truncate text-xs",
-                        indice === 0 ? "text-[#FFFDF8]/70" : "text-[#8A8177]",
+                        indice === 0 ? "text-[var(--color-text)]" : "text-[var(--color-text-muted)]",
                       ].join(" ")}
                     >
                       {tarifa.observacion}
@@ -97,7 +97,7 @@ export function TarifaTabla({ destinoId }: TarifaTablaProps) {
                 <span
                   className={[
                     "shrink-0 font-mono text-sm font-black tabular-nums",
-                    indice === 0 ? "text-[#E8C16A]" : "text-[#2F4B3B]",
+                    indice === 0 ? "text-[var(--color-action)]" : "text-[var(--color-brand)]",
                   ].join(" ")}
                 >
                   {formatearMonto(tarifa.monto, tarifa.moneda)}
@@ -108,7 +108,7 @@ export function TarifaTabla({ destinoId }: TarifaTablaProps) {
         )}
 
         {base && (
-          <p className="mt-5 border-t border-[#5B3A29]/[0.07] pt-4 text-xs leading-5 text-[#8A8177]">
+          <p className="mt-5 border-t border-[var(--color-border)]/[0.07] pt-4 text-xs leading-5 text-[var(--color-text-muted)]">
             Montos en bolivianos (BOB). Las tarifas pueden actualizarse sin
             aviso; consulta al momento de tu visita.
           </p>

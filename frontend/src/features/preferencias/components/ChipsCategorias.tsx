@@ -9,7 +9,8 @@
  * lista fija: así el formulario sigue funcionando si el catálogo cambia.
  */
 
-import { INSIGNIA_CATEGORIA } from "../../turismo/components/CategoriaBadge";
+import { ICONO_CATEGORIA } from "../../turismo/components/CategoriaBadge";
+import { Icono } from "../../../components/site/Iconos";
 import type { Categoria } from "../../../types/turismo";
 
 interface ChipsCategoriasProps {
@@ -41,16 +42,17 @@ function Chip({
       aria-pressed={activo}
       data-testid={`chip-categoria-${categoria.id_categoria}`}
       className={[
-        "inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-black transition duration-200",
+        "inline-flex min-h-11 items-center gap-2 border px-4 py-2.5 text-xs font-black transition duration-200",
         "disabled:cursor-not-allowed disabled:opacity-55",
         activo
-          ? "border-[#2F4B3B] bg-[#2F4B3B] text-[#FFFDF8] shadow-[0_8px_22px_rgba(47,75,59,0.28)]"
-          : "border-[#5B3A29]/15 bg-[#FFFDF8]/80 text-[#514B43] hover:border-[#2F4B3B]/40 hover:bg-[#FFFDF8] hover:text-[#233128]",
+          ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-[var(--lp-night)]"
+          : "border-[var(--color-border-strong)] bg-[var(--color-surface)] text-[var(--color-text)] hover:border-[var(--color-brand)]",
       ].join(" ")}
     >
-      <span aria-hidden="true" className="text-sm leading-none">
-        {INSIGNIA_CATEGORIA[categoria.nombre] ?? "📍"}
-      </span>
+      <Icono
+        nombre={ICONO_CATEGORIA[categoria.nombre] ?? "ubicacion"}
+        className="h-4 w-4"
+      />
 
       {categoria.nombre}
 
@@ -74,7 +76,7 @@ export function ChipsCategorias({
 }: ChipsCategoriasProps) {
   if (cargando) {
     return (
-      <p className="text-sm font-semibold text-[#746D63]">
+       <p className="text-sm font-semibold text-[var(--color-text-muted)]">
         Cargando categorías…
       </p>
     );
@@ -84,7 +86,7 @@ export function ChipsCategorias({
     return (
       <p
         role="alert"
-        className="rounded-2xl border border-[#9A3B2E]/25 bg-[#9A3B2E]/[0.07] px-4 py-3 text-sm font-semibold text-[#9A3B2E]"
+        className="border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/10 px-4 py-3 text-sm font-semibold text-[var(--color-danger)]"
       >
         {errorCarga}
       </p>
@@ -109,7 +111,7 @@ export function ChipsCategorias({
         ))}
       </div>
 
-      <p aria-live="polite" className="mt-3 text-xs font-semibold text-[#746D63]">
+      <p aria-live="polite" className="mt-3 text-xs font-semibold text-[var(--color-text-muted)]">
         {seleccionadas.length === 0
           ? "Ninguna categoría seleccionada todavía."
           : `${seleccionadas.length} ${
@@ -120,7 +122,7 @@ export function ChipsCategorias({
       </p>
 
       {errorValidacion && (
-        <p role="alert" className="mt-1 text-xs font-semibold text-[#9A3B2E]">
+        <p role="alert" className="mt-1 text-xs font-semibold text-[var(--color-danger)]">
           {errorValidacion}
         </p>
       )}

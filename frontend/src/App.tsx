@@ -4,6 +4,7 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "./app/router";
 import { AuthProvider } from "./features/auth/context/AuthContext";
 import { PreferenciasProvider } from "./features/preferencias/context/PreferenciasContext";
+import { RutaProvider } from "./features/turismo/context/RutaContext";
 
 /**
  * Cliente de TanStack Query.
@@ -39,7 +40,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <PreferenciasProvider>
-          <RouterProvider router={router} />
+          <RutaProvider>
+            <RouterProvider router={router} />
+          </RutaProvider>
         </PreferenciasProvider>
       </AuthProvider>
     </QueryClientProvider>

@@ -280,9 +280,9 @@ export function DestinoForm({
             COORDENADAS
         ========================================================== */}
         <div>
-          <p className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[#8D4F32]">
+          <p className="text-xs font-black text-[var(--color-text)]">
             Ubicación
-            <span className="ml-1 text-[#9A5B3C]" aria-hidden="true">
+            <span className="ml-1 text-[var(--color-danger)]" aria-hidden="true">
               *
             </span>
           </p>
@@ -342,7 +342,7 @@ export function DestinoForm({
             CATEGORÍAS
         ========================================================== */}
         <fieldset>
-          <legend className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[#8D4F32]">
+          <legend className="text-xs font-black text-[var(--color-text)]">
             Categorías
           </legend>
 
@@ -353,7 +353,7 @@ export function DestinoForm({
             // durante la carga, diciendo que no había categorías cuando
             // todavía no se había preguntado.
             pendienteCarga ? null : (
-              <p className="mt-2.5 text-xs text-[#746D63]">
+              <p className="mt-2.5 text-xs text-[var(--color-text-muted)]">
                 No hay categorías activas para asignar. El destino se publicará
                 igual, pero sin aparecer en los filtros del catálogo.
               </p>
@@ -368,10 +368,10 @@ export function DestinoForm({
                   <label
                     key={categoria.id_categoria}
                     htmlFor={id}
-                    className={`cursor-pointer rounded-full border px-4 py-2 text-xs font-black transition ${
+                    className={`cursor-pointer border px-4 py-2 text-xs font-black transition ${
                       marcada
-                        ? "border-[#2F4B3B] bg-[#2F4B3B] text-[#FFFDF8]"
-                        : "border-[#5B3A29]/15 bg-[#F3EBDD]/60 text-[#514B43] hover:border-[#2F4B3B]/40"
+                        ? "border-[var(--color-brand)] bg-[var(--color-brand)] text-[var(--lp-night)]"
+                        : "border-[var(--color-border-strong)] bg-[var(--color-surface)] text-[var(--color-text)] hover:border-[var(--color-brand)]"
                     }`}
                   >
                     <input
@@ -399,7 +399,7 @@ export function DestinoForm({
           {campoInvalido("categorias") && (
             <ul
               id={idErrorDe(`${idGrupo}-categorias`)}
-              className="mt-2 space-y-1 text-xs font-semibold text-[#9A3B2E]"
+              className="mt-2 space-y-1 text-xs font-semibold text-[var(--color-danger)]"
             >
               {erroresDe("categorias").map((mensaje) => (
                 <li key={mensaje}>{mensaje}</li>
@@ -436,7 +436,7 @@ export function DestinoForm({
           <div className="flex items-end">
             <label
               htmlFor={`${idGrupo}-activo`}
-              className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[#5B3A29]/15 bg-[#F3EBDD]/60 px-4 py-3.5"
+              className="flex cursor-pointer items-start gap-3 border border-[var(--color-border-strong)] bg-[var(--color-canvas)] px-4 py-3.5"
             >
               <input
                 id={`${idGrupo}-activo`}
@@ -444,14 +444,14 @@ export function DestinoForm({
                 type="checkbox"
                 checked={valores.activo}
                 onChange={(evento) => actualizar("activo", evento.target.checked)}
-                className="mt-0.5 h-4 w-4 accent-[#2F4B3B]"
+                className="mt-0.5 h-4 w-4 accent-[var(--color-brand)]"
               />
 
               <span>
-                <span className="block text-xs font-black text-[#263029]">
+                <span className="block text-xs font-black">
                   Visible en el catálogo
                 </span>
-                <span className="mt-1 block text-xs leading-5 text-[#746D63]">
+                <span className="mt-1 block text-xs leading-5 text-[var(--color-text-muted)]">
                   Si lo desmarcás, el destino se da de baja y desaparece del
                   catálogo público, pero acá queda siempre.
                 </span>
@@ -467,23 +467,23 @@ export function DestinoForm({
       {error && (
         <p
           role="alert"
-          className="rounded-2xl border border-[#9A3B2E]/25 bg-[#9A3B2E]/[0.07] px-4 py-3 text-sm font-semibold text-[#9A3B2E]"
+          className="border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/10 px-4 py-3 text-sm font-semibold text-[var(--color-danger)]"
         >
           {error}
         </p>
       )}
 
       {tocados && Object.keys(erroresLocales).length > 0 && (
-        <p role="status" className="text-xs font-semibold text-[#8D4F32]">
+        <p role="status" className="text-xs font-semibold text-[var(--color-danger)]">
           Revisá los campos marcados antes de guardar.
         </p>
       )}
 
-      <div className="flex flex-wrap items-center gap-4 border-t border-[#5B3A29]/[0.08] pt-6">
+      <div className="flex flex-wrap items-center gap-4 border-t border-[var(--color-border)] pt-6">
         <button
           type="submit"
           disabled={pendiente || pendienteCarga}
-          className="inline-flex items-center gap-2.5 rounded-full bg-[#2F4B3B] px-6 py-3 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128] disabled:cursor-not-allowed disabled:opacity-45"
+          className="lp-button lp-button--primary inline-flex min-h-11 items-center gap-2.5 px-6 py-3 text-sm font-black disabled:cursor-not-allowed disabled:opacity-45"
         >
           {pendiente
             ? "Guardando…"
@@ -504,7 +504,7 @@ export function DestinoForm({
             }
           }}
           disabled={pendiente}
-          className="rounded-full border border-[#2F4B3B]/25 px-6 py-3 text-sm font-black text-[#2F4B3B] transition hover:border-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-45"
+          className="lp-button lp-button--secondary min-h-11 px-6 py-3 text-sm font-black disabled:cursor-not-allowed disabled:opacity-45"
         >
           Descartar cambios
         </button>

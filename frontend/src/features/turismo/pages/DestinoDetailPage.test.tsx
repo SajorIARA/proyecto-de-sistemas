@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "../../auth/context/AuthContext";
+import { RutaProvider } from "../context/RutaContext";
 import {
   TurismoApiError,
   listarHorariosDe,
@@ -93,10 +94,12 @@ function renderDetalle(ruta = `/destinos/${ID}`) {
     <QueryClientProvider client={cliente()}>
       <MemoryRouter initialEntries={[ruta]}>
         <AuthProvider>
-          <Routes>
-            <Route path="/destinos" element={<h1>Catálogo</h1>} />
-            <Route path="/destinos/:id" element={<DestinoDetailPage />} />
-          </Routes>
+          <RutaProvider>
+            <Routes>
+              <Route path="/destinos" element={<h1>Catálogo</h1>} />
+              <Route path="/destinos/:id" element={<DestinoDetailPage />} />
+            </Routes>
+          </RutaProvider>
         </AuthProvider>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -243,6 +246,25 @@ describe("DestinoDetailPage", () => {
     expect(volver[0]).toHaveAttribute(
       "href",
       "/destinos?categoria=Naturaleza",
+    );
+  });
+
+  it("vuelve al constructor cuando el destino se abrió desde la creación de ruta", async () => {
+    vi.mocked(obtenerAtractivo).mockResolvedValue(atractivo());
+
+    renderDetalle(
+      `/destinos/${ID}?volver=${encodeURIComponent(
+        "/destinos?vista=armar&categoria=Cultura",
+      )}`,
+    );
+
+    const volver = await screen.findAllByRole("link", {
+      name: /volver a crear mi ruta/i,
+    });
+
+    expect(volver[0]).toHaveAttribute(
+      "href",
+      "/destinos?vista=armar&categoria=Cultura",
     );
   });
 

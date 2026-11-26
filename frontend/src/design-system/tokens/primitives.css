@@ -1,0 +1,53 @@
+:root {
+  --lp-blue-950: #102a43;
+  --lp-blue-900: #153b66;
+  --lp-blue-700: #0b5fff;
+  --lp-blue-100: #dce9ff;
+  --lp-red-700: #c82d45;
+  --lp-red-600: #e83d55;
+  --lp-red-100: #ffe5e9;
+  --lp-teal-800: #0b4b4d;
+  --lp-teal-700: #00786f;
+  --lp-teal-600: #008f83;
+  --lp-teal-100: #d7f3ef;
+  --lp-yellow-900: #5c3d00;
+  --lp-yellow-600: #d99a00;
+  --lp-yellow-100: #fff1c2;
+  --lp-sun: #ffb000;
+  --lp-sky: #64c8ff;
+  --lp-night: #07192d;
+  --lp-night-soft: #0d2947;
+  --lp-slate-900: #182230;
+  --lp-slate-700: #3d4c5c;
+  --lp-slate-600: #566575;
+  --lp-slate-300: #c7d1da;
+  --lp-slate-200: #dce3e9;
+  --lp-slate-100: #eaf0f3;
+  --lp-mist: #f4f7f8;
+  --lp-white: #ffffff;
+  --lp-danger: #b42318;
+
+  --lp-space-1: 0.25rem;
+  --lp-space-2: 0.5rem;
+  --lp-space-3: 0.75rem;
+  --lp-space-4: 1rem;
+  --lp-space-5: 1.25rem;
+  --lp-space-6: 1.5rem;
+  --lp-space-8: 2rem;
+  --lp-space-10: 2.5rem;
+  --lp-space-12: 3rem;
+  --lp-space-16: 4rem;
+  --lp-space-20: 5rem;
+
+  --lp-radius-sm: 0.375rem;
+  --lp-radius-md: 0.75rem;
+  --lp-radius-lg: 1.25rem;
+  --lp-radius-pill: 999px;
+
+  --lp-shadow-sm: 0 1px 2px rgb(16 42 67 / 0.08);
+  --lp-shadow-md: 0 14px 35px rgb(16 42 67 / 0.12);
+  --lp-shadow-float: 0 24px 60px rgb(16 42 67 / 0.18);
+
+  --lp-duration-fast: 150ms;
+  --lp-duration-base: 220ms;
+}

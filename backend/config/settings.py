@@ -2,7 +2,9 @@ import os
 import sys
 from datetime import timedelta
 from pathlib import Path
+from typing import Any
 
+import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,12 +38,14 @@ INSTALLED_APPS = [
     "turismo",
     "recomendaciones",
     "conocimiento",
+    "viajes",
     "django_celery_beat",
 ]
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "config.observability.RequestObservabilityMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
 ]
@@ -72,7 +76,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-DATABASES = {
+DATABASES: dict[str, Any] = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": os.getenv("POSTGRES_DB"),
@@ -82,6 +86,29 @@ DATABASES = {
         "PORT": os.getenv("POSTGRES_PORT", "5432"),
     }
 }
+
+# Soporte para DATABASE_URL (Supabase, Neon, Railway u otro PostgreSQL
+# externo). El engine se fija explícitamente a PostGIS: dj-database-url
+# usaría django.db.backends.postgresql y los campos GIS (PointField,
+# ST_DistanceSphere) dejarían de funcionar. conn_health_checks recicla
+# conexiones rotas cuando el pooler corta una sesión inactiva.
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+if DATABASE_URL:
+    try:
+        DB_CONN_MAX_AGE = int(os.getenv("DB_CONN_MAX_AGE") or "600")
+    except ValueError:
+        DB_CONN_MAX_AGE = 600
+    # Supabase exige TLS. En local con DEBUG=1 se puede desactivar, pero
+    # DB_SSL_REQUIRE=1 permite usar el mismo Supabase en desarrollo.
+    DB_SSL_REQUIRE = (os.getenv("DB_SSL_REQUIRE") or ("0" if DEBUG else "1")) == "1"
+    DATABASES["default"] = dj_database_url.parse(
+        DATABASE_URL,
+        engine="django.contrib.gis.db.backends.postgis",
+        conn_max_age=DB_CONN_MAX_AGE,
+        conn_health_checks=True,
+        ssl_require=DB_SSL_REQUIRE,
+    )
+
 
 LANGUAGE_CODE = "es-bo"
 TIME_ZONE = os.getenv("DJANGO_TIME_ZONE", "America/La_Paz")
@@ -96,6 +123,15 @@ CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost").split(",")
+    if origin.strip()
+]
+
+# Orígenes de confianza para CSRF. En Railway el dominio público se asigna
+# después de crear el servicio, así que se inyecta por variable de entorno
+# (p. ej. https://<servicio>.up.railway.app).
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]
 
@@ -132,8 +168,12 @@ REST_FRAMEWORK = {
         "anon": "100/hour",
         "user": "1000/hour",
         "auth": "30/minute",
+        "rag_anon": os.getenv("RAG_THROTTLE_ANON", "10/minute"),
+        "rag_user": os.getenv("RAG_THROTTLE_USER", "30/minute"),
     },
-    "NUM_PROXIES": 1,
+    # Nº de proxies de confianza delante de Django. Local: 1 (Nginx).
+    # Railway: 2 (edge de Railway + proxy interno).
+    "NUM_PROXIES": int(os.getenv("DJANGO_NUM_PROXIES", "1")),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     # ValidationError/IntegrityError/ProtectedError de Django -> 400/409
     # en vez de 500 (ver config/exceptions.py).
@@ -235,8 +275,55 @@ SCRAPER_MIN_INTERVAL_SECONDS = float(os.getenv("SCRAPER_MIN_INTERVAL_SECONDS", "
 SCRAPER_CHUNK_CHARS = int(os.getenv("SCRAPER_CHUNK_CHARS", "1200"))
 SCRAPER_CHUNK_OVERLAP_CHARS = int(os.getenv("SCRAPER_CHUNK_OVERLAP_CHARS", "200"))
 
-# Inferencia local aislada (Ollama). En el compose de IA solo el worker de
-# scraping/RAG comparte red con Ollama; el servicio no se publica al host.
+# Descubrimiento de lugares en fuentes abiertas (Overpass/Wikidata). El
+# frontend nunca habla con estos servicios: solo llama al backend. Fail-closed
+# en tamaño, timeout, intervalo y número de resultados para no abusar de APIs
+# públicas. Google Maps queda fuera del dataset por sus condiciones de uso.
+FUENTES_ABIERTAS_TIMEOUT_SECONDS = float(
+    os.getenv("FUENTES_ABIERTAS_TIMEOUT_SECONDS", "25")
+)
+FUENTES_ABIERTAS_MAX_BYTES = int(
+    os.getenv("FUENTES_ABIERTAS_MAX_BYTES", str(3 * 1024 * 1024))
+)
+FUENTES_ABIERTAS_MIN_INTERVAL_SECONDS = float(
+    os.getenv("FUENTES_ABIERTAS_MIN_INTERVAL_SECONDS", "1.0")
+)
+# Reintentos adicionales por espejo ante 429/504 o timeout transitorio.
+FUENTES_ABIERTAS_REINTENTOS_OVERPASS = max(
+    0, int(os.getenv("FUENTES_ABIERTAS_REINTENTOS_OVERPASS", "1"))
+)
+FUENTES_ABIERTAS_OVERPASS_URL = os.getenv(
+    "FUENTES_ABIERTAS_OVERPASS_URL", "https://overpass-api.de/api/interpreter"
+).rstrip("/")
+# Espejos públicos de Overpass: si el principal responde 406/429/504 se prueba
+# el siguiente. La URL singular sigue siendo la primera de la lista.
+_DEFAULT_OVERPASS_ESPEJOS = (
+    "https://overpass-api.de/api/interpreter,"
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+)
+FUENTES_ABIERTAS_OVERPASS_URLS = [
+    url.strip().rstrip("/")
+    for url in (
+        os.getenv("FUENTES_ABIERTAS_OVERPASS_URLS") or _DEFAULT_OVERPASS_ESPEJOS
+    ).split(",")
+    if url.strip()
+]
+FUENTES_ABIERTAS_WIKIDATA_URL = os.getenv(
+    "FUENTES_ABIERTAS_WIKIDATA_URL", "https://www.wikidata.org/w/api.php"
+).rstrip("/")
+FUENTES_ABIERTAS_USER_AGENT = os.getenv(
+    "FUENTES_ABIERTAS_USER_AGENT", SCRAPER_USER_AGENT
+)
+# Vacío = sin proxy (el opener ignora HTTP_PROXY del entorno). En el Compose
+# local apunta al proxy allowlistado que corre en el host.
+FUENTES_ABIERTAS_PROXY_URL = (
+    os.getenv("FUENTES_ABIERTAS_PROXY_URL", "").strip().rstrip("/")
+)
+FUENTES_ABIERTAS_MAX_LIMITE = 50
+
+# Inferencia local aislada (Ollama). En el compose de IA el worker y el
+# backend del asistente comparten red con Ollama; el servicio no se publica
+# al host.
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434").rstrip("/")
 OLLAMA_EMBED_MODEL = os.getenv("OLLAMA_EMBED_MODEL", "embeddinggemma:300m")
 OLLAMA_LLM_MODEL = os.getenv("OLLAMA_LLM_MODEL", "qwen3:0.6b")
@@ -252,6 +339,28 @@ OLLAMA_CONTEXT_LENGTH = int(os.getenv("OLLAMA_CONTEXT_LENGTH", "4096"))
 OLLAMA_MAX_PREDICT = int(os.getenv("OLLAMA_MAX_PREDICT", "384"))
 SCRAPER_AUTO_EMBED = os.getenv("SCRAPER_AUTO_EMBED", "0") == "1"
 
+# Asistente RAG público (POST /api/conocimiento/consultar/). El umbral de
+# distancia coseno y el Top-K se pueden ajustar sin tocar código.
+RAG_TOP_K = int(os.getenv("RAG_TOP_K", "4"))
+RAG_UMBRAL = float(os.getenv("RAG_UMBRAL", "0.65"))
+RAG_MAX_PREGUNTA = int(os.getenv("RAG_MAX_PREGUNTA", "500"))
+if not 1 <= RAG_TOP_K <= 8:
+    raise ImproperlyConfigured("RAG_TOP_K debe estar entre 1 y 8.")
+if not 0 <= RAG_UMBRAL <= 2:
+    raise ImproperlyConfigured("RAG_UMBRAL debe estar entre 0 y 2.")
+if RAG_MAX_PREGUNTA < 1:
+    raise ImproperlyConfigured("RAG_MAX_PREGUNTA debe ser mayor que 0.")
+
+# Trazado real de recorridos con OSRM. El valor por defecto es el servidor
+# público de demostración; un despliegue puede apuntar a su propia instancia
+# con RUTEO_URL, o dejarlo vacío para desactivar el trazado (el frontend
+# entonces muestra un trazado aproximado y lo rotula como tal).
+RUTEO_URL = (
+    os.getenv("RUTEO_URL", "https://router.project-osrm.org").strip().rstrip("/")
+)
+RUTEO_TIMEOUT_SECONDS = float(os.getenv("RUTEO_TIMEOUT_SECONDS", "6"))
+RUTEO_MAX_PUNTOS = int(os.getenv("RUTEO_MAX_PUNTOS", "25"))
+
 # Logging
 LOGGING = {
     "version": 1,
@@ -265,11 +374,19 @@ LOGGING = {
             "format": "{levelname} {message}",
             "style": "{",
         },
+        # Una línea JSON por petición: la consumen sin parsear texto libre.
+        "json": {
+            "()": "config.observability.JsonFormatter",
+        },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
+        },
+        "json_console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
         },
     },
     "root": {
@@ -284,6 +401,18 @@ LOGGING = {
         },
         "django.request": {
             "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+        "observabilidad": {
+            "handlers": ["json_console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        # Señales de degradación del asistente: siempre en JSON para poder
+        # alertar sobre 503 de Ollama sin buscar en logs de texto.
+        "conocimiento": {
+            "handlers": ["json_console"],
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
             "propagate": False,
         },

@@ -108,6 +108,32 @@ export interface PerfilBusqueda {
 /** Rol de un mensaje en la ventana del asistente. */
 export type RolMensaje = "usuario" | "asistente";
 
+/**
+ * Procedencia de una respuesta del asistente.
+ *
+ * - `rag`: texto generado desde documentación recuperada por el backend.
+ * - `catalogo`: degradación con datos reales del catálogo turístico.
+ * - `local`: degradación con el ranking del usuario y estimaciones propias.
+ */
+export type OrigenRespuesta = "rag" | "catalogo" | "local";
+
+/** Fragmento documental que respalda una respuesta RAG. */
+export interface CitaAsistente {
+  titulo: string;
+  url: string;
+  id_fragmento?: number;
+  numero_fragmento?: number;
+}
+
+/** Respuesta normalizada del adaptador del asistente. */
+export interface RespuestaAsistente {
+  texto: string;
+  origen: OrigenRespuesta;
+  citas: CitaAsistente[];
+  /** Texto corto que explica por qué no se usó el asistente documental. */
+  aviso?: string;
+}
+
 /** Mensaje de la conversación local con el asistente. */
 export interface MensajeAsistente {
   id: string;
@@ -115,6 +141,10 @@ export interface MensajeAsistente {
   texto: string;
   /** `true` mientras el texto se revela de forma progresiva. */
   escribiendo?: boolean;
+  /** Procedencia de la respuesta; ausente en mensajes de bienvenida. */
+  origen?: OrigenRespuesta;
+  citas?: CitaAsistente[];
+  aviso?: string;
 }
 
 /** Contexto que recibe el generador de respuestas del asistente. */

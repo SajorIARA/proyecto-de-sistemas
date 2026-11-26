@@ -1,25 +1,34 @@
 /**
  * Adaptador del chat del asistente.
  *
- * Si existe `VITE_ASISTENTE_CHAT_URL`, se envía la conversación al endpoint
- * del RAG (`{ mensajes, contexto }`) y se usa su respuesta. Mientras el
- * backend no lo exponga —o si el endpoint falla— se responde con el motor
- * local determinista, de modo que el chat nunca queda bloqueado.
+ * Se consulta el endpoint RAG con la pregunta del usuario y se usa su
+ * respuesta documentada con citas. Si el servicio falla, devuelve una
+ * degradación explícita: primero datos reales del catálogo (cuando están
+ * disponibles) y, si no, el motor local determinista. En ambos casos se
+ * informa el `origen` y un `aviso` para no simular éxito RAG.
  *
- * Contrato esperado del endpoint futuro:
+ * Contrato del endpoint RAG:
  *
  *   POST <VITE_ASISTENTE_CHAT_URL>
- *   { mensajes: [{ rol, texto }], contexto: { recomendaciones, perfil } }
- *   → { respuesta: string } | { texto: string } | { message: string }
+ *   { pregunta: string, top_k: number }
+ *   → { origen: "rag", respuesta: string, citas: CitaRAG[], recuperados, ... }
  */
 
 import { api } from "../../../api/http";
 import { ASISTENTE } from "../../../config/recomendaciones";
 import type {
+  CitaAsistente,
   ContextoAsistente,
-  MensajeAsistente,
+  RespuestaAsistente,
 } from "../../../types/recomendaciones";
+import type { Atractivo } from "../../../types/turismo";
+import { respuestaDesdeCatalogo } from "../utils/respuestaCatalogo";
 import { responderAsistente } from "../utils/asistente";
+
+const AVISO_CATALOGO =
+  "El asistente documental no está disponible; esta respuesta usa datos del catálogo.";
+const AVISO_LOCAL =
+  "El asistente documental no está disponible; esta respuesta usa tus recomendaciones y estimaciones.";
 
 function extraerTexto(data: unknown): string | null {
   if (!data || typeof data !== "object") {
@@ -39,37 +48,96 @@ function extraerTexto(data: unknown): string | null {
   return null;
 }
 
+/** Convierte las citas del serializer al contrato que consume la UI. */
+function extraerCitas(data: unknown): CitaAsistente[] {
+  if (!data || typeof data !== "object") {
+    return [];
+  }
+
+  const valor = (data as Record<string, unknown>).citas;
+
+  if (!Array.isArray(valor)) {
+    return [];
+  }
+
+  return valor.flatMap((cita: unknown): CitaAsistente[] => {
+    if (!cita || typeof cita !== "object") {
+      return [];
+    }
+
+    const objeto = cita as Record<string, unknown>;
+
+    if (typeof objeto.titulo !== "string" || !objeto.titulo.trim()) {
+      return [];
+    }
+
+    const idFragmento =
+      typeof objeto.id_fragmento === "number" ? objeto.id_fragmento : undefined;
+    const numeroFragmento =
+      typeof objeto.numero_fragmento === "number"
+        ? objeto.numero_fragmento
+        : undefined;
+
+    return [
+      {
+        titulo: objeto.titulo.trim(),
+        url: typeof objeto.url === "string" ? objeto.url : "",
+        ...(idFragmento !== undefined ? { id_fragmento: idFragmento } : {}),
+        ...(numeroFragmento !== undefined
+          ? { numero_fragmento: numeroFragmento }
+          : {}),
+      },
+    ];
+  });
+}
+
 /**
  * Resuelve la respuesta del asistente para el último mensaje del usuario.
  *
- * `mensajes` incluye todo el historial (sin el mensaje que se está
- * respondiendo en la UI) y `pregunta` es el texto recién enviado.
+ * `pregunta` es el texto recién enviado. El contexto se conserva para la
+ * degradación local; `destinos` permite degradar a datos reales del catálogo
+ * cuando el RAG no está disponible.
  */
 export async function obtenerRespuestaAsistente({
   pregunta,
-  mensajes,
   contexto,
+  destinos,
 }: {
   pregunta: string;
-  mensajes: MensajeAsistente[];
   contexto: ContextoAsistente;
-}): Promise<string> {
-  if (ASISTENTE.endpoint) {
-    try {
-      const { data } = await api.post(ASISTENTE.endpoint, {
-        mensajes: mensajes.map(({ rol, texto }) => ({ rol, texto })),
-        contexto,
-      });
-      const texto = extraerTexto(data);
+  destinos?: Atractivo[];
+}): Promise<RespuestaAsistente> {
+  try {
+    const { data } = await api.post(ASISTENTE.endpoint, {
+      pregunta,
+      top_k: ASISTENTE.topK,
+    });
+    const texto = extraerTexto(data);
 
-      if (texto) {
-        return texto;
-      }
-    } catch {
-      // El motor local mantiene el chat operativo si el endpoint aún no
-      // está desplegado o falla momentáneamente.
+    if (texto) {
+      return { texto, origen: "rag", citas: extraerCitas(data) };
     }
+  } catch {
+    // Una caída del RAG no rompe el chat: se informa la degradación.
   }
 
-  return responderAsistente(pregunta, contexto);
+  const textoCatalogo = destinos?.length
+    ? respuestaDesdeCatalogo(pregunta, destinos)
+    : null;
+
+  if (textoCatalogo) {
+    return {
+      texto: textoCatalogo,
+      origen: "catalogo",
+      citas: [],
+      aviso: AVISO_CATALOGO,
+    };
+  }
+
+  return {
+    texto: responderAsistente(pregunta, contexto),
+    origen: "local",
+    citas: [],
+    aviso: AVISO_LOCAL,
+  };
 }

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+# La aplicación es una SPA; no hay sitemap publicado todavía.
