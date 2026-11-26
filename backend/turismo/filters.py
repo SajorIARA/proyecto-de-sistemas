@@ -51,12 +51,42 @@ class AtractivoFilter(filters.FilterSet):
     q = filters.CharFilter(method="filtrar_q")
     categoria = CategoriaOrFilter()
     zona = filters.CharFilter(field_name="direccion", lookup_expr="icontains")
-    precio_min = filters.NumberFilter(field_name="tarifas__monto", lookup_expr="gte")
-    precio_max = filters.NumberFilter(field_name="tarifas__monto", lookup_expr="lte")
+    precio_min = filters.NumberFilter(method="filtrar_precio")
+    precio_max = filters.NumberFilter(method="filtrar_precio")
 
     class Meta:
         model = Atractivo
         fields: list[str] = []
+
+    def filtrar_precio(self, queryset, _nombre, _valor):
+        """Aplica ambos límites sobre una **misma** tarifa.
+
+        django-filter invoca el método una vez por cada parámetro presente.
+        Si cada límite se aplicara por separado, Django crearía un join de
+        ``tarifas`` por límite y un destino con tarifas de 10 y 100 pasaría
+        ``precio_min=50&precio_max=50`` (una tarifa cumple el mínimo y otra
+        el máximo). El guard hace que solo la primera invocación construya
+        el filtro combinado.
+        """
+        if getattr(self, "_precio_aplicado", False):
+            return queryset
+        self._precio_aplicado = True
+
+        minimo = self.form.cleaned_data.get("precio_min")
+        maximo = self.form.cleaned_data.get("precio_max")
+
+        rango = {}
+        if minimo is not None:
+            rango["tarifas__monto__gte"] = minimo
+        if maximo is not None:
+            rango["tarifas__monto__lte"] = maximo
+
+        if not rango:
+            return queryset
+
+        # distinct(): un destino con varias tarifas dentro del rango no debe
+        # repetirse en el catálogo.
+        return queryset.filter(**rango).distinct()
 
     def filtrar_q(self, queryset, _nombre, valor: str):
         return queryset.filter(

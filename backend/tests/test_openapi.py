@@ -94,7 +94,9 @@ class OpenAPITests(TestCase):
             for metodo, operacion in item.items()
             if metodo in self.METODOS_OPENAPI
         ]
-        self.assertEqual(len(operaciones), 83)
+        # Qa deshabilita PUT para consultas y admite PATCH (81 operaciones);
+        # dev aporta el endpoint público RAG `/api/conocimiento/consultar/`.
+        self.assertEqual(len(operaciones), 82)
         ids = [operacion["operationId"] for operacion in operaciones]
         self.assertEqual(len(ids), len(set(ids)))
 

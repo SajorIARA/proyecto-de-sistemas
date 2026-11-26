@@ -48,16 +48,24 @@ class UsuarioPreferenciaViewSet(ModelViewSet):
     ]
 )
 class ConsultaRecomendacionViewSet(ModelViewSet):
-    """CRUD consultas. Autenticados ven lo propio; ADMIN todo y escribe."""
+    """Consultas del usuario autenticado (issue #22/#27).
 
-    permission_classes = [IsAuthenticatedOwnerOrAdmin]
+    Cualquier usuario autenticado crea y gestiona **sus** consultas; el
+    ``usuario`` se toma del JWT (nunca del body). ADMIN ve todas.
+    """
+
+    permission_classes = [IsAuthenticated]
     serializer_class = ConsultaRecomendacionSerializer
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_queryset(self):
         base = ConsultaRecomendacion.objects.select_related("usuario").all()
         if es_admin(self.request.user):
             return base
         return base.filter(usuario=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(usuario=self.request.user)
 
 
 @extend_schema(

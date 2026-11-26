@@ -69,7 +69,7 @@ docker compose run --rm backend python manage.py test
 
 # Backend (linters: ruff/black no están en la imagen prod, se usa python slim)
 docker run --rm -v "$PWD/backend:/app" -w /app python:3.11-slim sh -c \
-  "pip install -q 'ruff==0.16.9' 'black==26.5.1' && ruff check . && black --check ."
+  "pip install -q 'ruff==0.17.3' 'black==26.10.1' && ruff check . && black --check ."
 
 # Backend (datos de referencia: roles, categorías, atractivos)
 docker compose run --rm backend python manage.py seed

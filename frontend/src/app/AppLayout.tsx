@@ -19,7 +19,18 @@ export function AppLayout() {
     const hash = window.location.hash;
 
     if (hash.length > 1) {
-      const destino = document.getElementById(decodeURIComponent(hash.slice(1)));
+      let id = hash.slice(1);
+
+      // Un fragmento malformado (`#%`) hace que decodeURIComponent lance
+      // URIError; en ese caso se usa el texto crudo y nunca se rompe el
+      // efecto de scroll.
+      try {
+        id = decodeURIComponent(id);
+      } catch {
+        // Se conserva el fragmento sin decodificar.
+      }
+
+      const destino = document.getElementById(id);
 
       if (destino) {
         destino.scrollIntoView({ behavior: "instant", block: "start" });

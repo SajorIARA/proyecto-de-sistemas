@@ -108,10 +108,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * sesión. Si a un usuario lo promueven en la BD, el frontend lo refleja
    * recién en el próximo login.
    */
-  const roles = useMemo<RolCodigo[]>(
-    () => (user?.roles ?? []).filter(esRolCodigo),
-    [user],
-  );
+  const roles = useMemo<RolCodigo[]>(() => {
+    // `roles` viene de localStorage: si alguien lo manipula y lo deja como
+    // string, un `.filter` directo rompería el render.
+    const datos = Array.isArray(user?.roles) ? user.roles : [];
+    return datos.filter(esRolCodigo);
+  }, [user]);
 
   const esAdmin = roles.includes("ADMIN");
 

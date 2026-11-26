@@ -6,7 +6,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from recomendaciones.models import UsuarioPreferencia
+from recomendaciones.models import ConsultaRecomendacion, UsuarioPreferencia
 from turismo.models import Categoria
 from usuarios.models import Rol, Usuario
 
@@ -79,6 +79,29 @@ class RecomendacionesPermisosTests(TestCase):
             format="json",
         )
         self.assertEqual(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_turista_crea_su_consulta_ignorando_el_usuario_del_body(self) -> None:
+        """El flujo de preferencias del turista debe poder guardar su consulta."""
+        c = APIClient()
+        c.credentials(HTTP_AUTHORIZATION=f"Bearer {_login(c, self.turista.email)}")
+
+        resp = c.post(
+            "/api/recomendaciones/consultas/",
+            {
+                # Intento de suplantación: el backend debe usar el JWT.
+                "usuario": str(self.otro.id_usuario),
+                "presupuesto_bob": "150.00",
+                "tiempo_horas": "4.00",
+                "punto_partida": {"type": "Point", "coordinates": [-68.15, -16.5]},
+            },
+            format="json",
+        )
+
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        consulta = ConsultaRecomendacion.objects.get(
+            id_consulta=resp.data["id_consulta"]
+        )
+        self.assertEqual(consulta.usuario, self.turista)
 
     def test_admin_ve_todo(self) -> None:
         c = APIClient()
