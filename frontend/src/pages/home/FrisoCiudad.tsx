@@ -20,7 +20,7 @@ export function FrisoCiudad() {
   return (
     <section
       aria-hidden="true"
-      className="overflow-hidden border-y border-[#233128]/15 bg-[#E8C16A] py-3.5 text-[#233128]"
+      className="overflow-hidden border-y border-[var(--color-border)] bg-[var(--color-action)] py-3.5 text-[var(--color-canvas)]"
     >
       <div className="friso-ciudad flex w-max">
         {[0, 1].map((copia) => (
@@ -31,7 +31,7 @@ export function FrisoCiudad() {
                 className="flex items-center gap-6 whitespace-nowrap px-6 font-mono text-[10px] font-bold uppercase tracking-[0.24em]"
               >
                 <span>{parada}</span>
-                <span className="h-1 w-1 shrink-0 rotate-45 bg-[#9A5B3C]" />
+                <span className="h-1 w-1 shrink-0 rotate-45 bg-[var(--color-route-strong)]" />
               </li>
             ))}
           </ul>

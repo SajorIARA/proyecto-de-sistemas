@@ -69,22 +69,19 @@ export function GaleriaNueva({
   }
 
   return (
-    <section className="overflow-hidden border border-[#5B3A29]/15 bg-[#FFFDF8]">
-      <div className="border-b border-[#5B3A29]/15 px-5 py-5 sm:px-8">
-        <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9A5B3C]">
-          02 / Medios
-        </p>
-
-        <h2 className="mt-1.5 font-display text-2xl font-black tracking-[-0.02em] text-[#233128]">
+    <section className="overflow-hidden rounded-[2rem] border border-[var(--color-border)]/[0.08] bg-[var(--color-surface)] shadow-[0_20px_60px_rgba(72,55,38,0.08)]">
+      <div className="flex items-center gap-3 border-b border-[var(--color-border)]/[0.08] px-6 py-5 sm:px-8">
+        <span className="h-px w-8 bg-[var(--color-action)]" aria-hidden="true" />
+        <h2 className="text-lg font-black tracking-tight text-[var(--color-text)]">
           Fotografías y videos
         </h2>
       </div>
 
-      <div className="space-y-6 px-5 py-7 sm:px-8">
+      <div className="space-y-6 px-6 py-7 sm:px-8">
         {sinCloudinary && (
           <p
             role="status"
-            className="border-l-2 border-[#C6923B]/55 bg-[#FBF0D9]/70 px-4 py-3 text-xs font-semibold leading-5 text-[#664717]"
+            className="rounded-2xl border border-[var(--color-action)] bg-[var(--color-action)]/[0.12] px-4 py-3 text-xs font-semibold text-[var(--color-action)]"
           >
             Cloudinary no está configurado en el frontend
             (`VITE_CLOUDINARY_CLOUD_NAME`). No se pueden agregar imágenes
@@ -96,10 +93,10 @@ export function GaleriaNueva({
         <div>
           <label
             htmlFor="nuevo-destino-archivos"
-            className={`inline-flex items-center gap-2.5 bg-[#233128] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#FFFDF8] transition ${
+            className={`inline-flex items-center gap-2.5 rounded-full bg-[var(--color-route-strong)] px-6 py-3 text-sm font-black text-[var(--color-text)] transition ${
               bloqueado
                 ? "cursor-not-allowed opacity-45"
-                : "cursor-pointer hover:bg-[#2F4B3B]"
+                : "cursor-pointer hover:bg-[var(--color-surface)]"
             }`}
           >
             <span aria-hidden="true">＋</span>
@@ -116,7 +113,7 @@ export function GaleriaNueva({
             />
           </label>
 
-          <p className="mt-2 text-xs leading-5 text-[#746D63]">
+          <p className="mt-2 text-xs leading-5 text-[var(--color-text-muted)]">
             Imágenes jpg, png o webp hasta 10&nbsp;MB; videos mp4, mov o webm
             hasta 100&nbsp;MB. Se suben automáticamente al crear el destino.
           </p>
@@ -126,7 +123,7 @@ export function GaleriaNueva({
         {errores.length > 0 && (
           <ul
             role="alert"
-            className="space-y-1 border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-4 py-3 text-xs font-semibold text-[#713A2A]"
+            className="space-y-1 rounded-2xl border border-[var(--color-danger)] bg-[var(--color-danger)]/[0.07] px-4 py-3 text-xs font-semibold text-[var(--color-danger)]"
           >
             {errores.map((mensaje) => (
               <li key={mensaje}>{mensaje}</li>
@@ -136,7 +133,7 @@ export function GaleriaNueva({
 
         {/* Listado de pendientes */}
         {archivos.length === 0 ? (
-          <p className="border border-dashed border-[#5B3A29]/20 px-4 py-8 text-center text-sm font-semibold text-[#746D63]">
+          <p className="rounded-2xl border border-dashed border-[var(--color-border)] px-4 py-8 text-center text-sm font-semibold text-[var(--color-text-muted)]">
             Todavía no agregaste archivos. Podés cargarlos ahora y se subirán
             solos al guardar el destino.
           </p>
@@ -145,7 +142,7 @@ export function GaleriaNueva({
             {archivos.map((item, indice) => (
               <li
                 key={item.id}
-                className="group relative overflow-hidden border border-[#5B3A29]/15 bg-[#F3EBDD]/50"
+                className="group relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-muted)]"
               >
                 <div className="relative aspect-[4/3]">
                   {item.previewUrl ? (
@@ -155,9 +152,9 @@ export function GaleriaNueva({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-[#233128]/90 text-[#FFFDF8]">
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-[var(--color-surface)] text-[var(--color-text)]">
                       <span aria-hidden="true" className="text-2xl">
-                        {item.tipo === "video" ? "🎬" : "🖼️"}
+                        {item.tipo === "video" ? "Video" : "Imagen"}
                       </span>
                       <span className="text-[0.6rem] font-black uppercase tracking-[0.14em]">
                         {item.tipo === "video" ? "Video" : "Imagen"}
@@ -165,7 +162,7 @@ export function GaleriaNueva({
                     </div>
                   )}
 
-                  <span className="absolute left-2 top-2 bg-[#233128]/90 px-2 py-1 font-mono text-[7px] font-bold uppercase tracking-[0.14em] text-[#FFFDF8]">
+                  <span className="absolute left-2 top-2 rounded-full bg-[var(--color-surface)] px-2.5 py-1 text-[0.58rem] font-black uppercase tracking-[0.12em] text-[var(--color-text)]">
                     Sin subir
                   </span>
 
@@ -174,13 +171,13 @@ export function GaleriaNueva({
                     onClick={() => onQuitar(item.id)}
                     disabled={deshabilitado}
                     aria-label={`Quitar el archivo ${indice + 1}`}
-                    className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center bg-[#9A3B2E] text-sm font-black text-[#FFFDF8] opacity-0 transition focus:opacity-100 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-danger)] text-sm font-black text-[var(--color-text)] opacity-0 transition focus:opacity-100 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     ×
                   </button>
                 </div>
 
-                <p className="truncate px-3 py-2 font-mono text-[7.5px] uppercase tracking-[0.06em] text-[#746D63]">
+                <p className="truncate px-3 py-2 text-[0.62rem] font-semibold text-[var(--color-text-muted)]">
                   {indice === 0 ? "Portada · " : ""}
                   {item.archivo.name}
                 </p>

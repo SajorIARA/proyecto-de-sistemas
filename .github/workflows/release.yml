@@ -4,9 +4,22 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Versión semver a publicar (ej. 1.0.9)"
+        description: "Versión semver a publicar (ej. 1.1.0)"
         required: true
         type: string
+      registry:
+        description: "Registro destino de las imágenes"
+        required: true
+        default: "ghcr"
+        type: choice
+        options:
+          - ghcr
+          - dockerhub
+      build_db:
+        description: "Construir también la imagen db (solo VPS/local; no se usa con Supabase)"
+        required: true
+        default: false
+        type: boolean
   push:
     tags: ["v*.*.*"]
 
@@ -18,14 +31,14 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
 
-env:
-  # GHCR exige nombres en minúsculas. El propietario del repositorio es
-  # SajorIARA, pero el registro usa sajoriara.
-  IMAGE_PREFIX: ghcr.io/sajoriara/proyecto-de-sistemas
+# El prefijo se calcula en el job según inputs.registry:
+#   ghcr      → ghcr.io/sajoriara/proyecto-de-sistemas
+#   dockerhub → raisiar/proyecto-de-sistemas
+# En pushes por tag se usa GHCR por defecto.
 
 jobs:
   images:
-    name: Build & push GHCR images
+    name: Build & push container images
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -51,12 +64,28 @@ jobs:
             echo "sha=$SHA"
           } >> "$GITHUB_OUTPUT"
 
+          # GHCR exige nombres en minúsculas: el usuario es SajorIARA,
+          # pero el registro usa sajoriara.
+          if [ "${{ inputs.registry || 'ghcr' }}" = "dockerhub" ]; then
+            echo "IMAGE_PREFIX=raisiar/proyecto-de-sistemas" >> "$GITHUB_ENV"
+          else
+            echo "IMAGE_PREFIX=ghcr.io/sajoriara/proyecto-de-sistemas" >> "$GITHUB_ENV"
+          fi
+
       - name: Login to GHCR
+        if: inputs.registry != 'dockerhub'
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9  # v3.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Docker Hub
+        if: inputs.registry == 'dockerhub'
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9  # v3.7.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f  # v3.12.0
@@ -68,6 +97,8 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=min
           tags: |
             ${{ env.IMAGE_PREFIX }}-backend:${{ steps.meta.outputs.semver }}
             ${{ env.IMAGE_PREFIX }}-backend:${{ steps.meta.outputs.minor }}
@@ -82,6 +113,8 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=min
           build-args: |
             VITE_CLOUDINARY_CLOUD_NAME=${{ vars.VITE_CLOUDINARY_CLOUD_NAME }}
           tags: |
@@ -105,16 +138,31 @@ jobs:
             ${{ env.IMAGE_PREFIX }}-proxy:latest
             ${{ env.IMAGE_PREFIX }}-proxy:${{ steps.meta.outputs.sha }}
 
+      # Solo para VPS/local. Con Supabase no se despliega esta imagen, por eso
+      # está desactivada por defecto y nunca bloquea la publicación de las
+      # imágenes de la aplicación.
       - name: Build & push database image
+        if: inputs.build_db == true
         uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8  # v6.19.2
         with:
           context: ./database
           file: ./database/Dockerfile
           push: true
           platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=min
           tags: |
             ${{ env.IMAGE_PREFIX }}-db:${{ steps.meta.outputs.semver }}
             ${{ env.IMAGE_PREFIX }}-db:${{ steps.meta.outputs.minor }}
             ${{ env.IMAGE_PREFIX }}-db:${{ steps.meta.outputs.major }}
             ${{ env.IMAGE_PREFIX }}-db:latest
             ${{ env.IMAGE_PREFIX }}-db:${{ steps.meta.outputs.sha }}
+
+      - name: Resumen de imágenes
+        run: |
+          echo "Registro: ${IMAGE_PREFIX}"
+          echo "Tag: ${{ steps.meta.outputs.semver }}"
+          echo "Referencias para Railway:"
+          echo "  ${IMAGE_PREFIX}-backend:${{ steps.meta.outputs.semver }}"
+          echo "  ${IMAGE_PREFIX}-frontend:${{ steps.meta.outputs.semver }}"
+          echo "  ${IMAGE_PREFIX}-proxy:${{ steps.meta.outputs.semver }}"

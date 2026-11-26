@@ -3,8 +3,8 @@
 > Local: 8 servicios (`docker-compose.yml`) con runserver + Vite dev.
 > Producción en VPS: 7 servicios (`docker-compose.prod.yml`, sin Flower) con
 > gunicorn + frontend estático. Solo el puerto 80 se publica.
-> Producción en Railway (PaaS): 8 servicios con imágenes GHCR, TLS en el
-> edge y Ollama privado. Ver §PaaS al final.
+> Producción en Railway (PaaS): 7 servicios con imágenes GHCR, TLS en el
+> edge y Ollama privado; PostgreSQL vive en Supabase. Ver §PaaS al final.
 
 ```mermaid
 flowchart TB
@@ -123,24 +123,29 @@ flowchart TB
 flowchart TB
     User[Navegador del Turista] -->|HTTPS 443| Edge[Edge de Railway<br/>TLS terminado]
 
-    subgraph Railway["Proyecto Railway — un entorno"]
+    subgraph Railway["Proyecto Railway — staging o producción"]
         Edge -->|HTTP · $PORT| Proxy[proxy<br/>Nginx · /healthz]
 
         Proxy -->|/api/*| Backend[backend<br/>Gunicorn :8000]
         Proxy -->|/*| Frontend[frontend<br/>Nginx :80]
 
-        Backend --> DB[(PostgreSQL + PostGIS + pgvector<br/>:5432 · volumen)]
         Backend --> Redis[(Redis :6379)]
         Backend --> Ollama[Ollama :11434<br/>embeddinggemma + qwen3]
         Backend -->|encola| Redis
 
         Worker[worker · Celery] --> Redis
-        Worker --> DB
         Worker --> Ollama
 
         Beat[beat · Celery Beat] --> Redis
-        Beat --> DB
     end
+
+    subgraph Supabase["Supabase — proyecto por entorno"]
+        DB[(PostgreSQL + PostGIS + pgvector<br/>Session Pooler · 5432 · SSL)]
+    end
+
+    Backend -->|DATABASE_URL| DB
+    Worker --> DB
+    Beat --> DB
 
     Backend -->|upload| Cloudinary[Cloudinary]
     Worker -->|upload| Cloudinary
@@ -162,7 +167,13 @@ Notas de despliegue:
   (`python manage.py migrate --noinput`), no en build.
 - **Ollama:** servicio privado con volumen `/root/.ollama`; los modelos se
   descargan una vez y sobreviven a los redespliegues.
-- **Imágenes:** `ghcr.io/sajoriara/proyecto-de-sistemas-*`; la base de datos
-  usa el template PostGIS + pgvector, no la imagen `db`.
+- **Imágenes:** `ghcr.io/sajoriara/proyecto-de-sistemas-*`; la imagen `db`
+  no se usa en Supabase.
+- **Base de datos:** PostgreSQL gestionado en Supabase con PostGIS + pgvector.
+  `DATABASE_URL` usa el **Session Pooler** (IPv4 + SSL), no la conexión
+  directa IPv6.
 
-Guía operativa completa: [`deploy/railway/README.md`](../../deploy/railway/README.md).
+Guías operativas:
+
+- [`deploy/supabase/README.md`](../../deploy/supabase/README.md) — base de datos.
+- [`deploy/railway/README.md`](../../deploy/railway/README.md) — aplicación.

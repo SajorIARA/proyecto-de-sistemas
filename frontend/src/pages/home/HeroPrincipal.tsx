@@ -1,236 +1,158 @@
 /**
- * Hero de la portada.
- *
- * Cuatro fotografías se alternan en crossfade (nunca video) con un
- * avance automático que se pausa al interactuar y se desactiva si el
- * usuario prefiere menos movimiento. La composición imita la cabecera
- * de una guía impresa: línea de datos, titular a sangre y un índice
- * numerado para recorrer las escenas.
+ * Portada turística principal: buscador, condiciones locales y collage vivo
+ * de experiencias paceñas. Las imágenes son locales y el movimiento se
+ * desactiva cuando el visitante prefiere reducirlo.
  */
 
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { IMAGENES_SITIO } from "../../config/imagenesSitio";
-import { useAuth } from "../../features/auth/context/AuthContext";
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Icono } from "../../components/site/Iconos";
+import { IMAGENES_SITIO } from "../../config/imagenesSitio";
+import { useClimaActual } from "../../features/clima/hooks/useClimaActual";
 
-const DIAPOSITIVAS = [
+const EXPERIENCIAS = [
   {
-    id: "aventura",
-    etiqueta: "Aventura",
-    ...IMAGENES_SITIO.hero.aventura,
+    etiqueta: "Miradores de La Paz",
+    ...IMAGENES_SITIO.categorias.Miradores,
+    clase: "right-[25%] top-12 h-64 w-48 rounded-t-[6rem] rounded-bl-2xl rounded-br-2xl sm:h-80 sm:w-60",
   },
   {
-    id: "cultura",
-    etiqueta: "Cultura",
-    ...IMAGENES_SITIO.hero.cultura,
+    etiqueta: "Centro histórico",
+    ...IMAGENES_SITIO.categorias.Cultura,
+    clase: "right-0 top-36 h-40 w-32 rounded-tl-2xl rounded-tr-[3rem] rounded-bl-2xl rounded-br-[3rem] sm:h-52 sm:w-40",
   },
   {
-    id: "naturaleza",
-    etiqueta: "Naturaleza",
-    ...IMAGENES_SITIO.hero.naturaleza,
-  },
-  {
-    id: "gastronomia",
-    etiqueta: "Gastronomía",
-    ...IMAGENES_SITIO.hero.gastronomia,
+    etiqueta: "Sabores paceños",
+    ...IMAGENES_SITIO.categorias.Gastronomía,
+    clase: "bottom-0 right-[18%] h-28 w-36 rounded-tl-[3rem] rounded-tr-2xl rounded-bl-[3rem] rounded-br-2xl sm:h-36 sm:w-48",
   },
 ] as const;
 
-const INTERVALO_MS = 6500;
-
 export function HeroPrincipal() {
-  const { isAuthenticated } = useAuth();
-  const [activa, setActiva] = useState(0);
-  const [pausado, setPausado] = useState(false);
+  const navigate = useNavigate();
+  const [busqueda, setBusqueda] = useState("");
+  const clima = useClimaActual();
 
-  useEffect(() => {
-    if (pausado) {
-      return;
-    }
+  const resumenClima = clima.isLoading
+    ? "Actualizando clima…"
+    : clima.data
+      ? `${clima.data.temperaturaC} °C · ${clima.data.condicion}`
+      : "Clima no disponible";
+  const detalleClima = clima.data
+    ? "Condiciones actuales en La Paz"
+    : "No pudimos consultar el tiempo actual";
 
-    // `matchMedia` no existe en todos los entornos de prueba.
-    const prefiereMenosMovimiento =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (prefiereMenosMovimiento) {
-      return;
-    }
-
-    const temporizador = window.setInterval(() => {
-      setActiva((indice) => (indice + 1) % DIAPOSITIVAS.length);
-    }, INTERVALO_MS);
-
-    return () => window.clearInterval(temporizador);
-  }, [pausado]);
-
-  const diapositiva = DIAPOSITIVAS[activa];
+  function enviarBusqueda(evento: FormEvent<HTMLFormElement>) {
+    evento.preventDefault();
+    const consulta = busqueda.trim();
+    navigate(consulta ? `/destinos?q=${encodeURIComponent(consulta)}` : "/destinos");
+  }
 
   return (
     <section
       id="inicio"
       aria-label="Presentación de Turismo La Paz"
-      className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-[#0F150F] text-[#FFFDF8]"
+      className="relative isolate overflow-hidden bg-[var(--color-surface-muted)] text-[var(--color-text)]"
     >
-      <div className="absolute inset-0 -z-10">
-        {DIAPOSITIVAS.map((item, indice) => (
-          <div
-            key={item.id}
-            aria-hidden={indice !== activa}
-            className={[
-              "absolute inset-0 transition-opacity duration-[1400ms] ease-out",
-              indice === activa ? "opacity-100" : "opacity-0",
-            ].join(" ")}
-          >
-            <img
-              src={item.src}
-              alt={indice === activa ? item.alt : ""}
-              loading="eager"
-              fetchPriority={indice === 0 ? "high" : "low"}
-              decoding="async"
-              className={[
-                "h-full w-full object-cover",
-                indice === activa ? "portada-zoom" : "",
-              ].join(" ")}
-            />
-          </div>
-        ))}
-
-        <div className="absolute inset-0 bg-[linear-gradient(105deg,rgba(10,15,11,0.92)_0%,rgba(10,15,11,0.68)_42%,rgba(10,15,11,0.14)_78%,rgba(10,15,11,0.55)_100%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0B110C] via-[#0B110C]/55 to-transparent" />
+      <div className="absolute inset-y-0 left-[42%] right-0 -z-10 overflow-hidden">
+        <img
+          src={IMAGENES_SITIO.hero.aventura.src}
+          alt=""
+          className="h-full w-full object-cover object-center portada-zoom"
+        />
       </div>
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,#E7F0E3_0%,#F8EFDC_45%,rgba(248,239,220,0.08)_78%)]" />
+      <div className="absolute -left-40 -top-56 -z-10 h-[32rem] w-[32rem] rounded-full bg-[var(--color-action)] blur-3xl" />
+      <div className="absolute -bottom-24 -left-16 h-72 w-72 rounded-[70%_30%_68%_32%] border-2 border-[var(--color-border-strong)]" />
 
-      <p className="pointer-events-none absolute right-5 top-1/2 hidden -translate-y-1/2 [writing-mode:vertical-rl] font-mono text-[9px] uppercase tracking-[0.42em] text-[#FFFDF8]/35 lg:block">
-        Altiplano boliviano · 3.640 m
-      </p>
-
-      <div className="contenedor-sitio relative flex flex-1 flex-col">
-        <div className="mt-[86px] flex items-center justify-between gap-6 border-b border-white/15 pb-4 font-mono text-[9px] uppercase tracking-[0.18em] text-[#FFFDF8]/55 sm:text-[10px] sm:tracking-[0.26em] lg:mt-[104px]">
-          <span>
-            <span className="hidden sm:inline">Guía de ciudad · </span>
-            La Paz, Bolivia
-          </span>
-          <span className="hidden md:inline">16°30′ S · 68°09′ O</span>
-          <span className="hidden text-[#E8C16A] sm:inline">
-            3.640 m s. n. m.
-          </span>
-          <span className="text-[#E8C16A] sm:hidden">3.640 m</span>
-        </div>
-
-        <div className="flex flex-1 flex-col justify-end pb-14 pt-20 sm:pb-16">
-          <div className="max-w-5xl">
-            <p className="portada-aparece font-mono text-[10px] uppercase tracking-[0.32em] text-[#E8C16A]">
-              Bienvenido a la hoyada
-            </p>
-
-            <h1 className="portada-aparece font-display mt-5 text-[clamp(3rem,8vw,7rem)] font-black leading-[0.88] tracking-[-0.05em] [animation-delay:80ms]">
-              La Paz no se visita,{" "}
-              <span className="block">
-                <em className="font-editorial font-normal italic text-[#E8C16A]">
-                  se sube.
-                </em>
-              </span>
-            </h1>
-
-            <div className="portada-aparece mt-9 grid gap-8 border-t border-white/15 pt-7 [animation-delay:160ms] lg:grid-cols-[minmax(0,30rem)_auto] lg:items-end lg:justify-between">
-              <p className="text-base leading-7 text-[#F3EBDD]/75 sm:text-lg">
-                Museos coloniales, mercados de altura y miradores sobre la
-                ciudad. Elige por zona, categoría o precio y arma tu ruta.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-x-7 gap-y-4">
-                <Link
-                  to={isAuthenticated ? "/mi-cuenta" : "/registro"}
-                  className="group inline-flex items-center gap-3 rounded-full bg-[#E8C16A] px-6 py-3.5 text-sm font-black text-[#1B241D] transition hover:bg-[#F3D68F]"
-                >
-                  Comenzar ahora
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1B241D] text-[#E8C16A] transition-transform group-hover:translate-x-0.5">
-                    <Icono nombre="flecha" className="h-4 w-4" />
-                  </span>
-                </Link>
-
-                <Link
-                  to="/destinos"
-                  className="group inline-flex items-center gap-2 border-b border-white/35 pb-1 text-sm font-bold text-[#FFFDF8] transition hover:border-[#E8C16A] hover:text-[#E8C16A]"
-                >
-                  Ver el catálogo
-                  <Icono
-                    nombre="flecha"
-                    className="h-4 w-4 transition-transform group-hover:translate-x-1"
-                  />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="relative border-t border-white/15 bg-[#0B110C]/55 backdrop-blur-md">
-        <div className="contenedor-sitio grid gap-4 py-5 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-10">
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#FFFDF8]/50">
-            <span className="text-[#E8C16A]">
-              {String(activa + 1).padStart(2, "0")}
-            </span>{" "}
-            / {String(DIAPOSITIVAS.length).padStart(2, "0")} ·{" "}
-            {diapositiva.etiqueta}
+      <div className="contenedor-sitio grid min-h-[720px] grid-cols-1 items-center gap-8 pb-20 pt-32 sm:min-h-[790px] sm:pb-28 sm:pt-44 lg:grid-cols-[minmax(0,57%)_minmax(330px,43%)] lg:pt-40">
+        <div className="relative z-20 max-w-2xl">
+          <p className="inline-flex items-center gap-2 text-[0.7rem] font-black uppercase tracking-[0.16em] text-[var(--color-brand)]">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--color-danger)] shadow-[0_0_0_6px_rgba(223,94,56,0.16)]" />
+            Una ciudad que sube contigo
           </p>
 
-          <ul
-            className="sin-scrollbar grid grid-cols-2 gap-x-6 gap-y-4 sm:flex sm:items-center sm:justify-end sm:gap-5"
-            onMouseEnter={() => setPausado(true)}
-            onMouseLeave={() => setPausado(false)}
-            onFocus={() => setPausado(true)}
-            onBlur={() => setPausado(false)}
-          >
-            {DIAPOSITIVAS.map((item, indice) => {
-              const seleccionada = indice === activa;
+          <h1 className="font-editorial mt-5 text-[clamp(3.7rem,7.2vw,6.5rem)] font-bold leading-[0.9] tracking-[-0.055em]">
+            Busca tu <em className="font-normal italic text-[var(--color-danger)]">propia</em>{" "}
+            forma de vivir La Paz.
+          </h1>
 
-              return (
-                <li key={item.id} className="min-w-0 sm:min-w-[7.5rem]">
-                  <button
-                    type="button"
-                    onClick={() => setActiva(indice)}
-                    aria-pressed={seleccionada}
-                    className="group w-full text-left"
-                  >
-                    <span
-                      className={[
-                        "block font-mono text-[9px] tracking-[0.2em] transition",
-                        seleccionada
-                          ? "text-[#E8C16A]"
-                          : "text-[#FFFDF8]/35 group-hover:text-[#FFFDF8]/60",
-                      ].join(" ")}
-                    >
-                      {String(indice + 1).padStart(2, "0")}
-                    </span>
-                    <span
-                      className={[
-                        "mt-1 block text-xs font-bold transition",
-                        seleccionada
-                          ? "text-[#FFFDF8]"
-                          : "text-[#FFFDF8]/50 group-hover:text-[#FFFDF8]/80",
-                      ].join(" ")}
-                    >
-                      {item.etiqueta}
-                    </span>
-                    <span className="mt-2 block h-px w-full overflow-hidden bg-white/15">
-                      <span
-                        className={[
-                          "block h-full transition-all duration-500",
-                          seleccionada
-                            ? "w-full bg-[#E8C16A]"
-                            : "w-0 bg-white/40 group-hover:w-1/3",
-                        ].join(" ")}
-                      />
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          <p className="mt-6 max-w-xl text-base leading-7 text-[var(--color-brand)] sm:text-lg">
+            Teleféricos, sabores de mercado, calles con historia y paisajes de
+            altura. Elige por dónde empieza tu aventura.
+          </p>
+
+          <form
+            onSubmit={enviarBusqueda}
+            className="relative z-30 mt-8 flex max-w-xl flex-col gap-2 rounded-[1.3rem] bg-[var(--color-surface)] p-2 pl-4 shadow-[0_18px_40px_rgba(24,56,45,0.18)] transition hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(24,56,45,0.25)] sm:flex-row sm:items-center"
+          >
+            <Icono nombre="buscar" className="hidden h-5 w-5 shrink-0 text-[var(--color-danger)] sm:block" />
+            <label htmlFor="busqueda-hero" className="sr-only">
+              ¿Qué quieres descubrir hoy?
+            </label>
+            <input
+              id="busqueda-hero"
+              type="search"
+              value={busqueda}
+              onChange={(evento) => setBusqueda(evento.target.value)}
+              placeholder="¿Qué quieres descubrir hoy?"
+              className="min-w-0 flex-1 bg-transparent px-2 py-3 text-sm font-semibold outline-none placeholder:text-[var(--color-brand)]"
+            />
+            <button
+              type="submit"
+              className="rounded-xl bg-[var(--color-danger)] px-5 py-3 text-sm font-black text-[var(--lp-night)] transition hover:-rotate-1 hover:bg-[var(--color-danger)]"
+            >
+              Explorar guía ↗
+            </button>
+          </form>
+
+          <div className="mt-8 flex flex-wrap gap-x-7 gap-y-3 text-xs text-[var(--color-brand)]">
+            <p><strong className="font-editorial block text-xl text-[var(--color-brand)]">3.640 msnm</strong>Ciudad de altura</p>
+            <p><strong className="font-editorial block text-xl text-[var(--color-brand)]">+80 destinos</strong>Por explorar</p>
+            <p><strong className="font-editorial block text-xl text-[var(--color-brand)]">4 zonas</strong>Con historia</p>
+          </div>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link to="/destinos?vista=armar" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[var(--color-route-strong)] px-5 py-3 text-sm font-black text-[var(--color-text)] transition hover:bg-[var(--color-surface)]">
+              Armar mi ruta <Icono nombre="flecha" className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+
+        <div className="relative h-[430px] sm:h-[500px]">
+          <div
+            aria-live="polite"
+            className="absolute right-0 top-0 z-20 flex items-center gap-3 rounded-2xl bg-[var(--color-route-strong)] px-4 py-3 text-xs text-[var(--color-text)] shadow-xl"
+          >
+            <Icono nombre="clima" className="h-6 w-6 text-[var(--color-action)]" />
+            <span>
+              <strong className="block text-[var(--color-text)]">{resumenClima}</strong>
+              {detalleClima}
+            </span>
+          </div>
+
+          {EXPERIENCIAS.map((experiencia, indice) => (
+            <article
+              key={experiencia.etiqueta}
+              className={`absolute z-10 overflow-hidden border-[7px] border-[var(--color-border)] bg-[var(--color-surface)] shadow-[0_20px_40px_rgba(24,56,45,0.24)] transition duration-500 hover:z-20 hover:-translate-y-3 hover:rotate-1 ${experiencia.clase} ${indice === 1 ? "animate-[portada-flotar_6s_ease-in-out_1s_infinite]" : "animate-[portada-flotar_7s_ease-in-out_infinite]"}`}
+            >
+              <img src={experiencia.src} alt={experiencia.alt} className="h-full w-full object-cover transition duration-700 hover:scale-110" />
+              <span className="absolute bottom-2 left-2 rounded-lg bg-[var(--color-surface-muted)] px-2 py-1 text-[0.7rem] font-black text-[var(--color-brand)]">
+                {experiencia.etiqueta}
+              </span>
+            </article>
+          ))}
+
+          <svg className="absolute right-0 top-[54%] z-30 h-36 w-[20rem] overflow-visible" viewBox="0 0 320 144" aria-hidden="true">
+            <path d="M304 108 C238 18 146 12 84 65 S24 110 10 42" fill="none" stroke="#DF5E38" strokeDasharray="4 8" strokeLinecap="round" strokeWidth="3" />
+            <text fontSize="29">
+              <animateMotion dur="8s" path="M304 108 C238 18 146 12 84 65 S24 110 10 42" repeatCount="indefinite" />
+              🚡
+            </text>
+          </svg>
         </div>
       </div>
+      <div className="absolute bottom-0 left-0 right-0 h-20 translate-y-1/2 rounded-[50%] bg-[var(--color-surface-muted)]" />
     </section>
   );
 }

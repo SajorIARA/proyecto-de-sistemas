@@ -48,16 +48,30 @@ class UsuarioPreferenciaViewSet(ModelViewSet):
     ]
 )
 class ConsultaRecomendacionViewSet(ModelViewSet):
-    """CRUD consultas. Autenticados ven lo propio; ADMIN todo y escribe."""
+    """Consultas del turista.
+
+    Cualquier autenticado puede CREATE (el perfil de búsqueda es dato del
+    propio usuario); la lectura y el resto de escrituras conservan la regla
+    anterior: cada uno ve lo propio y ADMIN ve todo. ``usuario`` se asigna
+    siempre desde el JWT, nunca desde el cuerpo de la petición.
+    """
 
     permission_classes = [IsAuthenticatedOwnerOrAdmin]
     serializer_class = ConsultaRecomendacionSerializer
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
     def get_queryset(self):
         base = ConsultaRecomendacion.objects.select_related("usuario").all()
         if es_admin(self.request.user):
             return base
         return base.filter(usuario=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(usuario=self.request.user)
 
 
 @extend_schema(

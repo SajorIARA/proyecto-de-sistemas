@@ -77,8 +77,8 @@ export function RecomendacionesPage() {
   return (
     <PrivateShell
       eyebrow="Recomendaciones"
-      titulo="Tu viaje, a tu medida"
-      descripcion="Explora los destinos que mejor encajan con tus intereses, tu presupuesto y el tiempo que tenés. Afinidad, costos en bolivianos y traslados estimados en una sola vista."
+      titulo="Opciones para tu forma de viajar"
+      descripcion="Compara afinidad, costos en bolivianos y traslados estimados según el perfil que definiste."
     >
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
         <div className="min-w-0 space-y-6">
@@ -92,7 +92,7 @@ export function RecomendacionesPage() {
           {consulta.isError && (
             <p
               role="status"
-              className="border-l-2 border-[#C6923B]/55 bg-[#FBF0D9]/70 px-4 py-3 text-xs leading-6 text-[#664717]"
+              className="border border-[var(--color-action)]/40 bg-[var(--color-action)]/10 px-4 py-3 text-xs leading-6 text-[var(--color-action)]"
             >
               No pudimos leer tu última consulta guardada. Partimos de tu
               borrador local; podés ajustar el perfil arriba y recalcular.
@@ -102,20 +102,20 @@ export function RecomendacionesPage() {
           {errorDePerfil && (
             <p
               role="alert"
-              className="border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-4 py-3 text-xs leading-6 text-[#713A2A]"
+              className="border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/10 px-4 py-3 text-xs leading-6 text-[var(--color-danger)]"
             >
               {errorDePerfil}
             </p>
           )}
 
           {resultado && (
-            <p className="border border-[#5B3A29]/15 bg-[#F3EBDD]/35 px-4 py-3 font-mono text-[8px] uppercase leading-5 tracking-[0.1em] text-[#746D63]">
+            <p className="border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 text-xs leading-6 text-[var(--color-text-muted)]">
               Revisamos{" "}
-              <strong className="font-bold tabular-nums text-[#233128]">
+              <strong className="font-black text-[var(--color-text)]">
                 {resultado.total_evaluados}
               </strong>{" "}
               atractivos activos en un radio de{" "}
-              <strong className="font-bold tabular-nums text-[#233128]">
+              <strong className="font-black text-[var(--color-text)]">
                 {resultado.radio_km} km
               </strong>{" "}
               desde {perfil.macrodistrito || "tu punto de partida"}.

@@ -1,31 +1,30 @@
 /**
- * Etiqueta de categoría sobre la fotografía de la ficha.
- *
- * Se resuelve como una pequeña estampa de papel (crema sobre la foto) en
- * lugar de una píldora: mantiene la lectura editorial del catálogo y
- * funciona igual sobre imágenes claras u oscuras.
+ * Chip de categoría sobre la fotografía de la card.
+ * Usa iconografía de línea y los tokens del sistema visual.
  */
+
+import { Icono, type NombreIcono } from "../../../components/site/Iconos";
 
 interface CategoriaBadgeProps {
   categoria: string;
   className?: string;
 }
 
-export const INSIGNIA_CATEGORIA: Record<string, string> = {
-  Aventura: "🥾",
-  "Gastronomía": "🍲",
-  Cultura: "🏛️",
-  Miradores: "🌄",
-  Naturaleza: "🏔️",
-  "Arqueología": "🗿",
+export const ICONO_CATEGORIA: Record<string, NombreIcono> = {
+  Aventura: "ruta",
+  "Gastronomía": "utensilios",
+  Cultura: "museo",
+  Miradores: "altitud",
+  Naturaleza: "hoja",
+  "Arqueología": "montana",
 };
 
 export function CategoriaBadge({ categoria, className = "" }: CategoriaBadgeProps) {
   return (
     <span
-      className={`inline-flex items-center gap-2 bg-[#F3EBDD]/95 px-2.5 py-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-[#233128] backdrop-blur-sm ${className}`}
+      className={`inline-flex items-center gap-2 border border-white/30 bg-[var(--color-text)]/80 px-3 py-1.5 text-xs font-black text-[var(--lp-night)] backdrop-blur-md ${className}`}
     >
-      <span className="h-1.5 w-1.5 shrink-0 bg-[#9A5B3C]" aria-hidden="true" />
+      <Icono nombre={ICONO_CATEGORIA[categoria] ?? "ubicacion"} className="h-4 w-4" />
       {categoria}
     </span>
   );

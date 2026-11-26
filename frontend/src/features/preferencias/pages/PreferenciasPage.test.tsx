@@ -218,9 +218,10 @@ describe("PreferenciasPage", () => {
       consulta: null,
     });
 
-    expect(
-      await screen.findByText(/preferencias guardadas/i),
-    ).toBeInTheDocument();
+    const confirmacion = await screen.findByText(/preferencias guardadas/i);
+    expect(confirmacion).toBeInTheDocument();
+    // El aviso usa el acento turquesa sobre una superficie oscura translúcida.
+    expect(confirmacion).toHaveClass("text-[var(--color-brand)]");
   });
 
   it("valida en el cliente y no llama al backend si faltan categorías", async () => {

@@ -22,8 +22,32 @@ services:
       timeout: 5s
       retries: 12
 
+  # Salida controlada a fuentes abiertas: corre en el host porque los bridges
+  # de Docker no tienen internet aquí. Se accede por socket Unix compartido y
+  # solo descarga la allowlist, nunca un proxy genérico ni Google Maps.
+  egress-proxy:
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.1.0}
+    container_name: turismo-melgarejo_egress-proxy
+    restart: always
+    network_mode: host
+    volumes:
+      # El código se monta en /code: montar /app/staging dentro de un /app
+      # read-only falla porque Docker no puede crear el punto de montaje.
+      - ./backend:/code:ro
+      - staging_data:/app/staging
+    environment:
+      EGRESS_PROXY_SOCKET: ${EGRESS_PROXY_SOCKET:-/app/staging/egress-proxy.sock}
+      EGRESS_PROXY_TIMEOUT: ${EGRESS_PROXY_TIMEOUT:-30}
+      EGRESS_PROXY_ALLOWED_HOSTS: ${EGRESS_PROXY_ALLOWED_HOSTS:-overpass-api.de,maps.mail.ru,overpass.kumi.systems,www.wikidata.org,query.wikidata.org,nominatim.openstreetmap.org,lapaz.bo,www.lapaz.bo,miteleferico.bo,www.miteleferico.bo,commons.wikimedia.org,upload.wikimedia.org,thumb.wikimedia.org,api.cloudinary.com,es.wikipedia.org,en.wikipedia.org,www.openstreetmap.org,sitservicios.lapaz.bo,www.aecid.es,ccelp.aecid.es,laboliviana.com,www.laboliviana.com,larufinabolivia.com,www.larufinabolivia.com,www.instagram.com,www.facebook.com,www.tiktok.com}
+    command: python /code/scripts/egress_proxy.py
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os,socket; s=socket.socket(socket.AF_UNIX); s.connect(os.getenv('EGRESS_PROXY_SOCKET', '/app/staging/egress-proxy.sock')); s.close()"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
   backend:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.1.0}
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -39,15 +63,25 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
+      # Vacía por defecto: usa la base `db` de este Compose. Si se define,
+      # Django la prioriza para permitir una instancia PostgreSQL externa.
+      DATABASE_URL: ${DATABASE_URL:-}
+      DB_CONN_MAX_AGE: ${DB_CONN_MAX_AGE:-600}
+      DB_SSL_REQUIRE: ${DB_SSL_REQUIRE:-0}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ci-placeholder}
+      # Permite los subdominios efímeros del túnel de desarrollo sin aceptar
+      # dominios arbitrarios. En producción debe definirse explícitamente.
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,.trycloudflare.com}
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      FUENTES_ABIERTAS_PROXY_URL: ${FUENTES_ABIERTAS_PROXY_URL:-unix:///app/staging/egress-proxy.sock}
+      FUENTES_ABIERTAS_OVERPASS_URLS: ${FUENTES_ABIERTAS_OVERPASS_URLS:-}
       STAGING_DIR: /app/staging
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
-      SCRAPER_ALLOWED_DOMAINS: ${SCRAPER_ALLOWED_DOMAINS:-}
+      SCRAPER_ALLOWED_DOMAINS: ${SCRAPER_ALLOWED_DOMAINS:-lapaz.bo,www.lapaz.bo,sitservicios.lapaz.bo,www.wikidata.org,query.wikidata.org,commons.wikimedia.org,upload.wikimedia.org,thumb.wikimedia.org,nominatim.openstreetmap.org,overpass-api.de,maps.mail.ru,es.wikipedia.org,en.wikipedia.org,miteleferico.bo,www.miteleferico.bo,www.aecid.es,ccelp.aecid.es,laboliviana.com,larufinabolivia.com,www.instagram.com,www.facebook.com,www.tiktok.com}
       SCRAPER_USER_AGENT: ${SCRAPER_USER_AGENT:-TurismoMelgarejoBot/1.0}
       SCRAPER_TIMEOUT_SECONDS: ${SCRAPER_TIMEOUT_SECONDS:-15}
       SCRAPER_MAX_BYTES: ${SCRAPER_MAX_BYTES:-2097152}
@@ -58,9 +92,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      egress-proxy:
+        condition: service_healthy
     networks:
       - app-network
       - datos-network
+      # Ollama corre en una Compose aparte y solo se ve desde esta red.
+      - ia-network
     healthcheck:
       test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8000), 2).close()"]
       interval: 5s
@@ -68,7 +106,7 @@ services:
       retries: 12
 
   frontend:
-    image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG:-1.0.7}
+    image: raisiar/proyecto-de-sistemas-frontend:${IMAGE_TAG:-1.1.0}
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
@@ -89,7 +127,7 @@ services:
       retries: 12
 
   proxy:
-    image: raisiar/proyecto-de-sistemas-proxy:${IMAGE_TAG:-1.0.4}
+    image: raisiar/proyecto-de-sistemas-proxy:${IMAGE_TAG:-1.1.0}
     build:
       context: ./proxy
       dockerfile: Dockerfile
@@ -131,7 +169,7 @@ services:
       retries: 12
 
   worker:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.1.0}
     container_name: turismo-melgarejo_worker
     restart: always
     # Solo el backend migra (evita carreras de CREATE EXTENSION entre
@@ -146,15 +184,20 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
+      DATABASE_URL: ${DATABASE_URL:-}
+      DB_CONN_MAX_AGE: ${DB_CONN_MAX_AGE:-600}
+      DB_SSL_REQUIRE: ${DB_SSL_REQUIRE:-0}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ci-placeholder}
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      FUENTES_ABIERTAS_PROXY_URL: ${FUENTES_ABIERTAS_PROXY_URL:-unix:///app/staging/egress-proxy.sock}
+      FUENTES_ABIERTAS_OVERPASS_URLS: ${FUENTES_ABIERTAS_OVERPASS_URLS:-}
       STAGING_DIR: /app/staging
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
-      SCRAPER_ALLOWED_DOMAINS: ${SCRAPER_ALLOWED_DOMAINS:-}
+      SCRAPER_ALLOWED_DOMAINS: ${SCRAPER_ALLOWED_DOMAINS:-lapaz.bo,www.lapaz.bo,sitservicios.lapaz.bo,www.wikidata.org,query.wikidata.org,commons.wikimedia.org,upload.wikimedia.org,thumb.wikimedia.org,nominatim.openstreetmap.org,overpass-api.de,maps.mail.ru,es.wikipedia.org,en.wikipedia.org,miteleferico.bo,www.miteleferico.bo,www.aecid.es,ccelp.aecid.es,laboliviana.com,larufinabolivia.com,www.instagram.com,www.facebook.com,www.tiktok.com}
       SCRAPER_USER_AGENT: ${SCRAPER_USER_AGENT:-TurismoMelgarejoBot/1.0}
       SCRAPER_TIMEOUT_SECONDS: ${SCRAPER_TIMEOUT_SECONDS:-15}
       SCRAPER_MAX_BYTES: ${SCRAPER_MAX_BYTES:-2097152}
@@ -169,12 +212,15 @@ services:
         condition: service_healthy
       backend:
         condition: service_healthy
+      egress-proxy:
+        condition: service_healthy
     networks:
       - app-network
       - datos-network
+      - ia-network
 
   beat:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.1.0}
     container_name: turismo-melgarejo_beat
     restart: always
     command: celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
@@ -186,6 +232,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
+      DATABASE_URL: ${DATABASE_URL:-}
+      DB_CONN_MAX_AGE: ${DB_CONN_MAX_AGE:-600}
+      DB_SSL_REQUIRE: ${DB_SSL_REQUIRE:-0}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ci-placeholder}
       CELERY_BROKER_URL: redis://redis:6379/0
@@ -206,13 +255,21 @@ services:
       - datos-network
 
   flower:
-    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.0.9}
+    image: raisiar/proyecto-de-sistemas-backend:${IMAGE_TAG:-1.1.0}
     container_name: turismo-melgarejo_flower
     restart: always
     command: celery -A config flower --address=0.0.0.0 --port=5555 --persistent=True --db=/tmp/flower.db
     volumes:
       - ./backend:/app
     environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      DATABASE_URL: ${DATABASE_URL:-}
+      DB_CONN_MAX_AGE: ${DB_CONN_MAX_AGE:-600}
+      DB_SSL_REQUIRE: ${DB_SSL_REQUIRE:-0}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-1}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-ci-placeholder}
       CELERY_BROKER_URL: redis://redis:6379/0
@@ -239,6 +296,11 @@ networks:
     driver: bridge
   datos-network:
     driver: bridge
+  # Red creada por la Compose de IA. Backend y worker la necesitan para
+  # generar embeddings con el modelo local (sin API externa ni secretos).
+  ia-network:
+    name: proyectodesistemas3_ia-network
+    external: true
 
 volumes:
   postgres_data:

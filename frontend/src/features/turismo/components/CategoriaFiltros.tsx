@@ -1,53 +1,62 @@
 /**
- * Índice de categorías del catálogo.
+ * Filtro de categorías del catálogo.
  *
- * Se presenta como una lista editorial con el conteo a la derecha, no como
- * una fila de píldoras. "Todos" es el estado inicial y no envía filtro al
- * backend. La lista mantiene el orden oficial del Product Owner y sigue
- * siendo un grupo de botones con `aria-pressed` para teclado y lectores.
+ * Chips: Todos + las 6 categorías oficiales del Product Owner, siempre
+ * visibles en el orden definido (Aventura, Gastronomía, Cultura, Miradores,
+ * Naturaleza, Arqueología). "Todos" es el estado inicial y no envía filtro
+ * al backend.
+ *
+ * Se implementa como grupo de botones con `aria-pressed` para que el
+ * filtro sea usable con teclado y announced correctamente.
  */
 
 import {
   CATEGORIAS_OFICIALES,
   CATEGORIA_TODOS,
 } from "../../../config/turismo";
+import { ICONO_CATEGORIA } from "./CategoriaBadge";
+import { Icono, type NombreIcono } from "../../../components/site/Iconos";
 
 interface CategoriaFiltrosProps {
   /** Categoría seleccionada, o `null` para "Todos". */
   seleccionada: string | null;
   onChange: (categoria: string | null) => void;
-  /** Conteos por categoría (opcional) para mostrar en la fila. */
+  /** Conteos por categoría (opcional) para mostrar en el chip. */
   conteos?: Record<string, number>;
-  /** Total de destinos del catálogo, para la fila "Todos". */
-  conteoTotal?: number;
   disabled?: boolean;
+  /** Distribuye todos los controles en varias filas, útil en paneles laterales. */
+  apilado?: boolean;
 }
 
 export function CategoriaFiltros({
   seleccionada,
   onChange,
   conteos,
-  conteoTotal,
   disabled = false,
+  apilado = false,
 }: CategoriaFiltrosProps) {
   return (
     <div
       role="group"
       aria-label="Filtrar catálogo por categoría"
-      className="grid grid-cols-2 gap-x-5 sm:grid-cols-3 lg:grid-cols-1 lg:gap-x-0"
+      className={
+        apilado
+          ? "flex flex-wrap items-center gap-2 pb-1 pt-0.5"
+          : "flex items-center gap-2.5 overflow-x-auto pb-1 pt-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] sm:gap-3 [&::-webkit-scrollbar]:hidden"
+      }
     >
-      <Fila
+      <Chip
         etiqueta={CATEGORIA_TODOS}
         activo={seleccionada === null}
-        conteo={conteoTotal}
         onClick={() => onChange(null)}
         disabled={disabled}
       />
 
       {CATEGORIAS_OFICIALES.map((categoria) => (
-        <Fila
+        <Chip
           key={categoria}
           etiqueta={categoria}
+          icono={ICONO_CATEGORIA[categoria]}
           activo={seleccionada === categoria}
           conteo={conteos?.[categoria]}
           onClick={() => onChange(categoria)}
@@ -58,21 +67,23 @@ export function CategoriaFiltros({
   );
 }
 
-interface FilaProps {
+interface ChipProps {
   etiqueta: string;
   activo: boolean;
   onClick: () => void;
+  icono?: NombreIcono;
   conteo?: number;
   disabled?: boolean;
 }
 
-function Fila({
+function Chip({
   etiqueta,
   activo,
   onClick,
+  icono,
   conteo,
   disabled = false,
-}: FilaProps) {
+}: ChipProps) {
   return (
     <button
       type="button"
@@ -80,29 +91,23 @@ function Fila({
       disabled={disabled}
       aria-pressed={activo}
       className={[
-        "flex min-h-11 w-full items-baseline justify-between gap-3 border-b border-[#5B3A29]/12 py-2.5 text-left transition",
-        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]",
+        "inline-flex min-h-11 shrink-0 items-center gap-2 border px-4 py-2.5 text-xs font-black transition duration-200",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus)]",
         "disabled:cursor-not-allowed disabled:opacity-55",
         activo
-          ? "text-[#9A5B3C]"
-          : "text-[#514B43] hover:text-[#233128]",
+          ? "border-[var(--color-brand)] bg-[var(--color-route-strong)] text-[var(--color-text)]"
+          : "border-[var(--color-border-strong)] bg-[var(--color-surface)] text-[var(--color-text)] hover:border-[var(--color-brand)]",
       ].join(" ")}
     >
-      <span
-        className={
-          activo
-            ? "font-editorial text-[1.08rem] font-normal italic"
-            : "text-[0.82rem] font-semibold"
-        }
-      >
-        {etiqueta}
-      </span>
+      {icono && <Icono nombre={icono} className="h-4 w-4" />}
+
+      {etiqueta}
 
       {typeof conteo === "number" && (
         <span
           className={[
-            "font-mono text-[10px] tabular-nums",
-            activo ? "text-[#9A5B3C]" : "text-[#8A8177]",
+            "px-1.5 py-0.5 font-data text-xs font-black",
+            activo ? "bg-white/20 text-white" : "bg-[var(--color-surface-muted)] text-[var(--color-text)]",
           ].join(" ")}
         >
           {conteo}

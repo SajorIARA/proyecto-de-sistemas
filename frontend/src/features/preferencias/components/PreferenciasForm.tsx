@@ -257,38 +257,32 @@ export function PreferenciasForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="overflow-hidden border border-[#5B3A29]/15 bg-[#FFFDF8]"
+      className="lp-panel overflow-hidden"
     >
-      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-[#5B3A29]/15 px-5 py-5 sm:px-7">
-        <div>
-          <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9A5B3C]">
-            01 / Perfil de viaje
-          </p>
-
-          <h2 className="mt-1.5 font-display text-2xl font-black tracking-[-0.02em] text-[#233128]">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border)] px-6 py-5 sm:px-8">
+        <div className="flex items-center gap-3">
+          <span className="h-1 w-8 bg-[var(--color-route)]" aria-hidden="true" />
+          <h2 className="text-lg font-black">
             Tus preferencias de viaje
           </h2>
         </div>
 
         {/* Indicador de respaldo local */}
-        <p
-          aria-live="polite"
-          className="max-w-sm font-mono text-[8px] uppercase leading-5 tracking-[0.14em] text-[#8A8177] sm:text-right"
-        >
+        <p aria-live="polite" className="text-xs font-semibold text-[var(--color-text-muted)]">
           {hayBorrador && guardadoEn
             ? `Borrador guardado en este navegador a las ${horaCorta(guardadoEn)}.`
             : "Completa el formulario y guarda para aplicarlo a tus recomendaciones."}
         </p>
       </div>
 
-      <div className="space-y-9 px-5 py-7 sm:px-7">
+      <div className="space-y-9 px-6 py-7 sm:px-8">
         {/* 1. Categorías */}
         <section>
           <header className="mb-4">
-            <h3 className="text-sm font-black text-[#233128]">
+            <h3 className="text-sm font-black">
               ¿Qué te interesa descubrir?
             </h3>
-            <p className="mt-1 text-xs leading-6 text-[#746D63]">
+            <p className="mt-1 text-xs leading-6 text-[var(--color-text-muted)]">
               Elige una o varias categorías temáticas. Se guardan como tu nivel
               de interés en el perfil.
             </p>
@@ -309,7 +303,7 @@ export function PreferenciasForm() {
           />
         </section>
 
-        <hr className="border-[#5B3A29]/[0.08]" />
+        <hr className="border-[var(--color-border)]" />
 
         {/* 2. Presupuesto */}
         <section>
@@ -321,7 +315,7 @@ export function PreferenciasForm() {
           />
         </section>
 
-        <hr className="border-[#5B3A29]/[0.08]" />
+        <hr className="border-[var(--color-border)]" />
 
         {/* 3. Duración */}
         <section>
@@ -335,7 +329,7 @@ export function PreferenciasForm() {
           />
         </section>
 
-        <hr className="border-[#5B3A29]/[0.08]" />
+        <hr className="border-[var(--color-border)]" />
 
         {/* 4. Punto de partida */}
         <section>
@@ -352,14 +346,14 @@ export function PreferenciasForm() {
         </section>
 
         {/* Resumen */}
-        <div className="border border-[#5B3A29]/15 bg-[#F3EBDD]/45 px-5 py-4">
-          <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#8D4F32]">
+        <div className="border border-[var(--color-border)] bg-[var(--color-canvas)] px-5 py-4">
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--color-brand)]">
             Resumen
           </p>
 
-          <ul className="mt-2 space-y-1 text-sm text-[#514B43]">
+          <ul className="mt-2 space-y-1 text-sm text-[var(--color-text-muted)]">
             <li>
-              <strong className="font-black text-[#233128]">
+              <strong className="font-black text-[var(--color-text)]">
                 {borrador.categorias.length}
               </strong>{" "}
               {borrador.categorias.length === 1
@@ -368,20 +362,20 @@ export function PreferenciasForm() {
             </li>
             <li>
               Presupuesto tope:{" "}
-              <strong className="font-black text-[#233128]">
+              <strong className="font-black text-[var(--color-text)]">
                 {formatearBob(borrador.presupuestoBob)}
               </strong>
             </li>
             <li>
               Duración:{" "}
-              <strong className="font-black text-[#233128]">
+              <strong className="font-black text-[var(--color-text)]">
                 {horasTotales} {horasTotales === 1 ? "hora" : "horas"}
               </strong>{" "}
               (máx. {DURACION.maxHoras} h)
             </li>
             <li>
               Punto de partida:{" "}
-              <strong className="font-black text-[#233128]">
+              <strong className="font-black text-[var(--color-text)]">
                 {construirConsulta() ? "definido" : "sin definir"}
               </strong>
             </li>
@@ -392,7 +386,7 @@ export function PreferenciasForm() {
         {aviso && (
           <p
             role="alert"
-            className="border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-4 py-3 text-sm font-semibold leading-6 text-[#713A2A]"
+            className="border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/10 px-4 py-3 text-sm font-semibold text-[var(--color-danger)]"
           >
             {aviso}
           </p>
@@ -402,7 +396,7 @@ export function PreferenciasForm() {
         {error && (
           <p
             role="alert"
-            className="border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-4 py-3 text-sm font-semibold leading-6 text-[#713A2A]"
+            className="border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/10 px-4 py-3 text-sm font-semibold text-[var(--color-danger)]"
           >
             {error}
           </p>
@@ -412,7 +406,7 @@ export function PreferenciasForm() {
         {exito && (
           <p
             role="status"
-            className="border-l-2 border-[#2F4B3B]/45 bg-[#EDF2E9] px-4 py-3 text-sm font-semibold leading-6 text-[#304A38]"
+            className="border border-[var(--color-brand)]/40 bg-[var(--color-brand)]/10 px-4 py-3 text-sm font-semibold text-[var(--color-brand)]"
           >
             Preferencias guardadas. Tus recomendaciones ya las tienen en cuenta.
           </p>
@@ -423,11 +417,11 @@ export function PreferenciasForm() {
           <div
             role="status"
             aria-live="polite"
-            className="flex items-center gap-3 border-l-2 border-[#2F4B3B]/35 bg-[#EDF2E9]/70 px-4 py-3 text-sm font-semibold text-[#304A38]"
+            className="flex items-center gap-3 border border-[var(--color-brand)]/40 bg-[var(--color-brand)]/10 px-4 py-3 text-sm font-semibold text-[var(--color-brand)]"
           >
             <span
               aria-hidden="true"
-              className="h-4 w-4 animate-spin rounded-full border-2 border-[#2F4B3B]/30 border-t-[#2F4B3B]"
+              className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-brand)]/40 border-t-[var(--color-route)]"
             />
             Guardando tus preferencias en el servidor…
           </div>
@@ -438,23 +432,22 @@ export function PreferenciasForm() {
           <button
             type="submit"
             disabled={pendiente || Boolean(errorCategorias)}
-            className="inline-flex items-center gap-3 bg-[#233128] px-5 py-3.5 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFFDF8] transition hover:bg-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-45"
+            className="lp-button lp-button--primary inline-flex min-h-11 items-center gap-2.5 px-6 py-3 text-sm font-black disabled:cursor-not-allowed disabled:opacity-45"
           >
             {pendiente ? "Guardando…" : "Guardar preferencias"}
-            <span aria-hidden="true">→</span>
           </button>
 
           <button
             type="button"
             onClick={descartarTodo}
             disabled={pendiente || !hayBorrador}
-            className="border border-[#5B3A29]/20 px-5 py-3.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#514B43] transition hover:border-[#9A5B3C]/45 hover:text-[#8D4F32] disabled:cursor-not-allowed disabled:opacity-45"
+            className="lp-button lp-button--secondary min-h-11 px-6 py-3 text-sm font-black disabled:cursor-not-allowed disabled:opacity-45"
           >
             Descartar borrador
           </button>
 
-          {hayErrores && tocados.size > 0 && (
-            <p className="text-xs font-semibold text-[#9A3B2E]">
+          {hayErrores && (
+            <p className="text-xs font-semibold text-[var(--color-danger)]">
               Faltan datos por corregir.
             </p>
           )}

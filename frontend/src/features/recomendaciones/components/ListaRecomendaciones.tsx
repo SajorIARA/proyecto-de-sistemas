@@ -35,18 +35,18 @@ function Esqueleto() {
         <div
           key={indice}
           aria-hidden="true"
-          className="border border-[#5B3A29]/15 bg-[#FFFDF8] p-6"
+          className="rounded-[1.75rem] border border-[var(--color-border)]/[0.08] bg-[var(--color-surface)] p-6"
         >
           <div className="flex items-start justify-between gap-4">
             <div className="w-full space-y-3">
-              <div className="h-5 w-20 animate-pulse bg-[#E9DFC9]" />
-              <div className="h-7 w-3/5 animate-pulse bg-[#E9DFC9]" />
-              <div className="h-4 w-2/5 animate-pulse bg-[#F0E7D8]" />
+              <div className="h-5 w-20 animate-pulse rounded-full bg-[var(--color-surface-muted)]" />
+              <div className="h-7 w-3/5 animate-pulse rounded-lg bg-[var(--color-surface-muted)]" />
+              <div className="h-4 w-2/5 animate-pulse rounded-full bg-[var(--color-surface-muted)]" />
             </div>
-            <div className="h-24 w-24 shrink-0 animate-pulse bg-[#F0E7D8]" />
+            <div className="h-24 w-24 shrink-0 animate-pulse rounded-full bg-[var(--color-surface-muted)]" />
           </div>
 
-          <div className="mt-6 h-24 animate-pulse bg-[#F3EBDD]" />
+          <div className="mt-6 h-24 animate-pulse rounded-2xl bg-[var(--color-surface-muted)]" />
         </div>
       ))}
     </div>
@@ -75,12 +75,12 @@ export function ListaRecomendaciones({
     return (
       <div
         role="alert"
-        className="border border-[#9A5B3C]/25 border-t-2 border-t-[#9A5B3C] bg-[#FFFDF8] px-6 py-8 text-center"
+        className="rounded-[1.75rem] border border-[var(--color-brand)] bg-[var(--color-action)]/[0.06] px-6 py-8 text-center"
       >
-        <p className="font-display text-xl font-black tracking-[-0.02em] text-[#8D4F32]">
+        <p className="text-base font-black text-[var(--color-brand)]">
           No pudimos calcular tus recomendaciones
         </p>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#6F655B]">
+        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--color-text-muted)]">
           {error}
         </p>
 
@@ -88,7 +88,7 @@ export function ListaRecomendaciones({
           type="button"
           onClick={onActualizar}
           disabled={pendiente}
-          className="mt-5 bg-[#233128] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFFDF8] transition hover:bg-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-55"
+          className="mt-5 rounded-full bg-[var(--color-route-strong)] px-6 py-3 text-sm font-black text-[var(--color-text)] transition hover:bg-[var(--color-route-strong)] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {pendiente ? "Reintentando…" : "Reintentar"}
         </button>
@@ -102,11 +102,11 @@ export function ListaRecomendaciones({
 
   if (!resultado) {
     return (
-      <div className="border border-dashed border-[#5B3A29]/20 bg-[#FFFDF8]/60 px-6 py-10 text-center">
-        <p className="font-display text-xl font-black tracking-[-0.02em] text-[#233128]">
+      <div className="rounded-[1.75rem] border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-10 text-center">
+        <p className="text-base font-black text-[var(--color-text)]">
           Todavía no calculamos tu ranking
         </p>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#746D63]">
+        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--color-text-muted)]">
           Revisa tu perfil de búsqueda y pulsa «Actualizar ranking» para ver
           los destinos que mejor encajan contigo.
         </p>
@@ -120,19 +120,15 @@ export function ListaRecomendaciones({
     <section aria-labelledby="titulo-top-k" className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9A5B3C]">
-            02 / Resultados
-          </p>
-
           <h2
             id="titulo-top-k"
-            className="mt-1 font-display text-2xl font-black tracking-[-0.02em] text-[#233128]"
+            className="text-xl font-black tracking-tight text-[var(--color-text)]"
           >
             Tu Top-K personalizado
           </h2>
 
           <p
-            className="mt-1 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-[#8A8177]"
+            className="mt-1 text-xs font-semibold text-[var(--color-text-muted)]"
             aria-live="polite"
           >
             {recomendaciones.length === 0
@@ -148,12 +144,12 @@ export function ListaRecomendaciones({
 
         {pendiente && (
           <p
-            className="inline-flex items-center gap-2 border border-[#2F4B3B]/25 bg-[#EDF2E9] px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-[#304A38]"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-muted)] px-3 py-1.5 text-[0.65rem] font-black uppercase tracking-[0.12em] text-[var(--color-brand)]"
             role="status"
           >
             <span
               aria-hidden="true"
-              className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#2F4B3B]/25 border-t-[#2F4B3B]"
+              className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[var(--color-border)] border-t-[#496454]"
             />
             Actualizando ranking
           </p>
@@ -161,11 +157,11 @@ export function ListaRecomendaciones({
       </div>
 
       {recomendaciones.length === 0 ? (
-        <div className="border border-dashed border-[#5B3A29]/20 bg-[#FFFDF8]/70 px-6 py-10 text-center">
-          <p className="font-display text-xl font-black tracking-[-0.02em] text-[#233128]">
+        <div className="rounded-[1.75rem] border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-10 text-center">
+          <p className="text-base font-black text-[var(--color-text)]">
             No encontramos destinos dentro de estos límites
           </p>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#746D63]">
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--color-text-muted)]">
             Probá ampliar el radio de búsqueda a {siguienteRadioKm} km o
             ajustar el presupuesto y la duración del recorrido.
           </p>
@@ -175,7 +171,7 @@ export function ListaRecomendaciones({
               type="button"
               onClick={onAmpliarRadio}
               disabled={pendiente}
-              className="bg-[#233128] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#FFFDF8] transition hover:bg-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-55"
+              className="rounded-full bg-[var(--color-route-strong)] px-6 py-3 text-sm font-black text-[var(--color-text)] transition hover:bg-[var(--color-route-strong)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               Ampliar radio a {siguienteRadioKm} km
             </button>
@@ -184,7 +180,7 @@ export function ListaRecomendaciones({
               type="button"
               onClick={onActualizar}
               disabled={pendiente}
-              className="border border-[#5B3A29]/20 bg-[#FFFDF8] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#2F4B3B] transition hover:border-[#233128] disabled:cursor-not-allowed disabled:opacity-55"
+              className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-3 text-sm font-black text-[var(--color-brand)] transition hover:border-[var(--color-border-strong)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               Reintentar
             </button>

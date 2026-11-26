@@ -265,6 +265,15 @@ export async function listarTarifasDe(id: string): Promise<Tarifa[]> {
   }
 }
 
+/** Todas las tarifas públicas, para resumir precios sin una petición por tarjeta. */
+export async function listarTarifas(): Promise<Tarifa[]> {
+  try {
+    return await listarTodo<Tarifa>(TURISMO_ENDPOINTS.tarifas);
+  } catch (error) {
+    throw mensajeDesdeError(error, "No pudimos cargar las tarifas del catálogo.");
+  }
+}
+
 /**
  * Facetas del panel de filtros. Tolera que el backend no lo exponga
  * todavía: devuelve `null` en lugar de romper el catálogo.
@@ -315,6 +324,7 @@ export const turismoApi = {
   listarCategorias,
   listarHorariosDe,
   listarTarifasDe,
+  listarTarifas,
   listarFacetas,
   listarAtractivosCercanos,
 };

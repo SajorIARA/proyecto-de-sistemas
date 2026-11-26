@@ -3,7 +3,7 @@
  * textarea), pista de ayuda y mensajes de error.
  *
  * Existe para que `DestinoForm` no repita el mismo marcado de input siete
- * veces. El estilo sigue la convención de `PasswordForm`: fondo marfil, borde
+ * veces. El estilo sigue la convención de `PasswordForm`: fondo crema, borde
  * `andes` en foco y borde `terracotta` cuando hay error.
  *
  * Los mensajes se asocian al input con `aria-describedby` y se marca
@@ -52,18 +52,18 @@ export function CampoTexto({
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <label
           htmlFor={id}
-          className="block font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#8D4F32]"
+          className="block text-xs font-black text-[var(--color-text)]"
         >
           {etiqueta}
           {obligatorio && (
-            <span className="ml-1 text-[#9A5B3C]" aria-hidden="true">
+            <span className="ml-1 text-[var(--color-danger)]" aria-hidden="true">
               *
             </span>
           )}
         </label>
 
         {contador && (
-          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] text-[#8A8177]">
+          <span className="font-data text-xs font-bold text-[var(--color-text-muted)]">
             {contador}
           </span>
         )}
@@ -72,7 +72,7 @@ export function CampoTexto({
       <div className="mt-2.5">{children}</div>
 
       {!hayError && pista && (
-        <p id={idPista} className="mt-2 text-xs leading-5 text-[#746D63]">
+        <p id={idPista} className="mt-2 text-xs leading-5 text-[var(--color-text-muted)]">
           {pista}
         </p>
       )}
@@ -80,7 +80,7 @@ export function CampoTexto({
       {hayError && (
         <ul
           id={idError}
-          className="mt-2 space-y-1 text-xs font-semibold text-[#9A3B2E]"
+          className="mt-2 space-y-1 text-xs font-semibold text-[var(--color-danger)]"
         >
           {error?.map((mensaje) => <li key={mensaje}>{mensaje}</li>)}
         </ul>
@@ -95,8 +95,8 @@ export function CampoTexto({
  * el mismo borde y fondo.
  */
 export const claseInput = (hayError: boolean): string =>
-  `w-full border bg-[#FFFDF8] px-3.5 py-3 text-sm text-[#263029] transition placeholder:text-[#8A8177]/70 ${
+  `min-h-12 w-full border bg-[var(--color-surface)] px-4 py-3 text-sm text-[var(--color-text)] transition placeholder:text-[var(--color-text-muted)] ${
     hayError
-      ? "border-[#9A5B3C]/60 focus:border-[#9A5B3C]"
-      : "border-[#5B3A29]/25 focus:border-[#2F4B3B]"
+      ? "border-[var(--color-danger)]"
+      : "border-[var(--color-border-strong)] focus:border-[var(--color-brand)]"
   }`;

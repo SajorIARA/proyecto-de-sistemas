@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthAlert } from "../components/AuthAlert";
 import { AuthShell } from "../components/AuthShell";
 import { FormField } from "../components/FormField";
 import { PasswordStrength } from "../components/PasswordStrength";
@@ -52,32 +51,14 @@ function ToggleContrasena({
       aria-pressed={visible}
       aria-controls={controls}
       aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
-      className="font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-[#746D63] underline decoration-[#5B3A29]/30 underline-offset-4 transition hover:text-[#2F4B3B] hover:decoration-[#2F4B3B]/50"
+      className="flex h-9 items-center gap-1 rounded-full px-2.5 text-[0.62rem] font-black uppercase tracking-[0.1em] text-[var(--color-text-muted)] transition hover:bg-[var(--color-route-strong)] hover:text-[var(--color-text)] focus-visible:ring-2 focus-visible:ring-[var(--color-border-strong)] focus-visible:outline-none"
     >
-      {visible ? "Ocultar" : "Ver"}
+      <span aria-hidden="true" className="text-sm leading-none">
+        {visible ? "◉" : "◎"}
+      </span>
+
+      <span aria-hidden="true">{visible ? "Ocultar" : "Ver"}</span>
     </button>
-  );
-}
-
-function EncabezadoSeccion({
-  numero,
-  titulo,
-  detalle,
-}: {
-  numero: string;
-  titulo: string;
-  detalle: string;
-}) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-[#5B3A29]/15 pb-2">
-      <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9A5B3C]">
-        {numero} · {titulo}
-      </p>
-
-      <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#A39B8F]">
-        {detalle}
-      </p>
-    </div>
   );
 }
 
@@ -208,22 +189,50 @@ export function RegisterPage() {
   return (
     <AuthShell
       title="Comienza tu viaje"
-      subtitle="Crea tu cuenta y arma tu propia bitácora de La Paz: naturaleza, cultura y experiencias a tu medida."
-      seccion="Alta"
-      codigo="02"
+      subtitle="Crea tu cuenta y descubre La Paz a través de su naturaleza, cultura y experiencias."
     >
+      {/* INTRO */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-3 w-3 items-center justify-center">
+              <span className="absolute h-3 w-3 animate-ping rounded-full bg-[var(--color-action)]" />
+              <span className="relative h-2 w-2 rounded-full bg-[var(--color-action)]" />
+            </span>
+
+            <p className="text-[0.62rem] font-black uppercase tracking-[0.26em] text-[var(--color-brand)]">
+              Crea tu experiencia
+            </p>
+          </div>
+
+          <span className="hidden text-[0.58rem] font-black uppercase tracking-[0.18em] text-[var(--color-text-muted)] sm:block">
+            La Paz · Bolivia
+          </span>
+        </div>
+
+        <div className="mt-4 h-px w-full bg-gradient-to-r from-[var(--color-action)] via-[var(--color-action)] to-transparent" />
+      </div>
+
+      {/* FORMULARIO */}
       <form
-        className="space-y-6"
+        className="space-y-5"
         onSubmit={handleSubmit}
         noValidate
         aria-busy={loading}
       >
+        {/* TUS DATOS */}
         <div className="space-y-4">
-          <EncabezadoSeccion
-            numero="01"
-            titulo="Tus datos"
-            detalle="Nombre y correo"
-          />
+          <div className="flex items-center gap-3">
+            <span className="text-[0.58rem] font-black uppercase tracking-[0.18em] text-[var(--color-brand)]">
+              01
+            </span>
+
+            <span className="text-[0.62rem] font-black uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+              Tus datos
+            </span>
+
+            <span className="h-px flex-1 bg-gradient-to-r from-[var(--color-surface-muted)] to-transparent" />
+          </div>
 
           <FormField
             id={IDS.nombre}
@@ -260,12 +269,19 @@ export function RegisterPage() {
           />
         </div>
 
+        {/* SEGURIDAD */}
         <div className="space-y-4">
-          <EncabezadoSeccion
-            numero="02"
-            titulo="Seguridad"
-            detalle="Llave de la bitácora"
-          />
+          <div className="flex items-center gap-3">
+            <span className="text-[0.58rem] font-black uppercase tracking-[0.18em] text-[var(--color-brand)]">
+              02
+            </span>
+
+            <span className="text-[0.62rem] font-black uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+              Seguridad
+            </span>
+
+            <span className="h-px flex-1 bg-gradient-to-r from-[var(--color-surface-muted)] to-transparent" />
+          </div>
 
           <FormField
             id={IDS.password}
@@ -326,29 +342,55 @@ export function RegisterPage() {
           />
         </div>
 
-        {formError && <AuthAlert tono="error">{formError}</AuthAlert>}
+        {/* ERROR GENERAL */}
+        {formError && (
+          <div
+            role="alert"
+            className="flex items-start gap-3 rounded-[1.3rem] border border-[var(--color-brand)] bg-[var(--color-surface-muted)] px-4 py-3.5 text-sm leading-6 text-[var(--color-brand)] shadow-sm"
+          >
+            <span
+              aria-hidden="true"
+              className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-action)] text-xs font-black"
+            >
+              !
+            </span>
 
-        <div className="space-y-3">
+            <span>{formError}</span>
+          </div>
+        )}
+
+        {/* BOTÓN */}
+        <div className="space-y-3 pt-1">
           <button
             type="submit"
             disabled={loading}
-            className="group flex w-full items-center justify-between gap-4 bg-[#233128] px-5 py-4 text-left text-[10px] font-black uppercase tracking-[0.2em] text-[#FFFDF8] transition hover:bg-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-60"
+            className="group relative flex w-full overflow-hidden rounded-full bg-[var(--color-route-strong)] px-5 py-3.5 text-sm font-black text-[var(--color-text)] shadow-[0_16px_38px_rgba(47,75,59,0.24)] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--color-route-strong)] hover:shadow-[0_20px_46px_rgba(47,75,59,0.30)] disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-60"
           >
-            <span>{loading ? "Creando cuenta…" : "Crear cuenta"}</span>
+            {/* Reflejo */}
+            <span className="pointer-events-none absolute inset-y-0 -left-24 w-20 rotate-12 bg-white/15 blur-xl transition-all duration-700 group-hover:left-[115%]" />
 
-            <span
-              aria-hidden="true"
-              className="font-display text-base leading-none transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
-            >
-              {loading ? "…" : "→"}
+            <span className="relative flex w-full items-center justify-between">
+              <span>
+                {loading ? "Creando cuenta…" : "Crear cuenta"}
+              </span>
+
+              <span
+                aria-hidden="true"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-action)] text-[var(--lp-night)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.55)] transition duration-300 group-hover:rotate-45 group-hover:scale-105"
+              >
+                {loading ? "…" : "↗"}
+              </span>
             </span>
           </button>
 
-          <p className="flex items-start gap-2 text-[10px] leading-5 text-[#8A8177]">
-            <span aria-hidden="true" className="mt-px text-[#9A5B3C]">
-              *
+          <p className="flex items-start gap-2 px-1 text-[0.68rem] font-medium leading-5 text-[var(--color-text-muted)]">
+            <span aria-hidden="true" className="mt-px">
+              ⓘ
             </span>
             <span>
+              <span aria-hidden="true" className="text-[var(--color-brand)]">
+                *
+              </span>{" "}
               Campos obligatorios. Usaremos tu correo solo para tu cuenta y
               tus preferencias de viaje.
             </span>
@@ -356,18 +398,44 @@ export function RegisterPage() {
         </div>
       </form>
 
-      <div className="mt-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-t border-[#5B3A29]/15 pt-4">
-        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#8A8177]">
-          ¿Ya tienes bitácora?
-        </p>
+      {/* DIVISOR */}
+      <div className="my-6 flex items-center gap-4">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[var(--color-surface-muted)]" />
 
+        <span className="whitespace-nowrap text-[0.57rem] font-black uppercase tracking-[0.22em] text-[var(--color-text-muted)]">
+          Turismo La Paz
+        </span>
+
+        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[var(--color-surface-muted)]" />
+      </div>
+
+      {/* LOGIN */}
+      <p className="text-center text-sm font-medium text-[var(--color-text-muted)]">
+        ¿Ya tienes una cuenta?{" "}
         <Link
           to="/login"
-          className="font-mono text-[9px] font-black uppercase tracking-[0.16em] text-[#233128] underline decoration-[#C6923B] decoration-2 underline-offset-4 transition hover:text-[#8D4F32]"
+          className="group relative font-black text-[var(--color-brand)] transition hover:text-[var(--color-brand)]"
         >
-          Inicia sesión →
+          Inicia sesión
+
+          <span className="absolute -bottom-1 left-0 h-[2px] w-full origin-left bg-[var(--color-action)] transition group-hover:bg-[var(--color-action)]" />
         </Link>
-      </div>
+      </p>
+
+      {/* VOLVER */}
+      <Link
+        to="/"
+        className="group mx-auto mt-5 flex w-fit items-center gap-2 rounded-full px-3 py-2 text-xs font-bold text-[var(--color-text-muted)] transition hover:bg-[var(--color-route-strong)]/[0.06] hover:text-[var(--color-brand)]"
+      >
+        <span
+          aria-hidden="true"
+          className="transition duration-300 group-hover:-translate-x-1"
+        >
+          ←
+        </span>
+
+        Volver al inicio
+      </Link>
     </AuthShell>
   );
 }

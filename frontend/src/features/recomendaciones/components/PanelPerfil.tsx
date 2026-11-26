@@ -74,22 +74,19 @@ export function PanelPerfil({
   return (
     <form
       onSubmit={manejarEnvio}
-      className="border border-[#5B3A29]/15 bg-[#FFFDF8] p-5 sm:p-7"
+      className="rounded-[1.75rem] border border-[var(--color-border)]/[0.09] bg-[var(--color-surface)] p-5 shadow-[0_18px_50px_rgba(72,55,38,0.07)] sm:p-6"
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-start gap-3.5">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-[#5B3A29]/15 bg-[#F3EBDD]/60 text-[#8D4F32]">
+        <div className="flex items-start gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-surface-muted)] text-[var(--color-brand)]">
             <Icono nombre="brujula" className="h-6 w-6" />
           </span>
 
           <div>
-            <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9A5B3C]">
-              01 / Perfil de consulta
-            </p>
-            <h2 className="mt-1.5 font-display text-2xl font-black tracking-[-0.02em] text-[#233128]">
+            <h2 className="text-lg font-black tracking-tight text-[var(--color-text)]">
               Tu perfil de búsqueda
             </h2>
-            <p className="mt-1 max-w-md text-xs leading-6 text-[#746D63]">
+            <p className="mt-1 max-w-md text-xs leading-6 text-[var(--color-text-muted)]">
               La afinidad combina tus intereses, el presupuesto, el tiempo
               disponible y la distancia desde tu punto de partida.
             </p>
@@ -99,7 +96,7 @@ export function PanelPerfil({
         <button
           type="submit"
           disabled={pendiente}
-          className="inline-flex items-center gap-2 bg-[#233128] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFFDF8] transition hover:bg-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-55"
+          className="inline-flex items-center gap-2 rounded-full bg-[var(--color-route-strong)] px-5 py-3 text-sm font-black text-[var(--color-text)] shadow-[0_10px_24px_rgba(47,75,59,0.18)] transition hover:-translate-y-0.5 hover:bg-[var(--color-route-strong)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
         >
           <Icono
             nombre="actualizar"
@@ -109,39 +106,39 @@ export function PanelPerfil({
         </button>
       </div>
 
-      <dl className="mt-5 grid grid-cols-2 gap-px border border-[#5B3A29]/15 bg-[#5B3A29]/15 sm:grid-cols-4">
-        <div className="bg-[#FFFDF8] px-3.5 py-3">
-          <dt className="font-mono text-[7.5px] font-bold uppercase tracking-[0.16em] text-[#8A8177]">
+      <dl className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="rounded-2xl bg-[var(--color-surface-muted)] px-3.5 py-3">
+          <dt className="text-[0.55rem] font-black uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
             Presupuesto
           </dt>
-          <dd className="mt-1 font-display text-base font-black tabular-nums text-[#233128]">
+          <dd className="mt-1 text-sm font-black tabular-nums text-[var(--color-text)]">
             {formatearBob(perfil.presupuestoBob)}
           </dd>
         </div>
 
-        <div className="bg-[#FFFDF8] px-3.5 py-3">
-          <dt className="font-mono text-[7.5px] font-bold uppercase tracking-[0.16em] text-[#8A8177]">
+        <div className="rounded-2xl bg-[var(--color-surface-muted)] px-3.5 py-3">
+          <dt className="text-[0.55rem] font-black uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
             Tiempo
           </dt>
-          <dd className="mt-1 font-display text-base font-black tabular-nums text-[#233128]">
+          <dd className="mt-1 text-sm font-black tabular-nums text-[var(--color-text)]">
             {formatearTiempo(perfil)}
           </dd>
         </div>
 
-        <div className="bg-[#FFFDF8] px-3.5 py-3">
-          <dt className="font-mono text-[7.5px] font-bold uppercase tracking-[0.16em] text-[#8A8177]">
+        <div className="rounded-2xl bg-[var(--color-surface-muted)] px-3.5 py-3">
+          <dt className="text-[0.55rem] font-black uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
             Salida
           </dt>
-          <dd className="mt-1 truncate font-display text-base font-black text-[#233128]">
+          <dd className="mt-1 truncate text-sm font-black text-[var(--color-text)]">
             {etiquetaPuntoPartida(perfil)}
           </dd>
         </div>
 
-        <div className="bg-[#FFFDF8] px-3.5 py-3">
-          <dt className="font-mono text-[7.5px] font-bold uppercase tracking-[0.16em] text-[#8A8177]">
+        <div className="rounded-2xl bg-[var(--color-surface-muted)] px-3.5 py-3">
+          <dt className="text-[0.55rem] font-black uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
             Radio · Top-K
           </dt>
-          <dd className="mt-1 font-display text-base font-black tabular-nums text-[#233128]">
+          <dd className="mt-1 text-sm font-black tabular-nums text-[var(--color-text)]">
             {perfil.radioKm} km · {perfil.topK}
           </dd>
         </div>
@@ -151,7 +148,7 @@ export function PanelPerfil({
         <div>
           <label
             htmlFor="recomendaciones-macrodistrito"
-            className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#8D4F32]"
+            className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[var(--color-brand)]"
           >
             Punto de partida
           </label>
@@ -163,7 +160,7 @@ export function PanelPerfil({
             onChange={(evento) =>
               onCambiar(conMacrodistrito(perfil, evento.target.value))
             }
-            className="mt-2 w-full border border-[#5B3A29]/25 bg-[#FFFDF8] px-3 py-2.5 text-sm font-semibold text-[#233128] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9A5B3C] disabled:opacity-60"
+            className="mt-2 w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-2.5 text-sm font-semibold text-[var(--color-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)] disabled:opacity-60"
           >
             <option value="">Punto guardado</option>
             {MACRODISTRITOS_LA_PAZ.map((macrodistrito) => (
@@ -178,7 +175,7 @@ export function PanelPerfil({
           <div>
             <label
               htmlFor="recomendaciones-radio"
-              className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#8D4F32]"
+              className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[var(--color-brand)]"
             >
               Radio
             </label>
@@ -190,7 +187,7 @@ export function PanelPerfil({
               onChange={(evento) =>
                 onCambiar({ ...perfil, radioKm: Number(evento.target.value) })
               }
-              className="mt-2 w-full border border-[#5B3A29]/25 bg-[#FFFDF8] px-3 py-2.5 text-sm font-semibold text-[#233128] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9A5B3C] disabled:opacity-60"
+              className="mt-2 w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm font-semibold text-[var(--color-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)] disabled:opacity-60"
             >
               {RECOMENDACIONES_POR_DEFECTO.radiosKm.map((radio) => (
                 <option key={radio} value={radio}>
@@ -203,7 +200,7 @@ export function PanelPerfil({
           <div>
             <label
               htmlFor="recomendaciones-top-k"
-              className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#8D4F32]"
+              className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[var(--color-brand)]"
             >
               Top-K
             </label>
@@ -215,7 +212,7 @@ export function PanelPerfil({
               onChange={(evento) =>
                 onCambiar({ ...perfil, topK: Number(evento.target.value) })
               }
-              className="mt-2 w-full border border-[#5B3A29]/25 bg-[#FFFDF8] px-3 py-2.5 text-sm font-semibold text-[#233128] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#9A5B3C] disabled:opacity-60"
+              className="mt-2 w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5 text-sm font-semibold text-[var(--color-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)] disabled:opacity-60"
             >
               {RECOMENDACIONES_POR_DEFECTO.topKs.map((topK) => (
                 <option key={topK} value={topK}>
@@ -227,7 +224,7 @@ export function PanelPerfil({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-6 border-t border-[#5B3A29]/15 pt-6 sm:grid-cols-2">
+      <div className="mt-6 grid gap-6 border-t border-[var(--color-border)]/[0.08] pt-6 sm:grid-cols-2">
         <SliderPresupuesto
           valor={perfil.presupuestoBob}
           onChange={(presupuestoBob) =>

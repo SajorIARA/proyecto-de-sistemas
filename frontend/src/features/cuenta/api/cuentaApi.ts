@@ -199,4 +199,54 @@ export const cuentaApi = {
       throw aCuentaApiError(error);
     }
   },
+
+  /** Datos personales y historial del usuario en sesión (`GET`). */
+  async exportarMisDatos(): Promise<MisDatos> {
+    try {
+      const { data } = await api.get<MisDatos>(AUTH_ENDPOINTS.misDatos);
+      return data;
+    } catch (error) {
+      throw aCuentaApiError(error);
+    }
+  },
+
+  /** Baja con anonimización; requiere confirmación explícita. */
+  async anonimizarMisDatos(): Promise<void> {
+    try {
+      await api.post(AUTH_ENDPOINTS.anonimizarMisDatos, {
+        confirmacion: "ANONIMIZAR",
+      });
+    } catch (error) {
+      throw aCuentaApiError(error);
+    }
+  },
 };
+
+/** Respuesta de `GET /api/auth/mis-datos/`. Nunca incluye contraseñas. */
+export interface MisDatos {
+  id_usuario: string;
+  email: string;
+  nombre: string;
+  activo: boolean;
+  fecha_creacion: string;
+  roles: string[];
+  preferencias: { categoria: string; nivel_interes: number }[];
+  consultas: Record<string, unknown>[];
+  viajes: Record<string, unknown>[];
+}
+
+/**
+ * Descarga la exportación como JSON legible. Se construye el Blob en el
+ * navegador para no depender de que el backend sirva un `Content-Disposition`.
+ */
+export async function descargarMisDatos(): Promise<void> {
+  const datos = await cuentaApi.exportarMisDatos();
+  const url = URL.createObjectURL(
+    new Blob([JSON.stringify(datos, null, 2)], { type: "application/json" }),
+  );
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = "mis-datos-turismo-melgarejo.json";
+  enlace.click();
+  URL.revokeObjectURL(url);
+}

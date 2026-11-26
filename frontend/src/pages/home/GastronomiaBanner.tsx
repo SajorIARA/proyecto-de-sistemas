@@ -1,94 +1,76 @@
 /**
- * Rutas gastronómicas.
+ * Banner de rutas gastronómicas.
  *
- * Una fotografía de mercado y, montada encima, una carta de papel con
- * los platos que cuentan la ciudad. El desfase y la sombra plana imitan
- * la impresión de un menú de fonda, en contraste con las líneas finas
- * del resto de la portada.
+ * Una sola fotografía a sangre con tipografía editorial, al estilo de
+ * las portadas de revista: el acento serif hace de contrapunto de los
+ * titulares geométricos del resto de la página.
  */
 
 import { Link } from "react-router-dom";
 import { IMAGENES_SITIO } from "../../config/imagenesSitio";
 import { Icono } from "../../components/site/Iconos";
 
-const PLATOS = [
-  { nombre: "Plato paceño", nota: "choclo, habas y queso frito" },
-  { nombre: "Salteñas", nota: "media mañana, recién horneadas" },
-  { nombre: "Api con pastel", nota: "para empezar el día" },
+const SABORES = [
+  "Plato paceño",
+  "Salteñas",
+  "Api con pastel",
+  "Mercado Rodríguez",
 ] as const;
 
 export function GastronomiaBanner() {
   return (
     <section
       id="gastronomia"
-      className="scroll-mt-24 bg-[#F3EBDD] py-20 sm:py-28"
+      className="relative scroll-mt-24 overflow-hidden bg-[var(--color-surface)] py-16 text-[var(--color-text)] sm:py-24"
     >
-      <div className="contenedor-sitio">
-        <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-0">
-          <div className="lg:col-span-7">
-            <div className="relative aspect-[4/3] overflow-hidden bg-[#233128] sm:aspect-[16/10]">
-              <img
-                src={IMAGENES_SITIO.gastronomia.src}
-                alt={IMAGENES_SITIO.gastronomia.alt}
-                loading="lazy"
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#101710]/55 via-transparent to-transparent" />
-              <p className="absolute bottom-4 left-4 font-mono text-[10px] uppercase tracking-[0.24em] text-[#FFFDF8]/75">
-                Mercado Rodríguez · La Paz
-              </p>
-            </div>
-          </div>
+      <img
+        src={IMAGENES_SITIO.gastronomia.src}
+        alt={IMAGENES_SITIO.gastronomia.alt}
+        loading="lazy"
+        decoding="async"
+        className="absolute inset-0 h-full w-full object-cover"
+      />
 
-          <div className="relative z-10 bg-[#FFFDF8] px-6 py-8 shadow-[10px_10px_0_0_rgba(154,91,60,0.85)] sm:px-10 sm:py-10 lg:col-span-5 lg:-ml-16">
-            <div className="flex items-center justify-between gap-4 border-b border-dashed border-[#5B3A29]/30 pb-4">
-              <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#9A5B3C]">
-                Rutas de mesa
-              </p>
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#746D63]">
-                La Paz · BO
-              </p>
-            </div>
+      <div className="absolute inset-0 bg-[var(--color-surface)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_30%,rgba(198,146,59,0.22),transparent_55%)]" />
 
-            <h2 className="font-editorial mt-6 text-[clamp(2.6rem,4.2vw,3.6rem)] leading-[0.98] tracking-[-0.02em] text-[#233128]">
-              La ciudad también{" "}
-              <em className="italic text-[#9A5B3C]">se come</em>.
-            </h2>
+      <div className="contenedor-sitio relative">
+        <div className="max-w-3xl">
+          <p className="inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[0.7rem] font-black uppercase tracking-[0.16em] text-[var(--color-text)] backdrop-blur-md">
+            <Icono nombre="utensilios" className="h-3.5 w-3.5" />
+            Sabores de altura
+          </p>
 
-            <p className="mt-4 text-sm leading-6 text-[#5C574E]">
-              La cocina paceña mezcla la despensa del altiplano con las
-              tradiciones de valle. Mercados, fondas y restaurantes cuentan la
-              ciudad a través de sus platos.
-            </p>
+          <h2 className="font-editorial mt-7 text-[clamp(2.8rem,6.5vw,5.2rem)] font-normal leading-[0.95] tracking-[-0.02em]">
+            Rutas <em className="italic text-[var(--color-action)]">gastronómicas</em>
+          </h2>
 
-            <ul className="mt-6 border-t border-[#5B3A29]/15">
-              {PLATOS.map((plato) => (
-                <li
-                  key={plato.nombre}
-                  className="flex items-baseline justify-between gap-4 border-b border-[#5B3A29]/15 py-3"
-                >
-                  <span className="text-sm font-bold text-[#233128]">
-                    {plato.nombre}
-                  </span>
-                  <span className="text-right text-xs text-[#746D63]">
-                    {plato.nota}
-                  </span>
-                </li>
-              ))}
-            </ul>
+          <p className="mt-6 max-w-xl text-base leading-7 text-[var(--color-text)] sm:text-lg">
+            La cocina paceña mezcla la despensa del altiplano con las
+            tradiciones de valle. Recorre mercados, fondas y restaurantes que
+            cuentan la ciudad a través de sus platos.
+          </p>
 
-            <Link
-              to="/destinos?categoria=Gastronom%C3%ADa"
-              className="group mt-6 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#9A5B3C]"
-            >
-              Ver gastronomía en el catálogo
-              <Icono
-                nombre="flecha"
-                className="h-4 w-4 transition-transform group-hover:translate-x-1"
-              />
-            </Link>
-          </div>
+          <ul className="mt-8 flex flex-wrap gap-2">
+            {SABORES.map((sabor) => (
+              <li
+                key={sabor}
+                className="rounded-full border border-white/20 bg-white/5 px-4 py-1.5 text-xs font-semibold text-[var(--color-text)] backdrop-blur-sm"
+              >
+                {sabor}
+              </li>
+            ))}
+          </ul>
+
+          <Link
+            to="/destinos?categoria=Gastronom%C3%ADa"
+            className="group mt-10 inline-flex items-center gap-3 rounded-full bg-[var(--color-action)] px-6 py-3.5 text-sm font-black text-[var(--lp-night)] transition hover:bg-[var(--color-surface-muted)]"
+          >
+            Descubrir gastronomía
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-surface)] text-[var(--color-action)] transition-transform group-hover:translate-x-0.5">
+              <Icono nombre="flecha" className="h-4 w-4" />
+            </span>
+          </Link>
         </div>
       </div>
     </section>

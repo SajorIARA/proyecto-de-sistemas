@@ -308,6 +308,13 @@ class Foto(models.Model):
         null=True, blank=True
     )
     orden: models.IntegerField[int, int] = models.IntegerField(default=0)
+    url_origen: models.URLField[str, str] = models.URLField(
+        max_length=500, blank=True, default=""
+    )
+    licencia: models.CharField[str, str] = models.CharField(
+        max_length=100, blank=True, default=""
+    )
+    atribucion: models.TextField[str, str] = models.TextField(blank=True, default="")
     fecha_creacion: models.DateTimeField[datetime, datetime] = models.DateTimeField(
         auto_now_add=True
     )

@@ -1,141 +1,47 @@
-/**
- * Pie de página del sitio público.
- *
- * Cierra la portada con la misma paleta andina del hero, un mapa de
- * enlaces a las secciones y un acceso directo al catálogo filtrado por
- * categoría. El nombre de marca se renderiza como texto (no como
- * enlace) para no competir con el logo de la cabecera.
- */
-
 import { Link } from "react-router-dom";
-import { CATEGORIAS_OFICIALES } from "../../config/turismo";
-import { Icono } from "./Iconos";
-
-const ENLACES_EXPLORAR = [
-  { etiqueta: "Catálogo completo", destino: "/destinos", ancla: false },
-  { etiqueta: "Descubre La Paz", destino: "/#descubre", ancla: true },
-  { etiqueta: "La Paz por zonas", destino: "/#zonas", ancla: true },
-  { etiqueta: "Rutas gastronómicas", destino: "/#gastronomia", ancla: true },
-  { etiqueta: "Datos útiles", destino: "/#datos", ancla: true },
-] as const;
-
-const ENLACES_CUENTA = [
-  { etiqueta: "Mi cuenta", destino: "/mi-cuenta" },
-  { etiqueta: "Crear cuenta", destino: "/registro" },
-  { etiqueta: "Preferencias de viaje", destino: "/mi-cuenta/preferencias" },
-] as const;
 
 export function SiteFooter() {
   return (
-    <footer className="relative overflow-hidden bg-[#101710] text-[#F3EBDD]">
-      <div
-        className="trama-topografica pointer-events-none absolute inset-0 opacity-50"
-        aria-hidden="true"
-      />
-
-      <div className="contenedor-sitio relative py-16 sm:py-20">
-        <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
-          <div className="max-w-sm">
-            <p className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center border border-[#F3EBDD]/20 bg-[#F3EBDD]/[0.06] text-[#F3EBDD]">
-                <Icono nombre="montana" className="h-5 w-5" />
-              </span>
-              <span className="text-lg font-black leading-none tracking-tight text-[#FFFDF8]">
-                Turismo{" "}
-                <span className="font-editorial text-xl font-normal italic text-[#E8C16A]">
-                  La Paz
-                </span>
-              </span>
-            </p>
-
-            <p className="mt-5 text-sm leading-7 text-[#F3EBDD]/60">
-              Una guía para recorrer la ciudad desde sus miradores, su
-              historia, sus mercados y sus paisajes de altura.
-            </p>
-
-            <p className="mt-6 inline-flex items-center gap-2 border border-[#F3EBDD]/15 px-3.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.2em] text-[#E8C16A]">
-              <span className="h-1.5 w-1.5 bg-[#E8C16A]" />
-              Bolivia · 3.600 m
-            </p>
-          </div>
-
-          <nav aria-label="Explorar">
-            <h2 className="font-mono text-[9px] font-semibold uppercase tracking-[0.26em] text-[#E8C16A]">
-              Explorar
-            </h2>
-            <ul className="mt-5 space-y-3">
-              {ENLACES_EXPLORAR.map((enlace) => (
-                <li key={enlace.etiqueta}>
-                  {enlace.ancla ? (
-                    <a
-                      href={enlace.destino}
-                      className="border-b border-transparent text-sm font-medium text-[#F3EBDD]/65 transition hover:border-[#E8C16A]/50 hover:text-[#FFFDF8]"
-                    >
-                      {enlace.etiqueta}
-                    </a>
-                  ) : (
-                    <Link
-                      to={enlace.destino}
-                      className="border-b border-transparent text-sm font-medium text-[#F3EBDD]/65 transition hover:border-[#E8C16A]/50 hover:text-[#FFFDF8]"
-                    >
-                      {enlace.etiqueta}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          <nav aria-label="Categorías">
-            <h2 className="font-mono text-[9px] font-semibold uppercase tracking-[0.26em] text-[#E8C16A]">
-              Categorías
-            </h2>
-            <ul className="mt-5 space-y-3">
-              {CATEGORIAS_OFICIALES.map((categoria) => (
-                <li key={categoria}>
-                  <Link
-                    to={`/destinos?categoria=${encodeURIComponent(categoria)}`}
-                    className="border-b border-transparent text-sm font-medium text-[#F3EBDD]/65 transition hover:border-[#E8C16A]/50 hover:text-[#FFFDF8]"
-                  >
-                    {categoria}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          <nav aria-label="Cuenta">
-            <h2 className="font-mono text-[9px] font-semibold uppercase tracking-[0.26em] text-[#E8C16A]">
-              Cuenta
-            </h2>
-            <ul className="mt-5 space-y-3">
-              {ENLACES_CUENTA.map((enlace) => (
-                <li key={enlace.etiqueta}>
-                  <Link
-                    to={enlace.destino}
-                    className="border-b border-transparent text-sm font-medium text-[#F3EBDD]/65 transition hover:border-[#E8C16A]/50 hover:text-[#FFFDF8]"
-                  >
-                    {enlace.etiqueta}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </div>
-
-        <div className="mt-14 flex flex-col gap-4 border-t border-[#F3EBDD]/15 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#F3EBDD]/50">
-            © 2026 Turismo La Paz · Proyecto de Sistemas
+    <footer className="chuki-footer" aria-labelledby="site-footer-title">
+      <div className="chuki-footer__main">
+        <div className="chuki-footer__brand">
+          <p className="chuki-brand" id="site-footer-title">
+            ✺ CHUKIYAPU
+            <small>ATLAS VIVO DE LOS ANDES</small>
           </p>
-
-          <a
-            href="/#inicio"
-            className="inline-flex items-center gap-2 font-mono text-[9px] font-semibold uppercase tracking-[0.18em] text-[#F3EBDD]/65 transition hover:text-[#E8C16A]"
-          >
-            Volver al inicio
-            <span aria-hidden="true">↑</span>
-          </a>
+          <p>
+            Información para descubrir, organizar y recorrer La Paz según tus
+            intereses y tu tiempo.
+          </p>
         </div>
+
+        <nav aria-label="Explorar desde el pie">
+          <h2>Explorar</h2>
+          <Link to="/destinos">Destinos</Link>
+          <Link to="/#experiencias">Experiencias</Link>
+          <Link to="/#zonas">Zonas</Link>
+          <Link to="/ruta">Mi viaje</Link>
+        </nav>
+
+        <nav aria-label="Cuenta desde el pie">
+          <h2>Cuenta</h2>
+          <Link to="/login">Iniciar sesión</Link>
+          <Link to="/registro">Crear cuenta</Link>
+          <Link to="/mi-cuenta/preferencias">Mis preferencias</Link>
+        </nav>
+
+        <div className="chuki-footer__info">
+          <h2>Información</h2>
+          <a href="https://lapaz.bo/turismo/" target="_blank" rel="noreferrer">
+            Turismo oficial de La Paz ↗
+          </a>
+          <a href="/images/CREDITOS.md">Créditos fotográficos</a>
+          <p>La Paz · Bolivia</p>
+        </div>
+      </div>
+      <div className="chuki-footer__bottom">
+        <span>© 2026 CHUKIYAPU · Proyecto de Sistemas</span>
+        <span>Fotografías reales con autoría y licencia documentadas.</span>
       </div>
     </footer>
   );
