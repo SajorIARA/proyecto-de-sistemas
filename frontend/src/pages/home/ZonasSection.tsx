@@ -1,9 +1,9 @@
 /**
  * "La Paz por zonas": las seis zonas que el backend reconoce en
- * `direccion` (`ZONAS_LA_PAZ`). Se presentan como un itinerario de líneas
- * finas sobre fondo andino, sin fotografías, para dar ritmo entre las
- * secciones claras y no prometer imágenes que el catálogo todavía no
- * tiene.
+ * `direccion` (`ZONAS_LA_PAZ`). Se presentan como tarjetas tipográficas
+ * sobre fondo andino, sin fotografías, para dar ritmo entre dos
+ * secciones claras y evitar prometer imágenes que el catálogo todavía
+ * no tiene.
  */
 
 import { Link } from "react-router-dom";
@@ -29,83 +29,79 @@ export function ZonasSection() {
   return (
     <section
       id="zonas"
-      className="relative scroll-mt-24 overflow-hidden bg-[#1B241D] py-20 text-[#F3EBDD] sm:py-28"
+      className="relative scroll-mt-24 overflow-hidden bg-[var(--color-surface)] py-14 text-[var(--color-text)] sm:py-20"
     >
       <div
-        className="trama-topografica pointer-events-none absolute inset-0 opacity-60"
+        className="trama-topografica pointer-events-none absolute inset-0 opacity-70"
         aria-hidden="true"
       />
 
+      <span
+        aria-hidden="true"
+        className="font-display pointer-events-none absolute -bottom-10 right-0 select-none text-[22vw] font-black leading-none tracking-[-0.08em] text-[var(--color-text)]/[0.03]"
+      >
+        LA PAZ
+      </span>
+
       <div className="contenedor-sitio relative">
-        <header className="grid gap-8 border-b border-[#E9DFC9]/20 pb-9 lg:grid-cols-12 lg:items-end">
-          <p className="font-mono text-[10px] uppercase tracking-[0.26em] text-[#E8C16A] lg:col-span-2">
-            La Paz por zonas
-            <span className="mt-1 block text-[#F3EBDD]/40">06 barrios</span>
-          </p>
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-[var(--color-action)]">
+              La Paz por zonas
+            </p>
 
-          <h2 className="font-display text-[clamp(2.6rem,5.4vw,4.6rem)] font-black leading-[0.94] tracking-[-0.05em] text-[#FFFDF8] lg:col-span-7">
-            La ciudad,{" "}
-            <span className="font-editorial font-normal italic text-[#E8C16A]">
-              barrio por barrio
-            </span>
-            .
-          </h2>
+            <h2 className="font-display mt-5 text-[clamp(2.4rem,5vw,4.2rem)] font-black leading-[0.98] tracking-[-0.045em] text-[var(--color-text)]">
+              Cada zona tiene su{" "}
+              <span className="font-editorial font-normal italic text-[var(--color-action)]">
+                propio ritmo
+              </span>
+              .
+            </h2>
+          </div>
 
-          <p className="max-w-md text-sm leading-7 text-[#F3EBDD]/60 sm:text-base lg:col-span-3 lg:pb-2">
+          <p className="max-w-md text-sm leading-7 text-[var(--color-text)] sm:text-base">
             La ciudad se recorre por barrios. Elige una zona para ver solo los
-            atractivos registrados en ella.
+            atractivos que el catálogo registra en ella.
           </p>
-        </header>
+        </div>
 
-        <ul>
+        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ZONAS_LA_PAZ.map((zona, indice) => (
             <li key={zona}>
               <Link
                 to={`/destinos?zona=${encodeURIComponent(zona)}`}
-                className="group grid grid-cols-[2.25rem_minmax(0,1fr)] items-start gap-4 border-b border-[#E9DFC9]/15 py-6 transition-colors hover:bg-[#F3EBDD]/[0.05] sm:grid-cols-[3rem_minmax(0,1.1fr)_minmax(0,1fr)_auto] sm:items-center sm:gap-6 sm:px-3"
+                className="group flex h-full flex-col justify-between rounded-[1.4rem] border border-[var(--color-border)] bg-[var(--color-surface-muted)]/[0.04] p-6 transition duration-300 hover:-translate-y-1 hover:border-[var(--color-action)] hover:bg-[var(--color-surface-muted)]/[0.08]"
               >
-                <span className="mt-1 font-mono text-[10px] tracking-[0.2em] text-[#E8C16A]/60 sm:mt-0">
-                  {String(indice + 1).padStart(2, "0")}
-                </span>
+                <div className="flex items-start justify-between">
+                  <span className="font-editorial text-4xl italic leading-none text-[var(--color-action)]">
+                    {String(indice + 1).padStart(2, "0")}
+                  </span>
 
-                <div>
-                  <h3 className="font-display text-2xl font-black tracking-[-0.03em] text-[#FFFDF8] transition-colors group-hover:text-[#E8C16A] sm:text-3xl">
-                    {zona}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-[#F3EBDD]/55 sm:hidden">
-                    {DESCRIPCIONES[zona]}
-                  </p>
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-action)]">
+                    <Icono nombre="ubicacion" className="h-4 w-4" />
+                  </span>
                 </div>
 
-                <p className="hidden text-sm leading-6 text-[#F3EBDD]/55 sm:block">
-                  {DESCRIPCIONES[zona]}
-                </p>
+                <div className="mt-10">
+                  <h3 className="font-display text-2xl font-black tracking-[-0.02em] text-[var(--color-text)]">
+                    {zona}
+                  </h3>
 
-                <span className="hidden items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#E8C16A] sm:flex sm:opacity-50 sm:transition-opacity sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100">
-                  Explorar
-                  <Icono nombre="flecha" className="h-4 w-4" />
-                </span>
+                  <p className="mt-2 text-sm leading-6 text-[var(--color-text)]">
+                    {DESCRIPCIONES[zona]}
+                  </p>
+
+                  <span className="mt-5 inline-flex items-center gap-2 text-[0.7rem] font-black uppercase tracking-[0.18em] text-[var(--color-action)]">
+                    Explorar zona
+                    <span className="transition-transform duration-300 group-hover:translate-x-1">
+                      <Icono nombre="flecha" className="h-4 w-4" />
+                    </span>
+                  </span>
+                </div>
               </Link>
             </li>
           ))}
         </ul>
-
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#F3EBDD]/35">
-            Las zonas filtran la dirección registrada en el catálogo
-          </p>
-
-          <Link
-            to="/destinos"
-            className="group inline-flex items-center gap-2 text-sm font-bold text-[#F3EBDD]/75 transition hover:text-[#FFFDF8]"
-          >
-            Ver todos los destinos
-            <Icono
-              nombre="flecha"
-              className="h-4 w-4 transition-transform group-hover:translate-x-1"
-            />
-          </Link>
-        </div>
       </div>
     </section>
   );

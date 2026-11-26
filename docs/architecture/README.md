@@ -9,7 +9,7 @@
 | 3 | **Secuencia** | [03-secuencia.md](03-secuencia.md) | Comunicación entre componentes para Login, Registro y Recomendación |
 | 4 | **Actividades** | [04-actividades.md](04-actividades.md) | Flujo de procesos: Registro/Login y Motor de Recomendación |
 | 5 | **Componentes** | [05-componentes.md](05-componentes.md) | Módulos del software y sus dependencias |
-| 6 | **Despliegue** | [06-despliegue.md](06-despliegue.md) | Infraestructura: Docker, Nginx, CI/CD, Railway |
+| 6 | **Despliegue** | [06-despliegue.md](06-despliegue.md) | Infraestructura: Docker, Nginx, CI/CD, Supabase y Railway |
 
 ## Diagrama de Base de Datos
 

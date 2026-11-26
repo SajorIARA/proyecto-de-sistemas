@@ -9,9 +9,9 @@ import type { ReactNode } from "react";
 type Tono = "ok" | "aviso" | "error";
 
 const TONOS: Record<Tono, string> = {
-  ok: "border-[#2F4B3B]/35 bg-[#EDF2E9] text-[#304A38]",
-  aviso: "border-[#C6923B]/45 bg-[#FBF0D9] text-[#664717]",
-  error: "border-[#9A5B3C]/40 bg-[#F6E8DF] text-[#713A2A]",
+  ok: "border-[var(--color-success)] bg-[var(--color-surface)] text-[var(--color-success)]",
+  aviso: "border-[var(--color-warning)] bg-[var(--color-surface)] text-[var(--color-warning)]",
+  error: "border-[var(--color-danger)] bg-[var(--color-surface)] text-[var(--color-danger)]",
 };
 
 const SIMBOLOS: Record<Tono, string> = {

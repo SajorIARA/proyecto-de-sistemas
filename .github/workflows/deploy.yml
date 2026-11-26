@@ -1,14 +1,20 @@
 name: Deploy
 
-# Despliegue manual a Railway.
+# Despliegue manual a Railway (backend, worker, beat, frontend y proxy).
+# La base de datos vive en Supabase, por lo que NO se despliega `db`.
 #
 # Railway puede desplegar de dos formas:
-#   - image  (recomendado): el servicio ya apunta a una imagen GHCR y solo
-#             se relanza para aplicar variables o re-descargar el tag.
+#   - image  (recomendado): el servicio ya apunta a una imagen de GHCR o
+#             Docker Hub y solo se relanza para aplicar variables o el tag.
 #   - source (respaldo):    Railway construye desde el código con `railway up`.
 #
 # El despliegue automático por push está desactivado a propósito: publicar
 # una imagen (workflow Release) y desplegarla son decisiones separadas.
+#
+# Los nombres de servicio se pueden sobrescribir con variables de GitHub
+# (Settings → Environments → <entorno> → Variables):
+#   RAILWAY_SERVICE_BACKEND, RAILWAY_SERVICE_WORKER, RAILWAY_SERVICE_BEAT,
+#   RAILWAY_SERVICE_FRONTEND, RAILWAY_SERVICE_PROXY.
 on:
   workflow_dispatch:
     inputs:
@@ -44,6 +50,11 @@ jobs:
     environment: ${{ inputs.environment }}
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      BACKEND_SERVICE: ${{ vars.RAILWAY_SERVICE_BACKEND || 'backend' }}
+      WORKER_SERVICE: ${{ vars.RAILWAY_SERVICE_WORKER || 'worker' }}
+      BEAT_SERVICE: ${{ vars.RAILWAY_SERVICE_BEAT || 'beat' }}
+      FRONTEND_SERVICE: ${{ vars.RAILWAY_SERVICE_FRONTEND || 'frontend' }}
+      PROXY_SERVICE: ${{ vars.RAILWAY_SERVICE_PROXY || 'proxy' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
         with:
@@ -56,13 +67,14 @@ jobs:
             exit 1
           fi
 
-      # Camino recomendado: los servicios ya usan imágenes de GHCR. Este paso
-      # relanza los servicios para aplicar variables o el tag configurado en
-      # Railway. No reconstruye nada desde el código fuente.
-      - name: Redeploy servicios con imagen GHCR
+      # Camino recomendado: los servicios ya usan imágenes de GHCR o Docker
+      # Hub. Este paso relanza los servicios para aplicar variables o el tag
+      # configurado en Railway. No reconstruye nada desde el código fuente.
+      - name: Redeploy servicios con imagen publicada
         if: inputs.strategy == 'image'
         run: |
-          for service in backend worker beat frontend proxy; do
+          for service in "$BACKEND_SERVICE" "$WORKER_SERVICE" "$BEAT_SERVICE" \
+                         "$FRONTEND_SERVICE" "$PROXY_SERVICE"; do
             echo "::group::Redeploy $service"
             npx --yes @railway/cli redeploy --service "$service" --yes
             echo "::endgroup::"
@@ -73,8 +85,8 @@ jobs:
       - name: Deploy desde código fuente
         if: inputs.strategy == 'source'
         run: |
-          npx --yes @railway/cli up --service backend --ci
-          npx --yes @railway/cli up --service frontend --ci
+          npx --yes @railway/cli up --service "$BACKEND_SERVICE" --ci
+          npx --yes @railway/cli up --service "$FRONTEND_SERVICE" --ci
 
       - name: Recordatorio post-deploy
         run: |

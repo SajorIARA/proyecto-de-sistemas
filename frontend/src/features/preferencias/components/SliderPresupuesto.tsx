@@ -35,7 +35,7 @@ export function SliderPresupuesto({
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <label
           htmlFor={id}
-          className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#8D4F32]"
+          className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[var(--color-brand)]"
         >
           Presupuesto tope
         </label>
@@ -43,7 +43,7 @@ export function SliderPresupuesto({
         <output
           htmlFor={id}
           aria-live="polite"
-          className="font-display text-2xl font-black tabular-nums tracking-[-0.02em] text-[#233128]"
+          className="text-lg font-black tabular-nums text-[var(--color-text)]"
         >
           {formatearBob(valor)}
         </output>
@@ -62,19 +62,19 @@ export function SliderPresupuesto({
         aria-invalid={Boolean(error)}
         aria-describedby={error ? idError : undefined}
         data-testid="slider-presupuesto"
-        className="rango-editorial mt-4 h-1.5 w-full cursor-pointer appearance-none text-[#9A5B3C] disabled:cursor-not-allowed disabled:opacity-55"
+        className="mt-4 h-2 w-full cursor-pointer appearance-none rounded-full accent-[#9A5B3C] disabled:cursor-not-allowed disabled:opacity-55"
         style={{
           background: `linear-gradient(90deg, #9A5B3C ${progreso}%, #E9DFC9 ${progreso}%)`,
         }}
       />
 
-      <div className="mt-2 flex justify-between font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-[#8A8177]">
+      <div className="mt-1.5 flex justify-between text-[0.65rem] font-bold text-[var(--color-text-muted)]">
         <span>{formatearBob(PRESUPUESTO_BOB.min)}</span>
         <span>{formatearBob(PRESUPUESTO_BOB.max)}</span>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[#8A8177]">
+        <span className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
           Rápido
         </span>
 
@@ -89,11 +89,11 @@ export function SliderPresupuesto({
               disabled={disabled}
               aria-pressed={activo}
               className={[
-                "border px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em] transition",
+                "rounded-full border px-3.5 py-1.5 text-xs font-black transition",
                 "disabled:cursor-not-allowed disabled:opacity-55",
                 activo
-                  ? "border-[#9A5B3C] bg-[#9A5B3C] text-[#FFFDF8]"
-                  : "border-[#5B3A29]/15 bg-[#FFFDF8] text-[#514B43] hover:border-[#9A5B3C]/45 hover:text-[#8D4F32]",
+                  ? "border-[var(--color-brand)] bg-[var(--color-action)] text-[var(--lp-night)]"
+                  : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)]",
               ].join(" ")}
             >
               {formatearBob(preset)}
@@ -106,7 +106,7 @@ export function SliderPresupuesto({
         <p
           id={idError}
           role="alert"
-          className="mt-2 text-xs font-semibold text-[#9A3B2E]"
+          className="mt-2 text-xs font-semibold text-[var(--color-danger)]"
         >
           {error}
         </p>

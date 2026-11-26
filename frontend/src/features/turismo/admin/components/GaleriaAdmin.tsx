@@ -110,22 +110,19 @@ export function GaleriaAdmin({
   }
 
   return (
-    <section className="overflow-hidden border border-[#5B3A29]/15 bg-[#FFFDF8]">
-      <div className="border-b border-[#5B3A29]/15 px-5 py-5 sm:px-8">
-        <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9A5B3C]">
-          02 / Medios
-        </p>
-
-        <h2 className="mt-1.5 font-display text-2xl font-black tracking-[-0.02em] text-[#233128]">
+    <section className="overflow-hidden rounded-[2rem] border border-[var(--color-border)]/[0.08] bg-[var(--color-surface)] shadow-[0_20px_60px_rgba(72,55,38,0.08)]">
+      <div className="flex items-center gap-3 border-b border-[var(--color-border)]/[0.08] px-6 py-5 sm:px-8">
+        <span className="h-px w-8 bg-[var(--color-action)]" aria-hidden="true" />
+        <h2 className="text-lg font-black tracking-tight text-[var(--color-text)]">
           Fotografías y videos
         </h2>
       </div>
 
-      <div className="space-y-6 px-5 py-7 sm:px-8">
+      <div className="space-y-6 px-6 py-7 sm:px-8">
         {sinCloudinary && (
           <p
             role="status"
-            className="border-l-2 border-[#C6923B]/55 bg-[#FBF0D9]/70 px-4 py-3 text-xs font-semibold leading-5 text-[#664717]"
+            className="rounded-2xl border border-[var(--color-action)] bg-[var(--color-action)]/[0.12] px-4 py-3 text-xs font-semibold text-[var(--color-action)]"
           >
             Cloudinary no está configurado en el frontend
             (`VITE_CLOUDINARY_CLOUD_NAME`). La subida directa de imágenes
@@ -137,7 +134,7 @@ export function GaleriaAdmin({
         <div>
           <label
             htmlFor={`${atractivoId}-archivos`}
-            className="inline-flex cursor-pointer items-center gap-2.5 bg-[#233128] px-5 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#FFFDF8] transition hover:bg-[#2F4B3B]"
+            className="inline-flex cursor-pointer items-center gap-2.5 rounded-full bg-[var(--color-route-strong)] px-6 py-3 text-sm font-black text-[var(--color-text)] transition hover:bg-[var(--color-surface)]"
           >
             <span aria-hidden="true">＋</span>
             Agregar imágenes o videos
@@ -153,7 +150,7 @@ export function GaleriaAdmin({
             />
           </label>
 
-          <p className="mt-2 text-xs leading-5 text-[#746D63]">
+          <p className="mt-2 text-xs leading-5 text-[var(--color-text-muted)]">
             Imágenes jpg, png o webp hasta 10&nbsp;MB; videos mp4, mov o webm
             hasta 100&nbsp;MB. Se pueden elegir varios a la vez.
           </p>
@@ -162,14 +159,14 @@ export function GaleriaAdmin({
         {/* Progreso de la subida en curso */}
         {subiendo && archivoEnCurso && (
           <div role="status" aria-live="polite">
-            <p className="mb-1.5 font-mono text-[8px] uppercase tracking-[0.12em] text-[#514B43]">
+            <p className="mb-1.5 text-xs font-semibold text-[var(--color-text-muted)]">
               Subiendo {archivoEnCurso}
               {progreso !== null ? ` — ${progreso}%` : "…"}
             </p>
 
-            <div className="h-1.5 w-full overflow-hidden bg-[#5B3A29]/10">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-surface-muted)]">
               <div
-                className="h-full bg-[#2F4B3B] transition-[width] duration-200"
+                className="h-full rounded-full bg-[var(--color-route-strong)] transition-[width] duration-200"
                 style={{ width: `${progreso ?? 8}%` }}
               />
             </div>
@@ -180,7 +177,7 @@ export function GaleriaAdmin({
         {(erroresArchivos.length > 0 || errorSubida || errorEliminar) && (
           <ul
             role="alert"
-            className="space-y-1 border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-4 py-3 text-xs font-semibold text-[#713A2A]"
+            className="space-y-1 rounded-2xl border border-[var(--color-danger)] bg-[var(--color-danger)]/[0.07] px-4 py-3 text-xs font-semibold text-[var(--color-danger)]"
           >
             {erroresArchivos.map((mensaje) => (
               <li key={mensaje}>{mensaje}</li>
@@ -192,13 +189,13 @@ export function GaleriaAdmin({
 
         {/* Listado */}
         {isPending && fotos.length === 0 && (
-          <p role="status" className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#8A8177]">
+          <p role="status" className="text-sm font-semibold text-[var(--color-text-muted)]">
             Cargando fotos…
           </p>
         )}
 
         {isError && (
-          <p role="alert" className="text-sm font-semibold text-[#9A3B2E]">
+          <p role="alert" className="text-sm font-semibold text-[var(--color-danger)]">
             {error instanceof Error
               ? error.message
               : "No pudimos cargar las fotos del destino."}
@@ -206,7 +203,7 @@ export function GaleriaAdmin({
         )}
 
         {!isPending && !isError && fotos.length === 0 && (
-          <p className="border border-dashed border-[#5B3A29]/20 px-4 py-8 text-center text-sm font-semibold text-[#746D63]">
+          <p className="rounded-2xl border border-dashed border-[var(--color-border)] px-4 py-8 text-center text-sm font-semibold text-[var(--color-text-muted)]">
             Todavía no hay fotos. Subí la primera para que aparezca en el
             catálogo.
           </p>
@@ -221,7 +218,7 @@ export function GaleriaAdmin({
               return (
                 <li
                   key={foto.id_foto}
-                  className="group relative overflow-hidden border border-[#5B3A29]/15 bg-[#F3EBDD]/50"
+                  className="group relative overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-muted)]"
                 >
                   <div className="relative aspect-[4/3]">
                     {miniatura ? (
@@ -233,9 +230,9 @@ export function GaleriaAdmin({
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-[#233128]/90 text-[#FFFDF8]">
+                      <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-[var(--color-surface)] text-[var(--color-text)]">
                         <span aria-hidden="true" className="text-2xl">
-                          {foto.tipo === "video" ? "🎬" : "🖼️"}
+                          {foto.tipo === "video" ? "Video" : "Imagen"}
                         </span>
                         <span className="text-[0.6rem] font-black uppercase tracking-[0.14em]">
                           {foto.tipo === "video" ? "Video" : "Imagen"}
@@ -244,7 +241,7 @@ export function GaleriaAdmin({
                     )}
 
                     {foto.estado !== "completed" && (
-                      <span className="absolute left-2 top-2 bg-[#233128]/90 px-2 py-1 font-mono text-[7px] font-bold uppercase tracking-[0.14em] text-[#FFFDF8]">
+                      <span className="absolute left-2 top-2 rounded-full bg-[var(--color-surface)] px-2.5 py-1 text-[0.58rem] font-black uppercase tracking-[0.12em] text-[var(--color-text)]">
                         {ETIQUETA_ESTADO[foto.estado]}
                       </span>
                     )}
@@ -254,13 +251,13 @@ export function GaleriaAdmin({
                       onClick={() => void eliminar(foto.id_foto)}
                       disabled={enCurso}
                       aria-label={`Eliminar la foto ${indice + 1}`}
-                      className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center bg-[#9A3B2E] text-sm font-black text-[#FFFDF8] opacity-0 transition focus:opacity-100 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-danger)] text-sm font-black text-[var(--color-text)] opacity-0 transition focus:opacity-100 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {enCurso ? "…" : "×"}
                     </button>
                   </div>
 
-                  <p className="truncate px-3 py-2 font-mono text-[7.5px] uppercase tracking-[0.06em] text-[#746D63]">
+                  <p className="truncate px-3 py-2 text-[0.62rem] font-semibold text-[var(--color-text-muted)]">
                     {indice === 0 ? "Portada · " : ""}
                     {foto.tipo === "video" ? "Video" : "Imagen"}
                   </p>

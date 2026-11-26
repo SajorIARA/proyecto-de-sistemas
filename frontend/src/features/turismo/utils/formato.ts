@@ -4,7 +4,7 @@
  */
 
 import { NOMBRE_DIA } from "../../../config/turismo";
-import type { Horario, Tarifa } from "../../../types/turismo";
+import type { Coordenada, Horario, Tarifa } from "../../../types/turismo";
 
 /**
  * Formatea un monto en bolivianos.
@@ -166,9 +166,7 @@ export function recortar(texto: string, maximo = 140): string {
 }
 
 /** Coordenadas legibles para el detalle. */
-export function formatearCoordenadas(
-  ubicacion: { longitud: number; latitud: number } | null,
-): string {
+export function formatearCoordenadas(ubicacion: Coordenada | null): string {
   if (!ubicacion) {
     return "Coordenadas no registradas";
   }
@@ -176,4 +174,28 @@ export function formatearCoordenadas(
   const { latitud, longitud } = ubicacion;
 
   return `${latitud.toFixed(5)}, ${longitud.toFixed(5)}`;
+}
+
+/**
+ * Ubicación legible para tarjetas y rutas.
+ *
+ * El inventario tiene destinos con punto PostGIS pero sin dirección postal.
+ * En ese caso se muestran las coordenadas en vez de decir que no hay
+ * ubicación, que sería engañoso.
+ */
+export function formatearUbicacion(
+  direccion: string | null | undefined,
+  ubicacion: Coordenada | null,
+): string {
+  const texto = direccion?.trim();
+
+  if (texto) {
+    return texto;
+  }
+
+  if (ubicacion) {
+    return `Coord. ${formatearCoordenadas(ubicacion)}`;
+  }
+
+  return "Ubicación no registrada";
 }

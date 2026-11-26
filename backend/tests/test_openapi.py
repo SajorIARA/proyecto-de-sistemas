@@ -14,17 +14,26 @@ class OpenAPITests(TestCase):
     RUTAS_ESPERADAS = {
         "/api/",
         "/api/health/",
+        "/api/health/detallado/",
         "/api/auth/login/",
         "/api/auth/logout/",
         "/api/auth/password/change/",
         "/api/auth/register/",
         "/api/auth/token/refresh/",
         "/api/auth/usuarios/",
+        "/api/auth/mis-datos/",
+        "/api/auth/mis-datos/anonimizar/",
         "/api/conocimiento/fragmentos/",
         "/api/conocimiento/fragmentos/{id_fragmento}/",
         "/api/conocimiento/fuentes/",
         "/api/conocimiento/fuentes/{id_fuente}/",
         "/api/conocimiento/consultar/",
+        "/api/conocimiento/admin/importaciones/",
+        "/api/conocimiento/admin/importaciones/{id_importacion}/",
+        "/api/conocimiento/admin/importaciones/{id_importacion}/candidatos/",
+        "/api/conocimiento/admin/importaciones/{id_importacion}/vectorizar/",
+        "/api/conocimiento/admin/candidatos/{id_candidato}/aprobar/",
+        "/api/conocimiento/admin/candidatos/{id_candidato}/rechazar/",
         "/api/preferences/",
         "/api/preferences/{id}/",
         "/api/recomendaciones/consultas/",
@@ -48,14 +57,22 @@ class OpenAPITests(TestCase):
         "/api/turismo/categorias/{id_categoria}/",
         "/api/turismo/horarios/",
         "/api/turismo/horarios/{id_horario}/",
+        "/api/turismo/ruteo/",
         "/api/turismo/tarifas/",
         "/api/turismo/tarifas/{id_tarifa}/",
         "/api/turismo/tipos-tarifa/",
         "/api/turismo/tipos-tarifa/{id_tipo_tarifa}/",
+        "/api/viajes/",
+        "/api/viajes/{id}/",
+        "/api/viajes/{id}/iniciar/",
+        "/api/viajes/{id}/finalizar/",
+        "/api/viajes/{id}/paradas/{parada_id}/visitada/",
     }
     OPERACIONES_PUBLICAS = {
         ("get", "/api/"),
         ("get", "/api/health/"),
+        ("get", "/api/health/detallado/"),
+        ("post", "/api/turismo/ruteo/"),
         ("post", "/api/auth/login/"),
         ("post", "/api/auth/register/"),
         ("post", "/api/auth/token/refresh/"),
@@ -94,15 +111,22 @@ class OpenAPITests(TestCase):
             for metodo, operacion in item.items()
             if metodo in self.METODOS_OPENAPI
         ]
-        # Qa deshabilita PUT para consultas y admite PATCH (81 operaciones);
-        # dev aporta el endpoint público RAG `/api/conocimiento/consultar/`.
-        self.assertEqual(len(operaciones), 82)
+        # Qa deshabilita PUT para consultas y admite PATCH; dev aporta las
+        # rutas nuevas (health detallado, importaciones, viajes, ruteo...).
+        self.assertEqual(len(operaciones), 101)
         ids = [operacion["operationId"] for operacion in operaciones]
         self.assertEqual(len(ids), len(set(ids)))
 
     def test_todas_las_rutas_documentadas_resuelven_en_django(self) -> None:
+        def reemplazar(parametro: re.Match[str]) -> str:
+            # Las rutas nuevas usan convertidores <uuid:...>; el resto de la
+            # API usa pk numérico o acepta cualquier texto.
+            if parametro.group(1) in {"id_importacion", "id_candidato"}:
+                return "00000000-0000-0000-0000-000000000001"
+            return "1"
+
         for ruta in self.esquema["paths"]:
-            concreta = re.sub(r"\{[^}]+\}", "1", ruta)
+            concreta = re.sub(r"\{([^}]+)\}", reemplazar, ruta)
             with self.subTest(ruta=ruta):
                 self.assertIsNotNone(resolve(concreta).func)
 

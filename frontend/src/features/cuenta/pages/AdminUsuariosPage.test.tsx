@@ -132,7 +132,7 @@ describe("AdminUsuariosPage", () => {
     const tabla = within(screen.getByRole("table"));
 
     expect(tabla.getByText("Administrador")).toBeInTheDocument();
-    expect(tabla.getByText("Turista")).toBeInTheDocument();
+    expect(tabla.getByText("Viajero")).toBeInTheDocument();
 
     expect(tabla.getByText("Activo")).toBeInTheDocument();
     expect(tabla.getByText("Inactivo")).toBeInTheDocument();

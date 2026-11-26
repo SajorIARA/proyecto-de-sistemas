@@ -31,23 +31,19 @@ function formatearFecha(iso: string): string {
   return `${dia}/${mes}/${anio}`;
 }
 
-/** Iniciales del nombre, para el monograma en bloque. */
+/** Iniciales del nombre, para el avatar de texto. */
 function iniciales(nombre: string): string {
   const partes = nombre.trim().split(/\s+/).filter(Boolean);
 
   return (partes[0]?.[0] ?? "?") + (partes[1]?.[0] ?? "");
 }
 
-function numero(valor: number): string {
-  return String(valor).padStart(2, "0");
-}
-
 function FilaSkeleton() {
   return (
-    <tr className="border-t border-[#5B3A29]/10">
+    <tr className="border-t border-[var(--color-border)]">
       {COLUMNAS.map((columna) => (
         <td key={columna} className="px-5 py-5">
-          <div className="h-3 w-full max-w-[9rem] animate-pulse bg-[#5B3A29]/10" />
+          <div className="h-3.5 w-full max-w-[9rem] animate-pulse bg-[var(--color-border)]" />
         </td>
       ))}
     </tr>
@@ -56,32 +52,30 @@ function FilaSkeleton() {
 
 function Fila({ usuario }: { usuario: UsuarioAdmin }) {
   return (
-    <tr className="border-t border-[#5B3A29]/10 transition hover:bg-[#F3EBDD]/45">
-      <td className="px-5 py-4">
+    <tr className="border-t border-[var(--color-border)] transition hover:bg-[var(--color-brand)]/10">
+      <td className="px-5 py-5">
         <div className="flex items-center gap-3">
           <span
             aria-hidden="true"
-            className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#2F4B3B]/20 bg-[#EDF2E9] font-mono text-[10px] font-bold uppercase tracking-[0.08em] text-[#2F4B3B]"
+            className="flex h-9 w-9 shrink-0 items-center justify-center bg-[var(--color-brand)]/15 text-xs font-black uppercase text-[var(--color-brand)]"
           >
             {iniciales(usuario.nombre)}
           </span>
 
           <div className="min-w-0">
-            <p className="truncate text-sm font-black text-[#233128]">
+            <p className="truncate text-sm font-black">
               {usuario.nombre}
             </p>
 
-            <p className="truncate font-mono text-[9px] tracking-[0.04em] text-[#746D63]">
-              {usuario.email}
-            </p>
+            <p className="truncate text-xs text-[var(--color-text-muted)]">{usuario.email}</p>
           </div>
         </div>
       </td>
 
-      <td className="px-5 py-4">
+      <td className="px-5 py-5">
         <div className="flex flex-wrap gap-1.5">
           {usuario.roles.length === 0 ? (
-            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-[#8A8177]">
+            <span className="text-xs font-semibold text-[var(--color-text-muted)]">
               Sin rol asignado
             </span>
           ) : (
@@ -90,23 +84,23 @@ function Fila({ usuario }: { usuario: UsuarioAdmin }) {
         </div>
       </td>
 
-      <td className="px-5 py-4">
+      <td className="px-5 py-5">
         <span
-          className={`inline-flex items-center gap-2 font-mono text-[9px] font-bold uppercase tracking-[0.14em] ${
-            usuario.activo ? "text-[#2F4B3B]" : "text-[#8A8177]"
+          className={`inline-flex items-center gap-1.5 text-xs font-black ${
+            usuario.activo ? "text-[var(--color-brand)]" : "text-[var(--color-text-muted)]"
           }`}
         >
           <span
             aria-hidden="true"
-            className={`h-1.5 w-1.5 ${
-              usuario.activo ? "bg-[#2F4B3B]" : "bg-[#8A8177]"
+            className={`h-2 w-2 rounded-full ${
+              usuario.activo ? "bg-[var(--color-route)]" : "bg-[var(--color-text-muted)]"
             }`}
           />
           {usuario.activo ? "Activo" : "Inactivo"}
         </span>
       </td>
 
-      <td className="px-5 py-4 font-mono text-[9px] tracking-[0.08em] text-[#746D63]">
+      <td className="px-5 py-5 font-data text-xs text-[var(--color-text-muted)]">
         {formatearFecha(usuario.fecha_creacion)}
       </td>
     </tr>
@@ -123,45 +117,28 @@ export function UsuariosTabla() {
   const usuarios = data?.results ?? [];
 
   return (
-    <section className="overflow-hidden border border-[#5B3A29]/15 bg-[#FFFDF8]">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#5B3A29]/15 px-5 py-5 sm:px-7">
-        <div>
-          <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9A5B3C]">
-            01 / Registro
-          </p>
+    <section className="lp-panel overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-border)] px-6 py-5 sm:px-8">
+        <div className="flex items-center gap-3">
+          <span className="h-1 w-8 bg-[var(--color-brand)]" aria-hidden="true" />
 
           {/* Título distinto del h1 de la página: si se repitiera, la
               pantalla tendría dos encabezados idénticos y un lector de
               pantalla no distinguiría la sección del título. */}
-          <h2 className="mt-1.5 font-display text-2xl font-black tracking-[-0.02em] text-[#233128]">
+          <h2 className="text-lg font-black">
             Cuentas registradas
           </h2>
         </div>
 
         {!isPending && !isError && (
-          <div className="flex items-end gap-3">
-            <span
-              aria-hidden="true"
-              className="font-display text-4xl font-black leading-none text-[#9A5B3C]"
-            >
-              {numero(data?.count ?? 0)}
-            </span>
-
-            <p
-              className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#746D63]"
-              aria-live="polite"
-            >
-              {data?.count ?? 0} {data?.count === 1 ? "usuario" : "usuarios"}
-            </p>
-          </div>
+          <p
+            className="font-data text-xs text-[var(--color-text-muted)]"
+            aria-live="polite"
+          >
+            {data?.count ?? 0} {data?.count === 1 ? "usuario" : "usuarios"}
+          </p>
         )}
       </div>
-
-      {!isPending && !isError && usuarios.length > 0 && (
-        <p className="border-b border-[#5B3A29]/10 bg-[#F3EBDD]/35 px-5 py-2 font-mono text-[8px] uppercase tracking-[0.16em] text-[#8A8177] sm:hidden">
-          Desliza la tabla para ver roles, estado y alta →
-        </p>
-      )}
 
       {/* =========================================================
           ESQUELETO DE CARGA
@@ -169,13 +146,13 @@ export function UsuariosTabla() {
       {isPending && (
         <>
           <p
-            className="px-5 pt-6 font-mono text-[9px] uppercase tracking-[0.18em] text-[#746D63] sm:px-7"
+            className="px-6 pt-6 text-sm font-semibold text-[var(--color-text-muted)] sm:px-8"
             role="status"
           >
             Cargando usuarios…
           </p>
 
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-5 overflow-x-auto">
             <table className="w-full min-w-[46rem] border-collapse">
               <caption className="sr-only">
                 Cargando el listado de usuarios
@@ -195,11 +172,8 @@ export function UsuariosTabla() {
           ERROR
       ========================================================== */}
       {isError && (
-        <div className="px-5 py-12 text-center sm:px-7">
-          <p
-            role="alert"
-            className="mx-auto max-w-md border-l-2 border-[#9A5B3C]/50 bg-[#F6E8DF]/60 px-4 py-3 text-left text-sm font-semibold leading-6 text-[#713A2A]"
-          >
+        <div className="px-6 py-12 text-center sm:px-8">
+          <p role="alert" className="text-sm font-semibold text-[var(--color-danger)]">
             {error instanceof Error
               ? error.message
               : "No pudimos cargar los usuarios."}
@@ -208,7 +182,7 @@ export function UsuariosTabla() {
           <button
             type="button"
             onClick={() => void refetch()}
-            className="mt-5 border border-[#233128]/25 px-5 py-2.5 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[#233128] transition hover:border-[#233128] hover:bg-[#233128] hover:text-[#FFFDF8]"
+            className="lp-button lp-button--secondary mt-5 min-h-11 px-6 py-2.5 text-sm font-black"
           >
             Reintentar
           </button>
@@ -219,11 +193,9 @@ export function UsuariosTabla() {
           VACÍO
       ========================================================== */}
       {!isPending && !isError && usuarios.length === 0 && (
-        <div className="px-5 py-12 text-center sm:px-7">
-          <p className="mx-auto max-w-md text-sm leading-7 text-[#746D63]">
-            Todavía no hay usuarios registrados en la plataforma.
-          </p>
-        </div>
+        <p className="px-6 py-12 text-center text-sm font-semibold text-[var(--color-text-muted)] sm:px-8">
+          Todavía no hay usuarios registrados en la plataforma.
+        </p>
       )}
 
       {/* =========================================================
@@ -238,16 +210,13 @@ export function UsuariosTabla() {
               </caption>
 
               <thead>
-                <tr className="border-b border-[#5B3A29]/15 bg-[#F3EBDD]/50">
-                  {COLUMNAS.map((columna, indice) => (
+                <tr className="bg-[var(--color-canvas)]">
+                  {COLUMNAS.map((columna) => (
                     <th
                       key={columna}
                       scope="col"
-                      className="px-5 py-3.5 text-left font-mono text-[8px] font-semibold uppercase tracking-[0.2em] text-[#8D4F32]"
+                      className="px-5 py-3.5 text-left text-xs font-black text-[var(--color-brand)]"
                     >
-                      <span className="mr-2 text-[#C6923B]">
-                        {numero(indice + 1)}
-                      </span>
                       {columna}
                     </th>
                   ))}
@@ -266,18 +235,18 @@ export function UsuariosTabla() {
           {totalPaginas > 1 && (
             <nav
               aria-label="Paginación de usuarios"
-              className="flex items-center justify-between gap-4 border-t border-[#5B3A29]/15 px-5 py-5 sm:px-7"
+              className="flex items-center justify-between gap-4 border-t border-[var(--color-border)] px-6 py-5 sm:px-8"
             >
               <button
                 type="button"
                 onClick={() => setPagina((p) => Math.max(1, p - 1))}
                 disabled={pagina === 1}
-                className="border border-[#233128]/25 px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-[#233128] transition hover:border-[#233128] hover:bg-[#233128] hover:text-[#FFFDF8] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#233128]"
+                className="lp-button lp-button--secondary min-h-11 px-5 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-40"
               >
                 ← Anterior
               </button>
 
-              <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[#746D63]">
+              <p className="font-data text-xs font-bold text-[var(--color-text-muted)]">
                 Página {pagina} de {totalPaginas}
               </p>
 
@@ -285,7 +254,7 @@ export function UsuariosTabla() {
                 type="button"
                 onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
                 disabled={pagina === totalPaginas}
-                className="border border-[#233128]/25 px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-[#233128] transition hover:border-[#233128] hover:bg-[#233128] hover:text-[#FFFDF8] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#233128]"
+                className="lp-button lp-button--secondary min-h-11 px-5 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Siguiente →
               </button>

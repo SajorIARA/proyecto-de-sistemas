@@ -40,12 +40,11 @@ export function SelectorDuracion({
   const idError = `${id}-error`;
   const limites = limitesDuracion(unidad);
   const horasTotales = duracionAHoras(valor, unidad);
-  const progreso = ((valor - limites.min) / (limites.max - limites.min)) * 100;
 
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#8D4F32]">
+        <span className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[var(--color-brand)]">
           Duración de la visita
         </span>
 
@@ -53,7 +52,7 @@ export function SelectorDuracion({
         <div
           role="group"
           aria-label="Unidad de duración"
-          className="inline-flex border border-[#5B3A29]/20 bg-[#F3EBDD]/50"
+          className="inline-flex rounded-full border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-1"
         >
           {UNIDADES.map((opcion) => {
             const activo = unidad === opcion.id;
@@ -67,11 +66,11 @@ export function SelectorDuracion({
                 aria-pressed={activo}
                 data-testid={`unidad-${opcion.id}`}
                 className={[
-                  "px-4 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.16em] transition",
+                  "rounded-full px-4 py-1.5 text-xs font-black transition",
                   "disabled:cursor-not-allowed disabled:opacity-55",
                   activo
-                    ? "bg-[#233128] text-[#FFFDF8]"
-                    : "text-[#514B43] hover:text-[#233128]",
+                    ? "bg-[var(--color-surface)] text-[var(--color-text)]"
+                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]",
                 ].join(" ")}
               >
                 {opcion.etiqueta}
@@ -83,10 +82,10 @@ export function SelectorDuracion({
 
       <p
         aria-live="polite"
-        className="mt-3 font-display text-2xl font-black tabular-nums tracking-[-0.02em] text-[#233128]"
+        className="mt-3 text-lg font-black tabular-nums text-[var(--color-text)]"
       >
         {formatearDuracion(valor, unidad)}
-        <span className="ml-2 font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-[#8A8177]">
+        <span className="ml-2 text-xs font-bold text-[var(--color-text-muted)]">
           ({horasTotales} {horasTotales === 1 ? "hora" : "horas"})
         </span>
       </p>
@@ -108,19 +107,16 @@ export function SelectorDuracion({
         aria-invalid={Boolean(error)}
         aria-describedby={error ? idError : undefined}
         data-testid="slider-duracion"
-        className="rango-editorial mt-3 h-1.5 w-full cursor-pointer appearance-none text-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-55"
-        style={{
-          background: `linear-gradient(90deg, #2F4B3B ${progreso}%, #E9DFC9 ${progreso}%)`,
-        }}
+        className="mt-3 h-2 w-full cursor-pointer appearance-none rounded-full accent-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-55"
       />
 
-      <div className="mt-2 flex justify-between font-mono text-[8px] font-bold uppercase tracking-[0.14em] text-[#8A8177]">
+      <div className="mt-1.5 flex justify-between text-[0.65rem] font-bold text-[var(--color-text-muted)]">
         <span>{limites.min}</span>
         <span>{limites.max}</span>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.18em] text-[#8A8177]">
+        <span className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
           Rápido
         </span>
 
@@ -135,11 +131,11 @@ export function SelectorDuracion({
               disabled={disabled}
               aria-pressed={activo}
               className={[
-                "border px-3 py-1.5 font-mono text-[8px] font-bold uppercase tracking-[0.12em] transition",
+                "rounded-full border px-3.5 py-1.5 text-xs font-black transition",
                 "disabled:cursor-not-allowed disabled:opacity-55",
                 activo
-                  ? "border-[#2F4B3B] bg-[#2F4B3B] text-[#FFFDF8]"
-                  : "border-[#5B3A29]/15 bg-[#FFFDF8] text-[#514B43] hover:border-[#2F4B3B]/40 hover:text-[#233128]",
+                  ? "border-[var(--color-border-strong)] bg-[var(--color-route-strong)] text-[var(--color-text)]"
+                  : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text)]",
               ].join(" ")}
             >
               {formatearDuracion(preset, unidad)}
@@ -148,7 +144,7 @@ export function SelectorDuracion({
         })}
       </div>
 
-      <p className="mt-2 text-xs text-[#746D63]">
+      <p className="mt-2 text-xs text-[var(--color-text-muted)]">
         Duración máxima admitida: {DURACION.maxHoras} horas.
       </p>
 
@@ -156,7 +152,7 @@ export function SelectorDuracion({
         <p
           id={idError}
           role="alert"
-          className="mt-1 text-xs font-semibold text-[#9A3B2E]"
+          className="mt-1 text-xs font-semibold text-[var(--color-danger)]"
         >
           {error}
         </p>

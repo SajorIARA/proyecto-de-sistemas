@@ -30,23 +30,23 @@ export function MapaDestino({ ubicacion, nombreDestino }: MapaDestinoProps) {
   return (
     <section
       aria-labelledby="mapa-destino"
-      className="overflow-hidden border border-[#5B3A29]/15 bg-[#FFFDF8]"
+      className="chuki-info-panel overflow-hidden rounded-[1.85rem] border border-[var(--color-border)] bg-[var(--color-surface)]"
     >
-      <header className="flex flex-wrap items-end justify-between gap-4 border-b border-[#5B3A29]/15 px-6 py-5">
+      <header className="flex items-center justify-between gap-4 border-b border-[var(--color-border)]/[0.08] px-6 py-5">
         <div>
-          <p className="font-mono text-[9px] uppercase tracking-[0.24em] text-[#9A5B3C]">
-            02 / Ubicación
+          <p className="text-[0.6rem] font-black uppercase tracking-[0.24em] text-[var(--color-brand)]">
+            Ubicación
           </p>
 
           <h3
             id="mapa-destino"
-            className="font-display mt-2 text-xl font-black tracking-[-0.03em] text-[#233128]"
+            className="mt-1 text-lg font-black tracking-tight text-[var(--color-text)]"
           >
             Cómo llegar
           </h3>
         </div>
 
-        <span className="shrink-0 border border-[#2F4B3B]/25 bg-[#EDF2E9] px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-[#304A38]">
+        <span className="shrink-0 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-muted)] px-3 py-1.5 text-[0.58rem] font-black uppercase tracking-[0.16em] text-[var(--color-text)]">
           Mapa interactivo
         </span>
       </header>
@@ -82,19 +82,15 @@ export function MapaDestino({ ubicacion, nombreDestino }: MapaDestinoProps) {
           className="flex min-h-[19rem] flex-col items-center justify-center px-6 py-12 text-center"
           data-testid="mapa-sin-coordenada"
         >
-          <p className="text-sm font-bold text-[#263029]">
+          <p className="text-sm font-bold text-[var(--color-text)]">
             Este destino aún no tiene coordenada registrada.
           </p>
         </div>
       )}
 
       {/* Coordenadas reales del backend */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#5B3A29]/15 px-6 py-4">
-        <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#8A8177]">
-          Coordenada PostGIS
-        </p>
-
-        <p className="font-mono text-sm font-bold tabular-nums text-[#233128]">
+      <div className="flex items-center justify-center border-t border-[var(--color-border)]/[0.08] px-6 py-4">
+        <p className="font-mono text-sm font-bold tabular-nums text-[var(--color-text)]">
           {formatearCoordenadas(ubicacion)}
         </p>
       </div>

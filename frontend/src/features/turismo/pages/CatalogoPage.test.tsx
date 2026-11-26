@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "../../auth/context/AuthContext";
+import { RutaProvider } from "../context/RutaContext";
 import { TurismoApiError, listarAtractivos } from "../api/turismoApi";
 import { CatalogoPage } from "./CatalogoPage";
 import type { Atractivo, Paginado } from "../../../types/turismo";
@@ -23,6 +24,10 @@ vi.mock("../api/turismoApi", async () => {
     listarFacetas: vi.fn(),
   };
 });
+
+vi.mock("./RutaBuilderPage", () => ({
+  RutaBuilderPage: () => <h1>Constructor de ruta</h1>,
+}));
 
 function atractivo(overrides: Partial<Atractivo> = {}): Atractivo {
   return {
@@ -64,14 +69,25 @@ function renderCatalogo(ruta = "/destinos") {
     <QueryClientProvider client={cliente()}>
       <MemoryRouter initialEntries={[ruta]}>
         <AuthProvider>
-          <Routes>
-            <Route path="/destinos" element={<CatalogoPage />} />
-            <Route path="/destinos/:id" element={<h1>Detalle</h1>} />
-          </Routes>
+          <RutaProvider>
+            <Routes>
+              <Route path="/destinos" element={<CatalogoPage />} />
+              <Route path="/destinos/:id" element={<h1>Detalle</h1>} />
+            </Routes>
+          </RutaProvider>
         </AuthProvider>
       </MemoryRouter>
     </QueryClientProvider>,
   );
+}
+
+async function abrirFiltros() {
+  fireEvent.click(
+    screen.getByRole("button", { name: /filtros y búsqueda/i }),
+  );
+  return screen.findByRole("dialog", {
+    name: /filtros del catálogo/i,
+  });
 }
 
 describe("CatalogoPage", () => {
@@ -87,6 +103,7 @@ describe("CatalogoPage", () => {
     vi.mocked(listarAtractivos).mockResolvedValue(pagina([]));
 
     renderCatalogo();
+    await abrirFiltros();
 
     const grupo = await screen.findByRole("group", {
       name: /filtrar catálogo por categoría/i,
@@ -158,7 +175,7 @@ describe("CatalogoPage", () => {
       within(card).getByTestId("destino-imagen-placeholder"),
     ).toBeInTheDocument();
 
-    expect(within(card).getByRole("link", { name: /ver detalle/i })).toHaveAttribute(
+    expect(within(card).getByRole("link", { name: /explorar/i })).toHaveAttribute(
       "href",
       "/destinos/11111111-1111-1111-1111-111111111111",
     );
@@ -170,6 +187,7 @@ describe("CatalogoPage", () => {
     renderCatalogo();
 
     await screen.findByTestId("catalogo-vacio");
+    await abrirFiltros();
 
     expect(vi.mocked(listarAtractivos).mock.calls[0][0]?.categoria).toBeNull();
 
@@ -269,6 +287,7 @@ describe("CatalogoPage", () => {
     renderCatalogo();
 
     await screen.findByTestId("catalogo-vacio");
+    await abrirFiltros();
     const llamadasIniciales = vi.mocked(listarAtractivos).mock.calls.length;
 
     const buscador = screen.getByRole("searchbox", {
@@ -303,6 +322,7 @@ describe("CatalogoPage", () => {
     renderCatalogo("/destinos?categoria=Miradores&zona=Centro");
 
     await screen.findByTestId("catalogo-vacio");
+    await abrirFiltros();
 
     expect(vi.mocked(listarAtractivos)).toHaveBeenCalledWith(
       expect.objectContaining({ categoria: "Miradores", zona: "Centro" }),
@@ -323,6 +343,7 @@ describe("CatalogoPage", () => {
 
     renderCatalogo();
     await screen.findByTestId("catalogo-vacio");
+    await abrirFiltros();
 
     fireEvent.click(screen.getByRole("button", { name: /miradores/i }));
 
@@ -349,6 +370,7 @@ describe("CatalogoPage", () => {
 
     renderCatalogo();
     await screen.findByTestId("catalogo-vacio");
+    await abrirFiltros();
 
     fireEvent.click(screen.getByTestId("rango-precio-hasta-20"));
 
@@ -369,6 +391,7 @@ describe("CatalogoPage", () => {
 
     renderCatalogo("/destinos?categoria=Miradores&zona=Centro");
     await screen.findByTestId("catalogo-vacio");
+    await abrirFiltros();
 
     fireEvent.click(
       screen.getByRole("button", {
@@ -391,6 +414,7 @@ describe("CatalogoPage", () => {
       "/destinos?categoria=Miradores&zona=Centro&q=museo&precio_max=20",
     );
     await screen.findByTestId("catalogo-vacio");
+    await abrirFiltros();
 
     fireEvent.click(screen.getByRole("button", { name: /limpiar todo/i }));
 
@@ -416,5 +440,77 @@ describe("CatalogoPage", () => {
     expect(
       screen.getByRole("button", { name: /quitar todos los filtros/i }),
     ).toBeInTheDocument();
+  });
+
+  it("mantiene el planificador compacto, con filtros desplazables y el chat desplegable", async () => {
+    vi.mocked(listarAtractivos).mockResolvedValue(pagina([atractivo()]));
+
+    renderCatalogo("/destinos?vista=armar");
+
+    expect(
+      await screen.findByRole("heading", { name: /constructor de ruta/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Planifica tu recorrido" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: /haz que la paz sea tu recorrido/i }),
+    ).not.toBeInTheDocument();
+
+    expect(
+      within(screen.getByRole("contentinfo")).queryByRole("link", {
+        name: /crear mi ruta/i,
+      }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /pregunta a la paz/i }));
+    expect(
+      await screen.findByRole("dialog", { name: /asistente la paz/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("añade un destino a la ruta y enlaza a la página de ruta", async () => {
+    vi.mocked(listarAtractivos).mockResolvedValue(
+      pagina([atractivo({ nombre: "Mirador Killi Killi" })]),
+    );
+
+    renderCatalogo();
+
+    fireEvent.click(await screen.findByRole("button", { name: /\+ ruta/i }));
+
+    expect(
+      await screen.findByRole("heading", { name: /constructor de ruta/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("cierra el panel de filtros con Escape y con la capa de fondo", async () => {
+    vi.mocked(listarAtractivos).mockResolvedValue(pagina([]));
+
+    renderCatalogo();
+    await screen.findByTestId("catalogo-vacio");
+    await abrirFiltros();
+
+    expect(
+      screen.getByRole("button", { name: /cerrar panel de filtros/i }),
+    ).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: /filtros del catálogo/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    await abrirFiltros();
+    fireEvent.click(
+      screen.getByRole("button", { name: /cerrar panel de filtros/i }),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("dialog", { name: /filtros del catálogo/i }),
+      ).not.toBeInTheDocument();
+    });
   });
 });

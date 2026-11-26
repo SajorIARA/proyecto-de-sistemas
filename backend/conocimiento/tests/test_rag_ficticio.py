@@ -10,6 +10,7 @@ from conocimiento.rag import (
     construir_mensajes,
     contiene_negativa,
     recuperar_fragmentos,
+    resolver_atractivo_en_pregunta,
     responder_con_contexto,
     respuesta_anclada,
     respuesta_sin_fugas,
@@ -113,6 +114,33 @@ class RecuperacionPgvectorTests(TestCase):
             resultado.fragmentos[0].distancia,
             resultado.fragmentos[1].distancia,
         )
+
+
+class ResolverAtractivoTests(TestCase):
+    def setUp(self) -> None:
+        self.arte = _atractivo("ZZTEST Museo Nacional de Arte", -68.13, -16.49)
+        self.naturaleza = _atractivo(
+            "ZZTEST Museo Nacional de Historia Natural", -68.07, -16.53
+        )
+
+    def test_nombra_un_solo_atractivo(self) -> None:
+        self.assertEqual(
+            resolver_atractivo_en_pregunta(
+                "¿Qué horario tiene el ZZTEST Museo Nacional de Arte?"
+            ),
+            self.arte.id_atractivo,
+        )
+
+    def test_pregunta_comparativa_no_filtra(self) -> None:
+        self.assertIsNone(
+            resolver_atractivo_en_pregunta(
+                "Compara ZZTEST Museo Nacional de Arte y "
+                "ZZTEST Museo Nacional de Historia Natural"
+            )
+        )
+
+    def test_sin_coincidencia_no_filtra(self) -> None:
+        self.assertIsNone(resolver_atractivo_en_pregunta("¿Qué lugares hay?"))
 
 
 class PromptTests(TestCase):

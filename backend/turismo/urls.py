@@ -10,6 +10,7 @@ from .views_catalogo import (
     TipoTarifaViewSet,
 )
 from .views_medios import EstadoFotoView, FirmaFotoView, SubirFotoView
+from .views_ruteo import RuteoView
 
 router = DefaultRouter()
 router.register("atractivos", AtractivoViewSet, basename="atractivo")
@@ -25,6 +26,7 @@ app_name = "turismo"
 # La firma va ANTES que el router: si no, `admin/fotos/{pk}/` del
 # ViewSet capturaría "firma" como lookup.
 urlpatterns = [
+    path("ruteo/", RuteoView.as_view(), name="ruteo"),
     path(
         "admin/fotos/firma/",
         FirmaFotoView.as_view(),

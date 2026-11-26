@@ -5,12 +5,14 @@ import { ProtectedRoute } from "../components/ProtectedRoute";
 import { RoleRoute } from "../components/RoleRoute";
 import { LoginPage } from "../features/auth/pages/LoginPage";
 import { RegisterPage } from "../features/auth/pages/RegisterPage";
+import { FuentesAdminPage } from "../features/conocimiento/admin/pages/FuentesAdminPage";
 import { AdminUsuariosPage } from "../features/cuenta/pages/AdminUsuariosPage";
 import { PerfilPage } from "../features/cuenta/pages/PerfilPage";
 import { AdminDestinoFormPage } from "../features/turismo/admin/pages/AdminDestinoFormPage";
 import { AdminDestinosPage } from "../features/turismo/admin/pages/AdminDestinosPage";
 import { CatalogoPage } from "../features/turismo/pages/CatalogoPage";
 import { DestinoDetailPage } from "../features/turismo/pages/DestinoDetailPage";
+import { RutaPage } from "../features/turismo/pages/RutaPage";
 import { PreferenciasPage } from "../features/preferencias/pages/PreferenciasPage";
 import { RecomendacionesPage } from "../features/recomendaciones/pages/RecomendacionesPage";
 import { HomePage } from "../pages/HomePage";
@@ -37,6 +39,10 @@ export const router = createBrowserRouter([
       {
         path: "destinos/:id",
         element: <DestinoDetailPage />,
+      },
+      {
+        path: "ruta",
+        element: <RutaPage />,
       },
       {
         path: "login",
@@ -68,6 +74,11 @@ export const router = createBrowserRouter([
             // Panel de administración: exige rol ADMIN.
             path: "mi-cuenta/usuarios",
             element: soloAdmin(<AdminUsuariosPage />),
+          },
+          {
+            // Panel de fuentes abiertas: importar, revisar y vectorizar. Solo ADMIN.
+            path: "mi-cuenta/fuentes",
+            element: soloAdmin(<FuentesAdminPage />),
           },
           {
             // CRUD de destinos: listado, alta y edición. Solo ADMIN.

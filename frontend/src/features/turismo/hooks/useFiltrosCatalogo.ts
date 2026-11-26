@@ -163,7 +163,16 @@ export function useFiltrosCatalogo(): UseFiltrosCatalogoResultado {
 
   const limpiar = useCallback(() => {
     setBorrador("");
-    setParametros(new URLSearchParams(), { replace: true });
+    setParametros(
+      (previos) => {
+        const siguientes = new URLSearchParams(previos);
+        ["categoria", "q", "zona", "precio_min", "precio_max"].forEach(
+          (clave) => siguientes.delete(clave),
+        );
+        return siguientes;
+      },
+      { replace: true },
+    );
   }, [setParametros]);
 
   return {

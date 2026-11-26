@@ -8,6 +8,7 @@ from usuarios.views import (
     TokenRefreshView,
 )
 from usuarios.views_admin import UsuariosAdminView
+from usuarios.views_privacidad import AnonimizarMisDatosView, MisDatosView
 
 urlpatterns = [
     path("login/", LoginView.as_view(), name="auth-login"),
@@ -20,4 +21,10 @@ urlpatterns = [
         name="auth-password-change",
     ),
     path("usuarios/", UsuariosAdminView.as_view(), name="auth-usuarios-admin"),
+    path("mis-datos/", MisDatosView.as_view(), name="auth-mis-datos"),
+    path(
+        "mis-datos/anonimizar/",
+        AnonimizarMisDatosView.as_view(),
+        name="auth-mis-datos-anonimizar",
+    ),
 ]

@@ -135,8 +135,8 @@ export function CarruselImagenes({
           {disponibles.map((url, i) => (
             <span
               key={url}
-              className={`h-1 transition-all duration-300 ${
-                i === indiceActual ? "w-5 bg-[#F3EBDD]" : "w-1.5 bg-[#F3EBDD]/45"
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                i === indiceActual ? "w-4 bg-[var(--color-surface)]" : "w-1.5 bg-white/50"
               }`}
             />
           ))}

@@ -7,16 +7,15 @@
  */
 
 import { Link } from "react-router-dom";
+import { Icono } from "../../../components/site/Iconos";
 import { PrivateShell } from "../../cuenta/components/PrivateShell";
 import { PreferenciasForm } from "../components/PreferenciasForm";
 
 function Pista({ titulo, detalle }: { titulo: string; detalle: string }) {
   return (
-    <li className="border-l-2 border-[#C6923B]/50 bg-[#F3EBDD]/45 px-4 py-3.5">
-      <p className="font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-[#233128]">
-        {titulo}
-      </p>
-      <p className="mt-1.5 text-xs leading-6 text-[#746D63]">{detalle}</p>
+    <li className="border-l-2 border-[var(--color-route)] bg-[var(--color-canvas)] px-4 py-3.5">
+      <p className="text-sm font-black">{titulo}</p>
+      <p className="mt-1 text-xs leading-6 text-[var(--color-text-muted)]">{detalle}</p>
     </li>
   );
 }
@@ -31,18 +30,15 @@ export function PreferenciasPage() {
       <div className="grid gap-6 lg:grid-cols-[1.55fr_0.85fr] lg:items-start">
         <PreferenciasForm />
 
-        <aside className="space-y-5 border border-[#5B3A29]/15 bg-[#FFFDF8] px-5 py-6 sm:px-7">
-          <div>
-            <p className="font-mono text-[9px] uppercase tracking-[0.22em] text-[#9A5B3C]">
-              02 / Notas al margen
-            </p>
-
-            <h2 className="mt-1.5 font-display text-2xl font-black tracking-[-0.02em] text-[#233128]">
+        <aside className="lp-panel space-y-4 px-6 py-7 sm:px-7">
+          <div className="flex items-center gap-3">
+            <Icono nombre="ajustes" className="h-5 w-5 text-[var(--color-brand)]" />
+            <h2 className="text-lg font-black">
               Cómo lo usamos
             </h2>
           </div>
 
-          <p className="text-sm leading-7 text-[#514B43]">
+          <p className="text-sm leading-7 text-[var(--color-text-muted)]">
             Tu borrador se guarda temporalmente en este navegador mientras
             completas el formulario. Nada se envía hasta que pulsas
             «Guardar preferencias».
@@ -69,12 +65,12 @@ export function PreferenciasPage() {
 
           <Link
             to="/mi-cuenta/recomendaciones"
-            className="group flex items-center justify-between gap-3 bg-[#233128] px-5 py-4 font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-[#FFFDF8] transition hover:bg-[#2F4B3B] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#233128]"
+            className="lp-button lp-button--primary group flex min-h-12 items-center justify-between gap-3 px-5 py-3 text-sm font-black"
           >
             Ver mis recomendaciones
             <span
               aria-hidden="true"
-              className="font-display text-base transition-transform group-hover:translate-x-1"
+              className="transition-transform group-hover:translate-x-1"
             >
               →
             </span>

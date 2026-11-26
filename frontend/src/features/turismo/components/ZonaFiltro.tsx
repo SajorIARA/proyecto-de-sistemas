@@ -3,8 +3,7 @@
  *
  * Se envía como el query param `zona` del backend, que resuelve un `icontains`
  * sobre la dirección del destino. "Todas las zonas" es el estado inicial y no
- * envía parámetro. El control se integra en el riel con una línea inferior,
- * en lugar de un select redondeado.
+ * envía parámetro.
  */
 
 import { useId } from "react";
@@ -29,38 +28,33 @@ export function ZonaFiltro({
   const id = useId();
 
   return (
-    <div>
-      <label
-        htmlFor={id}
-        className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#8A8177]"
-      >
+    <div className="relative">
+      <label htmlFor={id} className="sr-only">
         Zona
       </label>
 
-      <div className="relative">
-        <select
-          id={id}
-          value={seleccionada ?? ""}
-          onChange={(evento) => onChange(evento.target.value || null)}
-          disabled={disabled}
-          className="min-h-11 w-full appearance-none border-0 border-b border-[#5B3A29]/25 bg-transparent py-2.5 pl-0 pr-8 text-sm font-semibold text-[#233128] transition hover:border-[#2F4B3B]/40 focus:border-[#2F4B3B] focus:outline-none focus:ring-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C6923B] disabled:cursor-not-allowed disabled:opacity-55"
-        >
-          <option value="">Todas las zonas</option>
+      <select
+        id={id}
+        value={seleccionada ?? ""}
+        onChange={(evento) => onChange(evento.target.value || null)}
+        disabled={disabled}
+        className="min-h-12 w-full appearance-none rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-3 pr-10 text-sm font-bold text-[var(--color-text-muted)] transition hover:border-[var(--color-border-strong)] focus:border-[var(--color-border-strong)] focus:outline-none focus:ring-2 focus:ring-[var(--color-border-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-action)] disabled:cursor-not-allowed disabled:opacity-55"
+      >
+        <option value="">Todas las zonas</option>
 
-          {zonas.map((zona) => (
-            <option key={zona} value={zona}>
-              {zona}
-            </option>
-          ))}
-        </select>
+        {zonas.map((zona) => (
+          <option key={zona} value={zona}>
+            {zona}
+          </option>
+        ))}
+      </select>
 
-        <span
-          className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 text-[#9A5B3C]"
-          aria-hidden="true"
-        >
-          <Icono nombre="flecha" className="h-3.5 w-3.5 rotate-90" />
-        </span>
-      </div>
+      <span
+        className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
+        aria-hidden="true"
+      >
+        <Icono nombre="flecha" className="h-4 w-4 rotate-90" />
+      </span>
     </div>
   );
 }

@@ -1,22 +1,27 @@
-import { Link } from "react-router-dom";
+import { Icono } from "../components/site/Iconos";
+import { ButtonLink } from "../design-system/components/Button";
 
 export function NotFoundPage() {
   return (
-    <main className="grid min-h-screen place-items-center bg-slate-950 px-5 text-center text-white">
-      <div>
-        <p className="text-sm font-black uppercase tracking-[0.2em] text-amber-300">
-          Error 404
+    <main className="grid min-h-screen place-items-center bg-[var(--color-canvas)] px-5 py-12 text-center">
+      <div className="lp-panel w-full max-w-xl px-7 py-12 sm:px-12">
+        <span className="mx-auto grid h-14 w-14 place-items-center bg-[var(--color-text)] text-[var(--lp-night)]">
+          <Icono nombre="brujula" className="h-7 w-7" />
+        </span>
+        <p className="mt-7 font-data text-sm font-bold text-[var(--color-action-hover)]">
+          Error 404 · Ruta no encontrada
         </p>
-        <h1 className="mt-3 text-5xl font-black">Ruta no encontrada</h1>
-        <p className="mt-4 text-slate-400">
-          La página que buscas no existe o fue movida.
+        <h1 className="mt-4 text-4xl font-black tracking-[-0.05em] sm:text-5xl">
+          Esta parada no está disponible
+        </h1>
+        <p className="mt-5 text-sm leading-7 text-[var(--color-text-muted)] sm:text-base">
+          La página que buscas no existe, cambió de dirección o ya no está
+          publicada.
         </p>
-        <Link
-          to="/"
-          className="mt-8 inline-block rounded-full bg-sky-400 px-6 py-3 font-black text-slate-950"
-        >
+        <ButtonLink to="/" variante="primary" className="mt-8">
           Volver al inicio
-        </Link>
+          <Icono nombre="flecha" className="h-4 w-4" />
+        </ButtonLink>
       </div>
     </main>
   );
