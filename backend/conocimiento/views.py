@@ -304,9 +304,13 @@ class AprobarCandidatoAdminView(APIView):
                 duracion_minutos=entrada.validated_data["duracion_minutos"],
             )
         except ValueError as exc:
-            logger.warning("Error de validación al aprobar candidato %s: %s", id_candidato, exc)
+            logger.warning(
+                "Error de validación al aprobar candidato %s: %s", id_candidato, exc
+            )
             return Response(
-                {"detail": "No se pudo aprobar el candidato con los datos proporcionados."},
+                {
+                    "detail": "No se pudo aprobar el candidato con los datos proporcionados."
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
         importacion = ImportacionLugares.objects.get(pk=candidato.importacion_id)
