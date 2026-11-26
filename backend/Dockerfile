@@ -1,6 +1,6 @@
 # Build offline-first: la base ya contiene Python, GDAL, GEOS, PROJ y las
 # dependencias instaladas. No se ejecutan apt ni pip durante cada build.
-ARG BASE_IMAGE=raisiar/proyecto-de-sistemas-backend:1.1.0
+ARG BASE_IMAGE=ghcr.io/sajoriara/proyecto-de-sistemas-backend:1.0.10
 FROM ${BASE_IMAGE}
 
 USER root

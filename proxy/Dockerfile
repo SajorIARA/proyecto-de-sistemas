@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=raisiar/proyecto-de-sistemas-proxy:1.1.0
+ARG BASE_IMAGE=ghcr.io/sajoriara/proyecto-de-sistemas-proxy:1.0.10
 FROM ${BASE_IMAGE}
 
 COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
