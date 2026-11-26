@@ -29,7 +29,7 @@ export function ZonasSection() {
   return (
     <section
       id="zonas"
-      className="relative scroll-mt-24 overflow-hidden bg-[#233128] py-20 text-[#F3EBDD] sm:py-28"
+      className="relative scroll-mt-24 overflow-hidden bg-[var(--color-surface)] py-14 text-[var(--color-text)] sm:py-20"
     >
       <div
         className="trama-topografica pointer-events-none absolute inset-0 opacity-70"
@@ -38,7 +38,7 @@ export function ZonasSection() {
 
       <span
         aria-hidden="true"
-        className="font-display pointer-events-none absolute -bottom-10 right-0 select-none text-[22vw] font-black leading-none tracking-[-0.08em] text-[#F3EBDD]/[0.03]"
+        className="font-display pointer-events-none absolute -bottom-10 right-0 select-none text-[22vw] font-black leading-none tracking-[-0.08em] text-[var(--color-text)]/[0.03]"
       >
         LA PAZ
       </span>
@@ -46,20 +46,20 @@ export function ZonasSection() {
       <div className="contenedor-sitio relative">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="text-[0.62rem] font-black uppercase tracking-[0.26em] text-[#E8C16A]">
+            <p className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-[var(--color-action)]">
               La Paz por zonas
             </p>
 
-            <h2 className="font-display mt-5 text-[clamp(2.4rem,5vw,4.2rem)] font-black leading-[0.98] tracking-[-0.045em] text-[#FFFDF8]">
+            <h2 className="font-display mt-5 text-[clamp(2.4rem,5vw,4.2rem)] font-black leading-[0.98] tracking-[-0.045em] text-[var(--color-text)]">
               Cada zona tiene su{" "}
-              <span className="font-editorial font-normal italic text-[#E8C16A]">
+              <span className="font-editorial font-normal italic text-[var(--color-action)]">
                 propio ritmo
               </span>
               .
             </h2>
           </div>
 
-          <p className="max-w-md text-sm leading-7 text-[#F3EBDD]/65 sm:text-base">
+          <p className="max-w-md text-sm leading-7 text-[var(--color-text)] sm:text-base">
             La ciudad se recorre por barrios. Elige una zona para ver solo los
             atractivos que el catálogo registra en ella.
           </p>
@@ -70,28 +70,28 @@ export function ZonasSection() {
             <li key={zona}>
               <Link
                 to={`/destinos?zona=${encodeURIComponent(zona)}`}
-                className="group flex h-full flex-col justify-between rounded-[1.4rem] border border-[#E9DFC9]/15 bg-[#F3EBDD]/[0.04] p-6 transition duration-300 hover:-translate-y-1 hover:border-[#E8C16A]/45 hover:bg-[#F3EBDD]/[0.08]"
+                className="group flex h-full flex-col justify-between rounded-[1.4rem] border border-[var(--color-border)] bg-[var(--color-surface-muted)]/[0.04] p-6 transition duration-300 hover:-translate-y-1 hover:border-[var(--color-action)] hover:bg-[var(--color-surface-muted)]/[0.08]"
               >
                 <div className="flex items-start justify-between">
-                  <span className="font-editorial text-4xl italic leading-none text-[#E8C16A]/70">
+                  <span className="font-editorial text-4xl italic leading-none text-[var(--color-action)]">
                     {String(indice + 1).padStart(2, "0")}
                   </span>
 
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E9DFC9]/20 text-[#E8C16A]">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-action)]">
                     <Icono nombre="ubicacion" className="h-4 w-4" />
                   </span>
                 </div>
 
                 <div className="mt-10">
-                  <h3 className="font-display text-2xl font-black tracking-[-0.02em] text-[#FFFDF8]">
+                  <h3 className="font-display text-2xl font-black tracking-[-0.02em] text-[var(--color-text)]">
                     {zona}
                   </h3>
 
-                  <p className="mt-2 text-sm leading-6 text-[#F3EBDD]/60">
+                  <p className="mt-2 text-sm leading-6 text-[var(--color-text)]">
                     {DESCRIPCIONES[zona]}
                   </p>
 
-                  <span className="mt-5 inline-flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#E8C16A]">
+                  <span className="mt-5 inline-flex items-center gap-2 text-[0.7rem] font-black uppercase tracking-[0.18em] text-[var(--color-action)]">
                     Explorar zona
                     <span className="transition-transform duration-300 group-hover:translate-x-1">
                       <Icono nombre="flecha" className="h-4 w-4" />

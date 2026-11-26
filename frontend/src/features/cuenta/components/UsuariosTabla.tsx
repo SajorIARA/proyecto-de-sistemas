@@ -40,10 +40,10 @@ function iniciales(nombre: string): string {
 
 function FilaSkeleton() {
   return (
-    <tr className="border-t border-[#5B3A29]/[0.06]">
+    <tr className="border-t border-[var(--color-border)]">
       {COLUMNAS.map((columna) => (
         <td key={columna} className="px-5 py-5">
-          <div className="h-3.5 w-full max-w-[9rem] animate-pulse rounded-full bg-[#5B3A29]/10" />
+          <div className="h-3.5 w-full max-w-[9rem] animate-pulse bg-[var(--color-border)]" />
         </td>
       ))}
     </tr>
@@ -52,22 +52,22 @@ function FilaSkeleton() {
 
 function Fila({ usuario }: { usuario: UsuarioAdmin }) {
   return (
-    <tr className="border-t border-[#5B3A29]/[0.06] transition hover:bg-[#9A5B3C]/[0.04]">
+    <tr className="border-t border-[var(--color-border)] transition hover:bg-[var(--color-brand)]/10">
       <td className="px-5 py-5">
         <div className="flex items-center gap-3">
           <span
             aria-hidden="true"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2F4B3B]/10 text-xs font-black uppercase text-[#2F4B3B]"
+            className="flex h-9 w-9 shrink-0 items-center justify-center bg-[var(--color-brand)]/15 text-xs font-black uppercase text-[var(--color-brand)]"
           >
             {iniciales(usuario.nombre)}
           </span>
 
           <div className="min-w-0">
-            <p className="truncate text-sm font-black text-[#263029]">
+            <p className="truncate text-sm font-black">
               {usuario.nombre}
             </p>
 
-            <p className="truncate text-xs text-[#746D63]">{usuario.email}</p>
+            <p className="truncate text-xs text-[var(--color-text-muted)]">{usuario.email}</p>
           </div>
         </div>
       </td>
@@ -75,7 +75,7 @@ function Fila({ usuario }: { usuario: UsuarioAdmin }) {
       <td className="px-5 py-5">
         <div className="flex flex-wrap gap-1.5">
           {usuario.roles.length === 0 ? (
-            <span className="text-xs font-semibold text-[#8A8177]">
+            <span className="text-xs font-semibold text-[var(--color-text-muted)]">
               Sin rol asignado
             </span>
           ) : (
@@ -87,20 +87,20 @@ function Fila({ usuario }: { usuario: UsuarioAdmin }) {
       <td className="px-5 py-5">
         <span
           className={`inline-flex items-center gap-1.5 text-xs font-black ${
-            usuario.activo ? "text-[#2F4B3B]" : "text-[#8A8177]"
+            usuario.activo ? "text-[var(--color-brand)]" : "text-[var(--color-text-muted)]"
           }`}
         >
           <span
             aria-hidden="true"
             className={`h-2 w-2 rounded-full ${
-              usuario.activo ? "bg-[#2F4B3B]" : "bg-[#8A8177]"
+              usuario.activo ? "bg-[var(--color-route)]" : "bg-[var(--color-text-muted)]"
             }`}
           />
           {usuario.activo ? "Activo" : "Inactivo"}
         </span>
       </td>
 
-      <td className="px-5 py-5 text-xs font-semibold text-[#746D63]">
+      <td className="px-5 py-5 font-data text-xs text-[var(--color-text-muted)]">
         {formatearFecha(usuario.fecha_creacion)}
       </td>
     </tr>
@@ -117,22 +117,22 @@ export function UsuariosTabla() {
   const usuarios = data?.results ?? [];
 
   return (
-    <section className="overflow-hidden rounded-[2rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] shadow-[0_20px_60px_rgba(72,55,38,0.08)]">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#5B3A29]/[0.08] px-6 py-5 sm:px-8">
+    <section className="lp-panel overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--color-border)] px-6 py-5 sm:px-8">
         <div className="flex items-center gap-3">
-          <span className="h-px w-8 bg-[#9A5B3C]" aria-hidden="true" />
+          <span className="h-1 w-8 bg-[var(--color-brand)]" aria-hidden="true" />
 
           {/* Título distinto del h1 de la página: si se repitiera, la
               pantalla tendría dos encabezados idénticos y un lector de
               pantalla no distinguiría la sección del título. */}
-          <h2 className="text-lg font-black tracking-tight text-[#233128]">
+          <h2 className="text-lg font-black">
             Cuentas registradas
           </h2>
         </div>
 
         {!isPending && !isError && (
           <p
-            className="text-xs font-bold text-[#746D63]"
+            className="font-data text-xs text-[var(--color-text-muted)]"
             aria-live="polite"
           >
             {data?.count ?? 0} {data?.count === 1 ? "usuario" : "usuarios"}
@@ -146,7 +146,7 @@ export function UsuariosTabla() {
       {isPending && (
         <>
           <p
-            className="px-6 pt-6 text-sm font-semibold text-[#746D63] sm:px-8"
+            className="px-6 pt-6 text-sm font-semibold text-[var(--color-text-muted)] sm:px-8"
             role="status"
           >
             Cargando usuarios…
@@ -173,7 +173,7 @@ export function UsuariosTabla() {
       ========================================================== */}
       {isError && (
         <div className="px-6 py-12 text-center sm:px-8">
-          <p role="alert" className="text-sm font-semibold text-[#9A3B2E]">
+          <p role="alert" className="text-sm font-semibold text-[var(--color-danger)]">
             {error instanceof Error
               ? error.message
               : "No pudimos cargar los usuarios."}
@@ -182,7 +182,7 @@ export function UsuariosTabla() {
           <button
             type="button"
             onClick={() => void refetch()}
-            className="mt-5 rounded-full border border-[#2F4B3B]/25 px-6 py-2.5 text-sm font-black text-[#2F4B3B] transition hover:border-[#2F4B3B]"
+            className="lp-button lp-button--secondary mt-5 min-h-11 px-6 py-2.5 text-sm font-black"
           >
             Reintentar
           </button>
@@ -193,7 +193,7 @@ export function UsuariosTabla() {
           VACÍO
       ========================================================== */}
       {!isPending && !isError && usuarios.length === 0 && (
-        <p className="px-6 py-12 text-center text-sm font-semibold text-[#746D63] sm:px-8">
+        <p className="px-6 py-12 text-center text-sm font-semibold text-[var(--color-text-muted)] sm:px-8">
           Todavía no hay usuarios registrados en la plataforma.
         </p>
       )}
@@ -210,12 +210,12 @@ export function UsuariosTabla() {
               </caption>
 
               <thead>
-                <tr className="bg-[#9A5B3C]/[0.05]">
+                <tr className="bg-[var(--color-canvas)]">
                   {COLUMNAS.map((columna) => (
                     <th
                       key={columna}
                       scope="col"
-                      className="px-5 py-3.5 text-left text-[0.6rem] font-black uppercase tracking-[0.18em] text-[#8D4F32]"
+                      className="px-5 py-3.5 text-left text-xs font-black text-[var(--color-brand)]"
                     >
                       {columna}
                     </th>
@@ -235,18 +235,18 @@ export function UsuariosTabla() {
           {totalPaginas > 1 && (
             <nav
               aria-label="Paginación de usuarios"
-              className="flex items-center justify-between gap-4 border-t border-[#5B3A29]/[0.08] px-6 py-5 sm:px-8"
+              className="flex items-center justify-between gap-4 border-t border-[var(--color-border)] px-6 py-5 sm:px-8"
             >
               <button
                 type="button"
                 onClick={() => setPagina((p) => Math.max(1, p - 1))}
                 disabled={pagina === 1}
-                className="rounded-full border border-[#2F4B3B]/25 px-5 py-2 text-xs font-black text-[#2F4B3B] transition hover:border-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-40"
+                className="lp-button lp-button--secondary min-h-11 px-5 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-40"
               >
                 ← Anterior
               </button>
 
-              <p className="text-xs font-bold text-[#746D63]">
+              <p className="font-data text-xs font-bold text-[var(--color-text-muted)]">
                 Página {pagina} de {totalPaginas}
               </p>
 
@@ -254,7 +254,7 @@ export function UsuariosTabla() {
                 type="button"
                 onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
                 disabled={pagina === totalPaginas}
-                className="rounded-full border border-[#2F4B3B]/25 px-5 py-2 text-xs font-black text-[#2F4B3B] transition hover:border-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-40"
+                className="lp-button lp-button--secondary min-h-11 px-5 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Siguiente →
               </button>

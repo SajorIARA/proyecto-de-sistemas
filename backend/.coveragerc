@@ -1,0 +1,9 @@
+[run]
+source = .
+
+[report]
+# Los comandos de gestión son puntos de entrada operativos invocados por
+# migraciones/tareas; su cobertura se valida con pruebas de integración y no
+# debe diluir la señal de la lógica de la API.
+omit =
+    */management/commands/*

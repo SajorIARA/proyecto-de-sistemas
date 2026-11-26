@@ -14,6 +14,8 @@ export const TURISMO_ENDPOINTS = {
   categorias: "/turismo/categorias/",
   horarios: "/turismo/horarios/",
   tarifas: "/turismo/tarifas/",
+  /** Trazado real entre paradas (OSRM por el backend). */
+  ruteo: "/turismo/ruteo/",
 
   /**
    * CRUD de destinos (`AtractivoAdminViewSet`, `IsAdmin`). Es un

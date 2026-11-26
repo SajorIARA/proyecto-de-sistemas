@@ -1,16 +1,23 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { AuthProvider } from "./features/auth/context/AuthContext";
 import { HomePage } from "./pages/HomePage";
 
 function renderHome() {
+  const cliente = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+
   return render(
-    <MemoryRouter>
-      <AuthProvider>
-        <HomePage />
-      </AuthProvider>
-    </MemoryRouter>,
+    <QueryClientProvider client={cliente}>
+      <MemoryRouter>
+        <AuthProvider>
+          <HomePage />
+        </AuthProvider>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
@@ -32,12 +39,12 @@ describe("HomePage", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: /Explora La Paz\s*como nunca antes\./i,
+        name: /Qué puedes vivir hoy en La Paz/i,
       }),
     ).toBeInTheDocument();
 
     expect(
-      screen.getByRole("link", { name: /Turismo La Paz/i }),
+      screen.getByRole("link", { name: /La Paz.*en movimiento.*inicio/i }),
     ).toBeInTheDocument();
   }, TIMEOUT_PORTADA_MS);
 
@@ -49,39 +56,71 @@ describe("HomePage", () => {
     ).toHaveAttribute("href", "/login");
 
     expect(
-      screen.getByRole("link", { name: /Registrarme/i }),
-    ).toHaveAttribute("href", "/registro");
+      screen.getByRole("link", { name: /Planificar mi viaje/i }),
+    ).toHaveAttribute("href", "/destinos?vista=armar");
+  }, TIMEOUT_PORTADA_MS);
 
+  it("mantiene una sola acción principal para armar ruta en la portada", () => {
+    renderHome();
+
+    const enlace = screen.getByRole("link", { name: /Planificar mi viaje/i });
+
+    expect(enlace).toHaveAttribute("href", "/destinos?vista=armar");
     expect(
-      screen.getByRole("link", { name: /Comenzar ahora/i }),
-    ).toHaveAttribute("href", "/registro");
+      screen.queryByRole("link", { name: /Planificar desde cero/i }),
+    ).not.toBeInTheDocument();
   }, TIMEOUT_PORTADA_MS);
 
   it("muestra las categorías principales de turismo", () => {
     renderHome();
 
     expect(
-      screen.getByRole("heading", { name: "Naturaleza" }),
+      screen.getByRole("heading", { name: "Naturaleza de altura" }),
     ).toBeInTheDocument();
 
     expect(
-      screen.getByRole("heading", { name: "Cultura" }),
+      screen.getByRole("heading", { name: "Cultura viva" }),
     ).toBeInTheDocument();
 
     expect(
-      screen.getByRole("heading", { name: "Gastronomía" }),
+      screen.getByRole("heading", { name: "Sabores locales" }),
     ).toBeInTheDocument();
 
     expect(
       screen.getByRole("heading", { name: "Miradores" }),
     ).toBeInTheDocument();
 
-    expect(
-      screen.getByRole("heading", { name: "Aventura" }),
-    ).toBeInTheDocument();
+  }, TIMEOUT_PORTADA_MS);
+
+  it("enlaza experiencias, zonas y tiempos con parámetros utilizables", () => {
+    renderHome();
 
     expect(
-      screen.getByRole("heading", { name: "Arqueología" }),
+      screen.getByRole("link", { name: /Naturaleza de altura/i }),
+    ).toHaveAttribute("href", "/destinos?categoria=Naturaleza");
+    expect(
+      screen.getByRole("link", { name: /Mallasa.*Naturaleza/i }),
+    ).toHaveAttribute("href", "/destinos?zona=Mallasa");
+    expect(
+      screen.getByRole("link", { name: /Tengo 2 horas/i }),
+    ).toHaveAttribute("href", "/destinos?vista=armar&tiempo=2-horas");
+  }, TIMEOUT_PORTADA_MS);
+
+  it("muestra fotografías reales y un pie de navegación completo", () => {
+    renderHome();
+
+    expect(
+      screen.getByRole("img", {
+        name: /Fachada de la Basílica de San Francisco/i,
+      }),
+    ).toHaveAttribute("src", "/images/cat-cultura.jpg");
+    expect(
+      screen.getByRole("contentinfo", {
+        name: /CHUKIYAPU/i,
+      }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Créditos fotográficos/i }),
+    ).toHaveAttribute("href", "/images/CREDITOS.md");
   }, TIMEOUT_PORTADA_MS);
 });

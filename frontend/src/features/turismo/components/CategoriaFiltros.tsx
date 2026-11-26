@@ -14,7 +14,8 @@ import {
   CATEGORIAS_OFICIALES,
   CATEGORIA_TODOS,
 } from "../../../config/turismo";
-import { INSIGNIA_CATEGORIA } from "./CategoriaBadge";
+import { ICONO_CATEGORIA } from "./CategoriaBadge";
+import { Icono, type NombreIcono } from "../../../components/site/Iconos";
 
 interface CategoriaFiltrosProps {
   /** Categoría seleccionada, o `null` para "Todos". */
@@ -23,6 +24,8 @@ interface CategoriaFiltrosProps {
   /** Conteos por categoría (opcional) para mostrar en el chip. */
   conteos?: Record<string, number>;
   disabled?: boolean;
+  /** Distribuye todos los controles en varias filas, útil en paneles laterales. */
+  apilado?: boolean;
 }
 
 export function CategoriaFiltros({
@@ -30,12 +33,17 @@ export function CategoriaFiltros({
   onChange,
   conteos,
   disabled = false,
+  apilado = false,
 }: CategoriaFiltrosProps) {
   return (
     <div
       role="group"
       aria-label="Filtrar catálogo por categoría"
-      className="flex items-center gap-2.5 overflow-x-auto pb-1 pt-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] sm:gap-3 [&::-webkit-scrollbar]:hidden"
+      className={
+        apilado
+          ? "flex flex-wrap items-center gap-2 pb-1 pt-0.5"
+          : "flex items-center gap-2.5 overflow-x-auto pb-1 pt-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] sm:gap-3 [&::-webkit-scrollbar]:hidden"
+      }
     >
       <Chip
         etiqueta={CATEGORIA_TODOS}
@@ -48,7 +56,7 @@ export function CategoriaFiltros({
         <Chip
           key={categoria}
           etiqueta={categoria}
-          insignia={INSIGNIA_CATEGORIA[categoria]}
+          icono={ICONO_CATEGORIA[categoria]}
           activo={seleccionada === categoria}
           conteo={conteos?.[categoria]}
           onClick={() => onChange(categoria)}
@@ -63,7 +71,7 @@ interface ChipProps {
   etiqueta: string;
   activo: boolean;
   onClick: () => void;
-  insignia?: string;
+  icono?: NombreIcono;
   conteo?: number;
   disabled?: boolean;
 }
@@ -72,7 +80,7 @@ function Chip({
   etiqueta,
   activo,
   onClick,
-  insignia,
+  icono,
   conteo,
   disabled = false,
 }: ChipProps) {
@@ -83,27 +91,23 @@ function Chip({
       disabled={disabled}
       aria-pressed={activo}
       className={[
-        "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 py-2.5 text-xs font-black transition duration-200",
-        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]",
+        "inline-flex min-h-11 shrink-0 items-center gap-2 border px-4 py-2.5 text-xs font-black transition duration-200",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus)]",
         "disabled:cursor-not-allowed disabled:opacity-55",
         activo
-          ? "border-[#2F4B3B] bg-[#2F4B3B] text-[#FFFDF8] shadow-[0_8px_22px_rgba(47,75,59,0.28)]"
-          : "border-[#5B3A29]/15 bg-[#FFFDF8]/90 text-[#514B43] hover:border-[#2F4B3B]/40 hover:bg-[#FFFDF8] hover:text-[#233128]",
+          ? "border-[var(--color-brand)] bg-[var(--color-route-strong)] text-[var(--color-text)]"
+          : "border-[var(--color-border-strong)] bg-[var(--color-surface)] text-[var(--color-text)] hover:border-[var(--color-brand)]",
       ].join(" ")}
     >
-      {insignia && (
-        <span aria-hidden="true" className="text-sm leading-none">
-          {insignia}
-        </span>
-      )}
+      {icono && <Icono nombre={icono} className="h-4 w-4" />}
 
       {etiqueta}
 
       {typeof conteo === "number" && (
         <span
           className={[
-            "rounded-full px-1.5 py-0.5 text-[0.6rem] font-black tabular-nums",
-            activo ? "bg-[#FFFDF8]/20 text-[#FFFDF8]" : "bg-[#C6923B]/18 text-[#8D4F32]",
+            "px-1.5 py-0.5 font-data text-xs font-black",
+            activo ? "bg-white/20 text-white" : "bg-[var(--color-surface-muted)] text-[var(--color-text)]",
           ].join(" ")}
         >
           {conteo}

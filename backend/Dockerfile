@@ -1,90 +1,17 @@
-# syntax=docker/dockerfile:1
+# La base ya contiene Python, GDAL, GEOS, PROJ y las dependencias instaladas:
+# no se ejecuta pip. Solo se refrescan los paquetes del sistema para incorporar
+# parches de seguridad publicados después de construir la base.
+ARG BASE_IMAGE=ghcr.io/sajoriara/proyecto-de-sistemas-backend:1.0.10
+FROM ${BASE_IMAGE}
 
-# ============================================================
-# STAGE 1: dependencies
-# ============================================================
-FROM python:3.15-slim AS deps
-
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-WORKDIR /app
-
+USER root
 RUN apt-get update \
     && apt-get upgrade -y --no-install-recommends \
-    && apt-get install -y --no-install-recommends \
-    gcc \
-    libpq-dev \
-    gdal-bin \
-    libgdal-dev \
-    libgeos-dev \
-    libproj-dev \
-    proj-bin \
     && rm -rf /var/lib/apt/lists/*
-
-COPY requirements.txt .
-RUN rm -rf /usr/local/lib/python3.15/site-packages/setuptools-*.dist-info \
-    && pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir --upgrade pip setuptools wheel
-
-# ============================================================
-# STAGE 2: runtime (producción)
-# ============================================================
-FROM python:3.15-slim AS runtime
-
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
-
 WORKDIR /app
-
-RUN apt-get update \
-    && apt-get upgrade -y --no-install-recommends \
-    && apt-get install -y --no-install-recommends \
-    libpq5 \
-    gdal-bin \
-    libgdal36 \
-    libgeos-c1t64 \
-    libproj25 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copiar solo las dependencias instaladas (no sources de build).
-# El runtime no necesita pip/setuptools/wheel: se purgan para eliminar
-# CVEs heredados (setuptools<78.1.1, wheel<0.46.2, jaraco.context<6.1.0).
-RUN rm -rf \
-    /usr/local/lib/python3.15/site-packages/pip \
-    /usr/local/lib/python3.15/site-packages/pip-*.dist-info \
-    /usr/local/lib/python3.15/site-packages/setuptools \
-    /usr/local/lib/python3.15/site-packages/setuptools-*.dist-info \
-    /usr/local/lib/python3.15/site-packages/wheel \
-    /usr/local/lib/python3.15/site-packages/wheel-*.dist-info \
-    /usr/local/lib/python3.15/site-packages/pkg_resources \
-    /usr/local/bin/pip \
-    /usr/local/bin/pip3 \
-    /usr/local/bin/pip3.15 \
-    /usr/local/bin/setuptools-*
-COPY --from=deps /usr/local/lib/python3.15/site-packages /usr/local/lib/python3.15/site-packages
-COPY --from=deps /usr/local/bin /usr/local/bin
-RUN rm -rf \
-    /usr/local/lib/python3.15/site-packages/pip \
-    /usr/local/lib/python3.15/site-packages/pip-*.dist-info \
-    /usr/local/lib/python3.15/site-packages/setuptools \
-    /usr/local/lib/python3.15/site-packages/setuptools-*.dist-info \
-    /usr/local/lib/python3.15/site-packages/wheel \
-    /usr/local/lib/python3.15/site-packages/wheel-*.dist-info \
-    /usr/local/lib/python3.15/site-packages/pkg_resources \
-    /usr/local/bin/pip \
-    /usr/local/bin/pip3 \
-    /usr/local/bin/pip3.15 \
-    /usr/local/bin/setuptools-*
-
-COPY . .
-
-RUN useradd --create-home --system appuser \
-    && mkdir -p /app/staticfiles /app/logs /app/staging \
+COPY --chown=appuser:appuser . .
+RUN mkdir -p /app/staticfiles /app/logs /app/staging \
     && chown -R appuser:appuser /app
-
 USER appuser
 
-# Gunicorn (WSGI) con timeouts y workers
-CMD ["sh", "-c", "python manage.py collectstatic --noinput 2>/dev/null; gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers ${GUNICORN_WORKERS:-2} --threads ${GUNICORN_THREADS:-2} --timeout ${GUNICORN_TIMEOUT:-60} --access-logfile - --error-logfile - --capture-output"]
+CMD ["sh", "-c", "python manage.py collectstatic --noinput 2>/dev/null; gunicorn config.wsgi:application --bind [::]:$PORT --workers ${GUNICORN_WORKERS:-2} --threads ${GUNICORN_THREADS:-2} --timeout ${GUNICORN_TIMEOUT:-60} --access-logfile - --error-logfile - --capture-output"]

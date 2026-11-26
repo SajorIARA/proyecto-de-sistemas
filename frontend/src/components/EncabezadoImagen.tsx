@@ -18,12 +18,15 @@ interface EncabezadoImagenProps {
   alt?: string;
   /** `true` cuando es visible al entrar (header): carga con prioridad. */
   prioritaria?: boolean;
+  /** La imagen acompaña al fondo y no comunica contenido por sí sola. */
+  decorativa?: boolean;
 }
 
 export function EncabezadoImagen({
   className = "",
   alt = "Turismo La Paz",
   prioritaria = false,
+  decorativa = false,
 }: EncabezadoImagenProps) {
   if (!CLOUDINARY_CLOUD_NAME) {
     return null;
@@ -34,10 +37,14 @@ export function EncabezadoImagen({
   return (
     <img
       src={url}
-      alt={alt}
+      alt={decorativa ? "" : alt}
       loading={prioritaria ? "eager" : "lazy"}
       decoding="async"
-      className={`rounded-2xl object-cover shadow-lg ring-1 ring-black/10 ${className}`}
+      className={[
+        "object-cover",
+        decorativa ? "select-none" : "rounded-2xl shadow-lg ring-1 ring-black/10",
+        className,
+      ].join(" ")}
       data-testid="encabezado-imagen"
     />
   );

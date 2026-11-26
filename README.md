@@ -16,6 +16,7 @@ backend/            Django + DRF + GeoDjango (PostGIS)
 frontend/           React + Vite + Tailwind
 proxy/              Nginx reverse proxy
 database/           Imagen BD (PostGIS + pgvector) y scripts backup/restore
+deploy/             Guías de despliegue (Supabase + Railway)
 docs/               Documentación técnica y diagramas
 docker-compose.yml          Entorno de desarrollo (recarga en vivo)
 docker-compose.prod.yml     Entorno de producción (imágenes + Gunicorn)
@@ -28,7 +29,9 @@ La documentación de arquitectura (diagramas Mermaid) vive en `docs/`:
 - `docs/architecture/` — diagramas de arquitectura (vista general, frontend,
   backend, motor de recomendación, base de datos, infraestructura, CI/CD)
 - `docs/database/der.md` — diseño del modelo de datos relacional y geoespacial
-- `docs/integracion-ci-cd.md` — configuración de GitHub, Docker Hub y Railway
+- `docs/integracion-ci-cd.md` — configuración de GitHub, GHCR y Railway
+- `deploy/supabase/README.md` — PostgreSQL gestionado (PostGIS + pgvector)
+- `deploy/railway/README.md` — despliegue de la aplicación en Railway
 
 Todos los diagramas son archivos `.md` independientes compatibles con GitHub,
 VS Code y cualquier visor que soporte Mermaid.
@@ -61,6 +64,50 @@ VS Code y cualquier visor que soporte Mermaid.
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
+### Despliegue gestionado: Supabase + Railway
+
+Para staging y producción se usa **Supabase** como PostgreSQL gestionado
+(PostGIS + pgvector) y **Railway** para el backend, worker, beat, frontend,
+proxy, Redis y Ollama opcional. Cada entorno tiene su propio proyecto de
+Supabase y de Railway.
+
+```bash
+# 1. Publicar imágenes (GHCR por defecto; Docker Hub con registry=dockerhub)
+gh workflow run release.yml --ref dev -f version=1.1.0 -f registry=ghcr
+
+# 2. Desplegar el entorno (los servicios ya apuntan al tag publicado)
+gh workflow run deploy.yml -f environment=staging -f strategy=image
+```
+
+Guías completas:
+
+- [`deploy/supabase/README.md`](deploy/supabase/README.md) — proyectos,
+  extensiones, Session Pooler, seguridad y backups.
+- [`deploy/railway/README.md`](deploy/railway/README.md) — servicios,
+  variables, orden de creación, modelos de Ollama y pruebas de humo.
+
+### Si los builds fallan por DNS de Docker
+
+Síntoma: `apt-get`, `pip` o `pnpm` fallan con
+`Temporary failure in name resolution` aunque el host tenga Internet.
+
+Causa habitual: `/etc/resolv.conf` apunta a `127.0.0.53` (stub de
+systemd-resolved), inalcanzable desde la red del contenedor.
+
+```bash
+# Opción A: DNS explícito para los contenedores y para los builds
+#   /etc/docker/daemon.json → { "dns": ["1.1.1.1", "8.8.8.8"] }
+sudo systemctl restart docker
+
+# Opción B: solo para un build puntual (no toca el daemon)
+docker build --network=host -t mi-imagen ./backend
+
+# Opción C: en docker-compose.yml, por servicio
+#   dns: [1.1.1.1, 8.8.8.8]
+```
+
+En GitHub Actions no hace falta: los runners resuelven DNS normalmente.
+
 ## Ejecutar pruebas / lint dentro de contenedores
 
 ```bash
@@ -81,8 +128,12 @@ docker compose run --rm frontend pnpm test
 
 ## Base de datos
 
-- PostgreSQL + PostGIS + pgvector (imagen custom `database/Dockerfile` sobre `postgres:17-bookworm`).
-- Datos persistentes en el volumen `postgres_data`.
+- PostgreSQL + PostGIS + pgvector (imagen custom `database/Dockerfile` sobre
+  `postgres:17-bookworm`) para desarrollo y VPS.
+- En staging y producción la base vive en **Supabase**. Django recibe
+  `DATABASE_URL` con el Session Pooler y SSL; ver
+  [`deploy/supabase/README.md`](deploy/supabase/README.md).
+- Datos persistentes en el volumen `postgres_data` (solo local/VPS).
 - El schema (extensiones, tablas, índices) lo crean las **migraciones de Django**
   en el primer arranque (`manage.py migrate`); datos de referencia en
   `manage.py seed`.
@@ -150,7 +201,10 @@ Ver `.env.example`. Las claves principales:
 
 | Variable | Descripción |
 |---|---|
-| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | Credenciales de la BD |
+| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | Credenciales de la BD local/VPS |
+| `DATABASE_URL` | PostgreSQL externo (Supabase, Neon, Railway). Tiene prioridad sobre `POSTGRES_*` |
+| `DB_CONN_MAX_AGE` | Segundos de reutilización de conexión (600 por defecto) |
+| `DB_SSL_REQUIRE` | Fuerza TLS en la BD; vacío = 0 con `DEBUG=1`, 1 con `DEBUG=0` |
 | `DJANGO_SECRET_KEY` | Secreto de Django (¡cambiar en producción!) |
 | `DJANGO_DEBUG` | `1` en desarrollo, `0` en producción |
 | `DJANGO_ALLOWED_HOSTS` | Hosts permitidos, separados por coma |
@@ -165,7 +219,10 @@ Ver `.env.example`. Las claves principales:
 - Los flujos de GitHub Actions validan y prueban el backend y el frontend en cada push/PR.
 - Dependabot mantiene dependencias al día.
 - CodeQL, gitleaks y Trivy aportan seguridad.
-- Al crear un tag `v*.*.*` se publican imágenes a Docker Hub (**requiere los secretos `DOCKERHUB_USERNAME` y `DOCKERHUB_TOKEN`**).
+- Al crear un tag `v*.*.*` (o lanzar el workflow **Release** indicando una versión semver) se publican las imágenes en **GHCR** usando `GITHUB_TOKEN`; no requiere secretos adicionales.
+- Verifica que los paquetes sean descargables sin credenciales (en repos públicos suelen heredar acceso público). Comandos en [`docs/integracion-ci-cd.md`](docs/integracion-ci-cd.md).
+- El workflow **Release** también acepta `registry=dockerhub` para publicar en `raisiar/...` usando `DOCKERHUB_USERNAME` y `DOCKERHUB_TOKEN`.
+- El workflow **Deploy** es manual y relanza los servicios de Railway; el tag de imagen se configura en Railway.
 
 ## Licencia
 

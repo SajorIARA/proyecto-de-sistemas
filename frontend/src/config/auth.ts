@@ -12,6 +12,11 @@ export const AUTH_ENDPOINTS = {
   /** Listado de usuarios, restringido al rol ADMIN (`UsuariosAdminView`). */
   usuariosAdmin:
     import.meta.env.VITE_AUTH_USUARIOS_ADMIN_PATH || "/auth/usuarios/",
+  /** Exportación de datos personales (`MisDatosView`). */
+  misDatos: import.meta.env.VITE_AUTH_MIS_DATOS_PATH || "/auth/mis-datos/",
+  /** Baja con anonimización (`AnonimizarMisDatosView`). */
+  anonimizarMisDatos:
+    import.meta.env.VITE_AUTH_ANONIMIZAR_PATH || "/auth/mis-datos/anonimizar/",
 } as const;
 
 /**

@@ -45,7 +45,7 @@ export function RangoPrecioFiltro({
     <div className="flex flex-wrap items-center gap-3">
       <span
         id={idEtiqueta}
-        className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[#8A8177]"
+        className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[var(--color-text-muted)]"
       >
         Precio (BOB)
       </span>
@@ -69,11 +69,11 @@ export function RangoPrecioFiltro({
               data-testid={`rango-precio-${rangoPrecio.id}`}
               className={[
                 "inline-flex min-h-11 items-center rounded-full border px-3.5 py-2 text-xs font-black transition duration-200",
-                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]",
+                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-action)]",
                 "disabled:cursor-not-allowed disabled:opacity-55",
                 activo
-                  ? "border-[#9A5B3C] bg-[#9A5B3C] text-[#FFFDF8] shadow-[0_8px_22px_rgba(154,91,60,0.25)]"
-                  : "border-[#5B3A29]/15 bg-[#FFFDF8]/90 text-[#514B43] hover:border-[#9A5B3C]/45 hover:text-[#8D4F32]",
+                  ? "border-[var(--color-brand)] bg-[var(--color-action)] text-[var(--lp-night)] shadow-[0_8px_22px_rgba(154,91,60,0.25)]"
+                  : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)]",
               ].join(" ")}
             >
               {rangoPrecio.etiqueta}
@@ -83,14 +83,14 @@ export function RangoPrecioFiltro({
       </div>
 
       {rango && (rango.min !== null || rango.max !== null) && (
-        <p className="text-xs font-semibold text-[#8A8177]" aria-live="polite">
+        <p className="text-xs font-semibold text-[var(--color-text-muted)]" aria-live="polite">
           El catálogo va de {formatearLimite(rango.min)} a{" "}
           {formatearLimite(rango.max)}
         </p>
       )}
 
       {!rango && tienePrecio && (
-        <p className="text-xs font-semibold text-[#8A8177]">
+        <p className="text-xs font-semibold text-[var(--color-text-muted)]">
           {formatearLimite(precioMin)} – {formatearLimite(precioMax)}
         </p>
       )}

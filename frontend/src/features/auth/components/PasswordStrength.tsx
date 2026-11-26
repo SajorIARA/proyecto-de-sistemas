@@ -20,11 +20,11 @@ export function PasswordStrength({
 
   return (
     <div
-      className="rounded-[1.15rem] border border-[#5B3A29]/15 bg-[#FFFDF8]/75 px-3.5 py-3"
+      className="rounded-[1.15rem] border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-3"
       aria-live="polite"
     >
       <div className="flex items-center justify-between gap-3">
-        <span className="text-[0.58rem] font-black uppercase tracking-[0.2em] text-[#81796F]">
+        <span className="text-[0.58rem] font-black uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
           Seguridad
         </span>
 
@@ -55,7 +55,7 @@ export function PasswordStrength({
             key={requisito.id}
             className={[
               "flex items-start gap-2 text-[0.7rem] font-semibold leading-5",
-              requisito.cumple ? "text-[#2F4B3B]" : "text-[#8B8174]",
+              requisito.cumple ? "text-[var(--color-brand)]" : "text-[var(--color-text-muted)]",
             ].join(" ")}
           >
             <span
@@ -63,8 +63,8 @@ export function PasswordStrength({
               className={[
                 "mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[0.6rem] font-black",
                 requisito.cumple
-                  ? "bg-[#2F4B3B]/12 text-[#2F4B3B]"
-                  : "bg-[#5B3A29]/8 text-[#9B9184]",
+                  ? "bg-[var(--color-route-strong)] text-[var(--color-text)]"
+                  : "bg-[var(--color-surface-muted)] text-[var(--color-text-muted)]",
               ].join(" ")}
             >
               {requisito.cumple ? "✓" : "·"}
