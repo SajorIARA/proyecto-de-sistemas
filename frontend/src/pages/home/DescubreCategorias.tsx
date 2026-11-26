@@ -53,25 +53,25 @@ export function DescubreCategorias() {
   return (
     <section
       id="descubre"
-      className="scroll-mt-24 bg-[#F3EBDD] py-20 sm:py-28"
+      className="scroll-mt-24 bg-[var(--color-surface-muted)] py-14 sm:py-20"
     >
       <div className="contenedor-sitio">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="text-[0.62rem] font-black uppercase tracking-[0.26em] text-[#9A5B3C]">
+            <p className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-[var(--color-brand)]">
               Descubre La Paz
             </p>
 
-            <h2 className="font-display mt-5 text-[clamp(2.4rem,5vw,4.2rem)] font-black leading-[0.98] tracking-[-0.045em] text-[#233128]">
+            <h2 className="font-display mt-5 text-[clamp(2.4rem,5vw,4.2rem)] font-black leading-[0.98] tracking-[-0.045em] text-[var(--color-text)]">
               Seis formas de{" "}
-              <span className="font-editorial font-normal italic text-[#9A5B3C]">
+              <span className="font-editorial font-normal italic text-[var(--color-brand)]">
                 sentir
               </span>{" "}
               la ciudad.
             </h2>
           </div>
 
-          <p className="max-w-md text-sm leading-7 text-[#5C574E] sm:text-base">
+          <p className="max-w-md text-sm leading-7 text-[var(--color-text-muted)] sm:text-base">
             Cada categoría reúne atractivos registrados en el catálogo
             turístico. Elige una y combina después zona, precio y búsqueda por
             texto.
@@ -83,7 +83,7 @@ export function DescubreCategorias() {
             <li key={categoria.nombre}>
               <Link
                 to={`/destinos?categoria=${encodeURIComponent(categoria.nombre)}`}
-                className="group relative block h-full overflow-hidden rounded-[1.5rem] bg-[#233128] shadow-[0_18px_45px_rgba(72,55,38,0.16)] transition duration-500 hover:-translate-y-1.5 hover:shadow-[0_30px_70px_rgba(72,55,38,0.28)]"
+                className="group relative block h-full overflow-hidden rounded-[1.5rem] bg-[var(--color-surface)] shadow-[0_18px_45px_rgba(72,55,38,0.16)] transition duration-500 hover:-translate-y-1.5 hover:shadow-[0_30px_70px_rgba(72,55,38,0.28)]"
               >
                 <div className="aspect-[4/5] w-full overflow-hidden sm:aspect-[3/4]">
                   <img
@@ -95,28 +95,28 @@ export function DescubreCategorias() {
                   />
                 </div>
 
-                <div className="absolute inset-0 bg-gradient-to-t from-[#101710] via-[#101710]/35 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-surface)] via-[var(--color-surface)] to-transparent" />
 
                 <div className="absolute inset-x-0 top-0 flex items-start justify-between p-5">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-black/25 text-[#F3EBDD] backdrop-blur-md">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/25 bg-black/25 text-[var(--color-text)] backdrop-blur-md">
                     <Icono nombre={categoria.icono} className="h-5 w-5" />
                   </span>
 
-                  <span className="text-[0.62rem] font-black uppercase tracking-[0.22em] text-[#F3EBDD]/55">
+                  <span className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-[var(--color-text)]">
                     {String(indice + 1).padStart(2, "0")}
                   </span>
                 </div>
 
                 <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-                  <h3 className="text-2xl font-black tracking-[-0.02em] text-[#FFFDF8]">
+                  <h3 className="text-2xl font-black tracking-[-0.02em] text-[var(--color-text)]">
                     {categoria.nombre}
                   </h3>
 
-                  <p className="mt-2 max-w-[18rem] text-sm leading-6 text-[#F3EBDD]/70">
+                  <p className="mt-2 max-w-[18rem] text-sm leading-6 text-[var(--color-text)]">
                     {categoria.descripcion}
                   </p>
 
-                  <span className="mt-5 inline-flex items-center gap-2 text-[0.68rem] font-black uppercase tracking-[0.18em] text-[#E8C16A]">
+                  <span className="mt-5 inline-flex items-center gap-2 text-[0.7rem] font-black uppercase tracking-[0.18em] text-[var(--color-action)]">
                     Explorar
                     <span className="transition-transform duration-300 group-hover:translate-x-1">
                       <Icono nombre="flecha" className="h-4 w-4" />
@@ -131,7 +131,7 @@ export function DescubreCategorias() {
         <div className="mt-12 flex justify-center">
           <Link
             to="/destinos"
-            className="inline-flex items-center gap-3 rounded-full border border-[#2F4B3B]/25 bg-[#FFFDF8] px-7 py-3.5 text-sm font-black text-[#2F4B3B] transition hover:border-[#2F4B3B] hover:bg-[#2F4B3B] hover:text-[#FFFDF8]"
+            className="inline-flex items-center gap-3 rounded-full border border-[var(--color-border-strong)] bg-[var(--color-surface)] px-7 py-3.5 text-sm font-black text-[var(--color-text)] transition hover:border-[var(--color-border-strong)] hover:bg-[var(--color-route-strong)] hover:text-[var(--color-text)]"
           >
             Ver todos los destinos
             <Icono nombre="flecha" className="h-4 w-4" />

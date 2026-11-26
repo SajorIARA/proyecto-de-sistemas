@@ -259,15 +259,15 @@ export function responderAsistente(
     return respuestaInicial(contexto.perfil);
   }
 
-  if (contexto.recomendaciones.length === 0) {
-    return respuestaSinDatos(contexto.perfil);
-  }
-
   if (
     texto.length <= 30 &&
     contiene(texto, ["hola", "buenas", "hey", "buen dia", "saludos"])
   ) {
     return respuestaInicial(contexto.perfil);
+  }
+
+  if (contexto.recomendaciones.length === 0) {
+    return respuestaSinDatos(contexto.perfil);
   }
 
   const categoria = CATEGORIAS_CLAVE.find(({ claves }) =>

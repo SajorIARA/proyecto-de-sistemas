@@ -16,7 +16,7 @@ export type RolCodigo = (typeof ROLES)[number];
 /** Etiqueta y color de cada rol, para los badges de la interfaz. */
 export const ROL_ETIQUETAS: Record<RolCodigo, string> = {
   ADMIN: "Administrador",
-  TOURIST: "Turista",
+  TOURIST: "Viajero",
 };
 
 /**

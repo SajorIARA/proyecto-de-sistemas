@@ -1,24 +1,9 @@
-/**
- * Vista individual de un destino — ruta `/destinos/:id`.
- *
- * Alcance del sprint:
- *  - carga asíncrona del destino por id (sin recargas del navegador);
- *  - galería de imágenes (preparada para Cloudinary, con marcador de
- *    marca mientras el backend no envíe fotos);
- *  - descripción del destino (el backend no expone un campo aparte de
- *    historia/cultura, por eso no se duplica el mismo texto);
- *  - horario de atención y costos oficiales (endpoints `/horarios/` y
- *    `/tarifas/`, filtrados en cliente porque el backend no expone
- *    filter backends);
- *  - espacio reservado para el mapa con la coordenada PostGIS;
- *  - botón de retorno al catálogo que conserva la categoría activa;
- *  - manejo de 404 con mensaje propio y reintento ante otros errores.
- */
-
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import { SiteFooter } from "../../../components/site/SiteFooter";
+import { SiteHeader } from "../../../components/site/SiteHeader";
+import { Icono } from "../../../components/site/Iconos";
+import { Button, ButtonLink } from "../../../design-system/components/Button";
 import { TurismoApiError } from "../api/turismoApi";
-import { useDestino } from "../hooks/useTurismo";
-import { formatearDuracion, formatearCoordenadas } from "../utils/formato";
 import { CatalogoError } from "../components/CatalogoError";
 import { CategoriaBadge } from "../components/CategoriaBadge";
 import { DetalleSkeleton } from "../components/Skeletons";
@@ -26,211 +11,178 @@ import { GaleriaDestino } from "../components/GaleriaDestino";
 import { HorarioTabla } from "../components/HorarioTabla";
 import { MapaDestino } from "../components/MapaDestino";
 import { TarifaTabla } from "../components/TarifaTabla";
-import { EncabezadoImagen } from "../../../components/EncabezadoImagen";
+import { useRuta } from "../context/RutaContext";
+import { useDestino } from "../hooks/useTurismo";
+import {
+  formatearCoordenadas,
+  formatearDuracion,
+  formatearUbicacion,
+} from "../utils/formato";
+
+function esRutaInternaSegura(valor: string | null): valor is string {
+  return Boolean(valor?.startsWith("/") && !valor.startsWith("//"));
+}
 
 export function DestinoDetailPage() {
   const { id = "" } = useParams();
   const [parametros] = useSearchParams();
-
-  // Conserva la combinación de filtros activa al volver al catálogo
-  // (categoría, texto, zona y rango de precio).
-  const query = parametros.toString();
-  const volverA = query ? `/destinos?${query}` : "/destinos";
-
+  const { contiene, alternar } = useRuta();
+  const regresoSolicitado = parametros.get("volver");
+  const regresoAlConstructor = esRutaInternaSegura(regresoSolicitado)
+    ? regresoSolicitado
+    : null;
+  const parametrosCatalogo = new URLSearchParams(parametros);
+  parametrosCatalogo.delete("volver");
+  const queryCatalogo = parametrosCatalogo.toString();
+  const volverA =
+    regresoAlConstructor ??
+    (queryCatalogo ? `/destinos?${queryCatalogo}` : "/destinos");
+  const desdeConstructor = (() => {
+    if (!regresoAlConstructor) return false;
+    const [, query = ""] = regresoAlConstructor.split("?", 2);
+    return (
+      regresoAlConstructor.startsWith("/destinos") &&
+      new URLSearchParams(query).get("vista") === "armar"
+    );
+  })();
+  const etiquetaVolver = desdeConstructor
+    ? "Volver a crear mi ruta"
+    : "Volver al catálogo";
   const { data: destino, isPending, isError, error, refetch } = useDestino(id);
 
   if (isPending) {
     return (
-      <main className="min-h-screen bg-[#F3EBDD] px-6 py-14 text-[#263029] sm:px-8 lg:px-10">
-        <div className="contenedor-medio">
-          <Link
-            to={volverA}
-            className="inline-flex items-center gap-2 text-sm font-bold text-[#8D4F32] underline-offset-4 hover:underline"
-          >
-            <span aria-hidden="true">←</span> Volver al catálogo
+      <div className="chuki-page min-h-screen bg-[var(--color-canvas)]">
+        <SiteHeader />
+        <main id="contenido-principal" className="contenedor-medio py-10">
+          <Link to={volverA} className="inline-flex min-h-11 items-center gap-2 font-bold">
+            <span aria-hidden="true">←</span> {etiquetaVolver}
           </Link>
-
-          <div className="mt-10">
+          <div className="mt-8">
             <DetalleSkeleton />
           </div>
-        </div>
-      </main>
+        </main>
+        <SiteFooter />
+      </div>
     );
   }
 
   if (isError) {
     const noExiste = error instanceof TurismoApiError && error.esNoEncontrado;
-
     return (
-      <main className="grid min-h-screen place-items-center bg-[#F3EBDD] px-6 py-16 text-[#263029]">
-        <div className="w-full max-w-lg text-center">
-          {noExiste ? (
-            <>
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-[#9A5B3C]">
-                Error 404
-              </p>
-
-              <span
-                className="mx-auto mt-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#2F4B3B]/10 text-4xl"
-                aria-hidden="true"
-              >
-                🧭
-              </span>
-
-              <h1 className="mt-6 text-3xl font-black tracking-[-0.03em] text-[#233128]">
-                No encontramos este destino
-              </h1>
-
-              <p className="mt-4 text-sm leading-6 text-[#514B43]">
-                El atractivo que buscas no existe o ya no está disponible en
-                nuestro catálogo. Puede que haya cambiado su nombre o que se
-                haya dado de baja.
-              </p>
-
-              <Link
-                to={volverA}
-                className="mt-8 inline-flex items-center gap-2.5 rounded-full bg-[#2F4B3B] px-7 py-3.5 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128]"
-              >
-                Volver al catálogo
-                <span aria-hidden="true">→</span>
-              </Link>
-            </>
-          ) : (
-            <CatalogoError
-              onReintentar={() => void refetch()}
-              mensaje={
-                error instanceof Error
-                  ? error.message
-                  : "No pudimos cargar la información de este destino."
-              }
-            />
-          )}
-        </div>
-      </main>
+      <div className="chuki-page min-h-screen bg-[var(--color-canvas)]">
+        <SiteHeader />
+        <main id="contenido-principal" className="grid min-h-[70vh] place-items-center px-5 py-16">
+          <div className="max-w-lg text-center">
+            {noExiste ? (
+              <>
+                <p className="font-data text-sm font-bold text-[var(--color-action)]">Error 404</p>
+                <Icono nombre="brujula" className="mx-auto mt-6 h-12 w-12 text-[var(--color-brand)]" />
+                <h1 className="mt-5 text-3xl font-black">No encontramos este destino</h1>
+                <p className="mt-4 leading-7 text-[var(--color-text-muted)]">
+                  El lugar no existe o dejó de estar publicado. Regresa para
+                  consultar otras opciones disponibles.
+                </p>
+                <ButtonLink to={volverA} variante="primary" className="mt-7">
+                  {etiquetaVolver}
+                </ButtonLink>
+              </>
+            ) : (
+              <CatalogoError
+                onReintentar={() => void refetch()}
+                mensaje={
+                  error instanceof Error
+                    ? error.message
+                    : "No pudimos cargar este destino."
+                }
+              />
+            )}
+          </div>
+        </main>
+        <SiteFooter />
+      </div>
     );
   }
 
-  if (!destino) {
-    return null;
-  }
+  if (!destino) return null;
 
+  const enRuta = contiene(destino.id);
   const duracion = formatearDuracion(destino.duracion_minutos);
 
   return (
-    <main className="min-h-screen bg-[#F3EBDD] text-[#263029]">
-      {/* =========================================================
-          CABECERA
-      ========================================================== */}
-      <header className="relative overflow-hidden border-b border-[#5B3A29]/[0.08] bg-[#233128]">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `
-              linear-gradient(45deg, rgba(233,223,201,.35) 25%, transparent 25%),
-              linear-gradient(-45deg, rgba(233,223,201,.35) 25%, transparent 25%)
-            `,
-            backgroundSize: "52px 52px",
-          }}
-          aria-hidden="true"
-        />
-
-        <div
-          className="pointer-events-none absolute -left-20 top-0 h-72 w-72 rounded-full bg-[#C6923B]/22 blur-[120px]"
-          aria-hidden="true"
-        />
-
-        <div className="contenedor-medio relative px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
+    <div className="chuki-page min-h-screen bg-[var(--color-canvas)]">
+      <SiteHeader />
+      <main id="contenido-principal">
+        <div className="contenedor-amplio py-5">
           <Link
             to={volverA}
-            className="inline-flex items-center gap-2.5 rounded-full border border-[#E9DFC9]/20 bg-[#1A241C]/35 px-4 py-2.5 text-xs font-black text-[#F3EBDD] backdrop-blur-xl transition hover:bg-[#1A241C]/60"
+            className="inline-flex min-h-11 items-center gap-2 rounded-md border border-[var(--color-border)] bg-[var(--button-secondary-bg)] px-3 font-bold text-[var(--color-text)] transition-colors hover:border-[var(--color-brand)] hover:bg-[var(--color-route-strong)] hover:text-[var(--color-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-action)] motion-reduce:transition-none"
           >
             <span aria-hidden="true">←</span>
-            Volver al catálogo
+            {etiquetaVolver}
           </Link>
+        </div>
 
-          <div className="mt-10 flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
-            <div className="max-w-3xl">
-              {destino.categorias.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {destino.categorias.map((categoria) => (
-                    <span
-                      key={categoria}
-                      className="inline-flex items-center rounded-full border border-[#E9DFC9]/25 bg-[#1A241C]/40 px-1 py-1 backdrop-blur-xl"
-                    >
-                      <CategoriaBadge categoria={categoria} />
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <h1 className="mt-5 text-[clamp(2.2rem,5.5vw,3.8rem)] font-black leading-[0.98] tracking-[-0.04em] text-[#FFFDF8]">
+        <section className="contenedor-amplio grid overflow-hidden bg-[var(--lp-night)] shadow-[var(--lp-shadow-float)] lg:min-h-[40rem] lg:grid-cols-[1.35fr_0.65fr]">
+          <div className="min-h-[30rem] border-b border-white/10 lg:border-b-0">
+            <GaleriaDestino atractivo={destino} />
+          </div>
+          <div className="lp-topographic flex flex-col justify-between p-6 text-white sm:p-8 lg:p-10 xl:p-12">
+            <div>
+              <div className="flex flex-wrap gap-2">
+                {destino.categorias.map((categoria) => (
+                  <CategoriaBadge key={categoria} categoria={categoria} />
+                ))}
+              </div>
+              <h1 className="lp-editorial-title mt-6 text-[clamp(3.5rem,6vw,6.5rem)] leading-[0.82]">
                 {destino.nombre}
               </h1>
-
-              <p className="mt-5 flex items-start gap-2.5 text-sm font-semibold text-[#E8D8B7]/85">
-                <span className="mt-px" aria-hidden="true">
-                  📍
-                </span>
-
-                <span>
-                  {destino.direccion?.trim() || "Ubicación no registrada"}
-                </span>
+              <p className="mt-6 flex items-start gap-2 leading-7 text-white/70">
+                <Icono nombre="ubicacion" className="mt-1 h-5 w-5 shrink-0 text-[var(--lp-sun)]" />
+                {formatearUbicacion(destino.direccion, destino.ubicacion)}
               </p>
 
-              {/* Datos rápidos */}
-              <dl className="mt-8 flex flex-wrap gap-3">
-                <DatoRapido
-                  etiqueta="Tiempo de visita"
-                  valor={duracion}
-                  insignia="⏱"
-                />
-
-                <DatoRapido
+              <dl className="mt-8 grid grid-cols-2 border-y border-white/20 sm:grid-cols-3">
+                <Dato etiqueta="Visita" valor={duracion || "Sin confirmar"} />
+                <Dato etiqueta="Tarifa" valor="Consultar abajo" />
+                <Dato
                   etiqueta="Coordenadas"
                   valor={formatearCoordenadas(destino.ubicacion)}
-                  insignia="🧭"
-                />
-
-                <DatoRapido
-                  etiqueta="Fuente"
-                  valor={destino.fuente_origen}
-                  insignia="🗂️"
+                  className="col-span-2 sm:col-span-1"
                 />
               </dl>
             </div>
 
-            <EncabezadoImagen
-              prioritaria
-              className="h-28 w-auto max-w-[42%] shrink-0 sm:h-40 lg:h-52"
-            />
-          </div>
-        </div>
-      </header>
-
-      {/* =========================================================
-          CONTENIDO
-      ========================================================== */}
-      <div className="contenedor-medio px-6 py-12 sm:px-8 lg:px-10 lg:py-16">
-        <GaleriaDestino atractivo={destino} />
-
-        <div className="mt-12 grid gap-10 lg:grid-cols-[1.25fr_1fr] lg:gap-12">
-          {/* Columna principal */}
-          <div className="space-y-10">
-            <section aria-labelledby="descripcion-destino">
-              <p className="text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#9A5B3C]">
-                Sobre el destino
-              </p>
-
-              <h2
-                id="descripcion-destino"
-                className="mt-2 text-2xl font-black tracking-[-0.02em] text-[#233128]"
+            <div className="mt-8 grid gap-2 sm:grid-cols-[1fr_auto]">
+              <Button
+                variante={enRuta ? "route" : "primary"}
+                onClick={() => alternar(destino)}
               >
-                Descripción
-              </h2>
+                <Icono nombre="ruta" className="h-4 w-4" />
+                {enRuta ? "Incluido en mi viaje" : "Añadir a mi viaje"}
+              </Button>
+              {enRuta && (
+                <ButtonLink to="/destinos?vista=armar" variante="secondary">
+                  Organizar
+                </ButtonLink>
+              )}
+            </div>
+          </div>
+        </section>
 
-              <p className="mt-5 whitespace-pre-line text-[0.95rem] leading-7 text-[#3F3A34]">
+        <div className="contenedor-amplio grid gap-10 py-12 lg:grid-cols-[1.15fr_0.85fr] lg:py-20">
+          <div className="space-y-8">
+            <section
+              aria-label="Descripción"
+              className="border-l-4 border-[var(--color-action)] bg-[var(--color-surface)] p-7 shadow-[var(--lp-shadow-md)] sm:p-10"
+            >
+              <p className="text-sm font-bold text-[var(--color-action-hover)]">Antes de llegar</p>
+              <h2 id="descripcion-destino" className="lp-editorial-title mt-3 text-5xl">
+                Conoce el lugar
+              </h2>
+              <p className="mt-5 whitespace-pre-line leading-7 text-[var(--color-text-muted)]">
                 {destino.descripcion ||
-                  "La descripción de este destino estará disponible próximamente."}
+                  "La descripción de este destino todavía no está disponible."}
               </p>
             </section>
 
@@ -240,51 +192,45 @@ export function DestinoDetailPage() {
             />
           </div>
 
-          {/* Columna lateral */}
-          <div className="space-y-6">
+          <aside className="space-y-6" aria-label="Información para la visita">
             <HorarioTabla destinoId={destino.id} />
-
             <TarifaTabla destinoId={destino.id} />
-          </div>
+            <section className="lp-panel p-5">
+              <h2 className="font-black">Confianza de los datos</h2>
+              <dl className="mt-4 space-y-3 text-sm">
+                <div className="flex justify-between gap-4">
+                  <dt className="text-[var(--color-text-muted)]">Fuente</dt>
+                  <dd className="text-right font-bold">{destino.fuente_origen}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-[var(--color-text-muted)]">Estado</dt>
+                  <dd className="text-right font-bold text-[var(--color-brand)]">
+                    Publicado
+                  </dd>
+                </div>
+              </dl>
+            </section>
+          </aside>
         </div>
-
-        {/* Navegación inferior */}
-        <div className="mt-16 flex flex-col items-center gap-4 border-t border-[#5B3A29]/[0.08] pt-10 text-center">
-          <p className="text-[0.6rem] font-black uppercase tracking-[0.22em] text-[#8A8177]">
-            Sigue explorando
-          </p>
-
-          <Link
-            to={volverA}
-            className="inline-flex items-center gap-2.5 rounded-full bg-[#2F4B3B] px-7 py-3.5 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128]"
-          >
-            Volver al catálogo
-            <span aria-hidden="true">→</span>
-          </Link>
-        </div>
-      </div>
-    </main>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
 
-/** Métrica destacada bajo el titular. */
-function DatoRapido({
+function Dato({
   etiqueta,
   valor,
-  insignia,
+  className = "",
 }: {
   etiqueta: string;
   valor: string;
-  insignia: string;
+  className?: string;
 }) {
   return (
-    <div className="min-w-[9rem] rounded-[1.1rem] border border-[#E9DFC9]/12 bg-[#F5EFE4]/[0.07] px-4 py-3 backdrop-blur-xl">
-      <dt className="flex items-center gap-2 text-[0.55rem] font-black uppercase tracking-[0.2em] text-[#E8D8B7]/60">
-        <span aria-hidden="true">{insignia}</span>
-        {etiqueta}
-      </dt>
-
-      <dd className="mt-1.5 text-sm font-black text-[#FFFDF8]">{valor}</dd>
+    <div className={`min-w-0 py-4 pr-4 sm:border-r sm:border-white/20 sm:px-4 first:pl-0 last:border-r-0 ${className}`}>
+      <dt className="text-xs text-white/55">{etiqueta}</dt>
+      <dd className="mt-1 break-words font-data text-sm font-bold">{valor}</dd>
     </div>
   );
 }

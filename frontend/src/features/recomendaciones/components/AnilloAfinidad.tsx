@@ -75,13 +75,13 @@ export function AnilloAfinidad({
       </svg>
 
       <div className="absolute text-center">
-        <p className="text-xl font-black leading-none tabular-nums text-[#233128]">
+        <p className="text-xl font-black leading-none tabular-nums text-[var(--color-text)]">
           {valor}
-          <span className="ml-0.5 text-[0.65rem] font-black text-[#8D4F32]">
+          <span className="ml-0.5 text-[0.65rem] font-black text-[var(--color-brand)]">
             %
           </span>
         </p>
-        <p className="mt-1 text-[0.5rem] font-black uppercase tracking-[0.16em] text-[#8A8177]">
+        <p className="mt-1 text-[0.5rem] font-black uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
           Afinidad
         </p>
       </div>

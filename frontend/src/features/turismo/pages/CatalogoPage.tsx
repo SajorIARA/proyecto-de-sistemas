@@ -1,49 +1,36 @@
-/**
- * Catálogo de destinos turísticos — ruta `/destinos`.
- *
- * Alcance definido por el Product Owner:
- *  - cuadrícula responsiva de cards (imagen, categoría, nombre,
- *    ubicación, descripción corta, botón "Ver detalle");
- *  - buscador en tiempo real por texto con debounce (nombre, palabra
- *    clave o dirección);
- *  - panel de filtros combinables: categorías (chips), zona geográfica y
- *    rango de precio en BOB, todos conectados a los query params del
- *    backend (`q`, `categoria`, `zona`, `precio_min`, `precio_max`);
- *  - paginación por scroll infinito consumiendo la API de Django sin
- *    recargas del navegador;
- *  - esqueletos de carga, estado vacío y estado de error con reintento.
- *
- * Todo el estado de los filtros vive en la URL, así que una búsqueda es
- * compartible y el botón "volver al catálogo" del detalle la restaura.
- */
-
 import { useEffect, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { useAuth } from "../../auth/context/AuthContext";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { CATALOGO_PAGE_SIZE } from "../../../config/turismo";
-import { useCatalogo, useFacetas, useAtractivosCercanos } from "../hooks/useTurismo";
-import { useFiltrosCatalogo } from "../hooks/useFiltrosCatalogo";
+import { Button, ButtonLink } from "../../../design-system/components/Button";
+import { LocationSelector, type UbicacionSeleccionada } from "../../../components/LocationSelector";
+import { SiteFooter } from "../../../components/site/SiteFooter";
+import { SiteHeader } from "../../../components/site/SiteHeader";
+import { Icono } from "../../../components/site/Iconos";
+import type { Atractivo } from "../../../types/turismo";
+import { CatalogoError } from "../components/CatalogoError";
 import { CatalogoFiltros } from "../components/CatalogoFiltros";
 import { CatalogoVacio } from "../components/CatalogoVacio";
 import { DestinoCard } from "../components/DestinoCard";
 import { DestinoCardSkeleton } from "../components/Skeletons";
-import { CatalogoError } from "../components/CatalogoError";
-import { EncabezadoImagen } from "../../../components/EncabezadoImagen";
-import { Icono } from "../../../components/site/Iconos";
-import { LocationSelector, type UbicacionSeleccionada } from "../../../components/LocationSelector";
+import { useRuta } from "../context/RutaContext";
+import { useFiltrosCatalogo } from "../hooks/useFiltrosCatalogo";
+import { useAtractivosCercanos, useCatalogo, useFacetas } from "../hooks/useTurismo";
+import { RutaBuilderPage } from "./RutaBuilderPage";
+import { ChatFlotanteCatalogo } from "../components/ChatFlotanteCatalogo";
 
-/**
- * Tarjetas de esqueleto durante la carga inicial. Se igualan al
- * `PAGE_SIZE` real del backend (20) para que la cuadrícula no dé un salto
- * de layout cuando lleguen los datos.
- */
 const SKELETONS = CATALOGO_PAGE_SIZE;
 
 export function CatalogoPage() {
-  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [parametros] = useSearchParams();
+  const vistaArmarRuta = parametros.get("vista") === "armar";
   const [ubicacion, setUbicacion] = useState<UbicacionSeleccionada | null>(null);
   const [usarCercanos, setUsarCercanos] = useState(false);
+  const [filtrosAbiertos, setFiltrosAbiertos] = useState(false);
+  const botonFiltrosRef = useRef<HTMLButtonElement | null>(null);
+  const panelFiltrosRef = useRef<HTMLElement | null>(null);
+  const centinela = useRef<HTMLDivElement | null>(null);
+  const { destinos: ruta, contiene, alternar } = useRuta();
 
   const {
     filtros,
@@ -56,28 +43,9 @@ export function CatalogoPage() {
     limpiarTexto,
     limpiar,
   } = useFiltrosCatalogo();
-
   const { data: facetas } = useFacetas();
-
-  const {
-    destinos: destinosCatalogo,
-    total: totalCatalogo,
-    hayMas,
-    cargandoMas,
-    isPending,
-    isFetching,
-    isError,
-    recargar,
-    fetchNextPage,
-  } = useCatalogo(filtros);
-
-  const {
-    data: destinosCercanosData,
-    isPending: isPendingCercanos,
-    isFetching: isFetchingCercanos,
-    isError: isErrorCercanos,
-    refetch: recargarCercanos,
-  } = useAtractivosCercanos({
+  const catalogo = useCatalogo(filtros);
+  const cercanos = useAtractivosCercanos({
     lat: ubicacion?.latitud ?? null,
     lon: ubicacion?.longitud ?? null,
     radio: 2000,
@@ -85,414 +53,370 @@ export function CatalogoPage() {
   });
 
   const modoCercanos = usarCercanos && ubicacion !== null;
-  const origenUbicacion =
-    ubicacion?.tipo === "gps" ? "tu ubicación GPS" : ubicacion?.macrodistrito ?? "la zona elegida";
-
+  const origen =
+    ubicacion?.tipo === "gps"
+      ? "tu ubicación"
+      : ubicacion?.macrodistrito ?? "la zona elegida";
   const destinos = modoCercanos
-    ? destinosCercanosData?.results ?? []
-    : destinosCatalogo;
-  const total = modoCercanos ? destinos.length : totalCatalogo;
-  const isPendingActual = modoCercanos ? isPendingCercanos : isPending;
-  const isErrorActual = modoCercanos ? isErrorCercanos : isError;
-  const recargarActual = modoCercanos ? recargarCercanos : recargar;
+    ? cercanos.data?.results ?? []
+    : catalogo.destinos;
+  const total = modoCercanos ? destinos.length : catalogo.total;
+  const pendiente = modoCercanos ? cercanos.isPending : catalogo.isPending;
+  const error = modoCercanos ? cercanos.isError : catalogo.isError;
+  const actualizando = modoCercanos
+    ? cercanos.isFetching && !cercanos.isPending
+    : catalogo.isFetching && !catalogo.isPending;
 
-  const handleUbicacionChange = (nuevaUbicacion: UbicacionSeleccionada | null) => {
-    setUbicacion(nuevaUbicacion);
-    setUsarCercanos(!!nuevaUbicacion);
-  };
+  useEffect(() => {
+    if (!filtrosAbiertos) return;
 
-  const centinela = useRef<HTMLDivElement | null>(null);
+    const desbordamientoPrevio = document.body.style.overflow;
+    const manejarTecla = (evento: KeyboardEvent) => {
+      if (evento.key === "Escape") {
+        setFiltrosAbiertos(false);
+        botonFiltrosRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", manejarTecla);
+    document.body.style.overflow = "hidden";
+    const cuadro = requestAnimationFrame(() => panelFiltrosRef.current?.focus());
 
-  // Scroll infinito: dispara la siguiente página cuando el centinela entra
-  // en pantalla. Se deja un margen de 400px para empezar a cargar antes de
-  // que el usuario llegue al final.
+    return () => {
+      cancelAnimationFrame(cuadro);
+      document.removeEventListener("keydown", manejarTecla);
+      document.body.style.overflow = desbordamientoPrevio;
+    };
+  }, [filtrosAbiertos]);
+
   useEffect(() => {
     const nodo = centinela.current;
-
-    if (!nodo || !hayMas || isPending) {
-      return;
-    }
-
-    if (typeof IntersectionObserver === "undefined") {
+    if (
+      !nodo ||
+      !catalogo.hayMas ||
+      catalogo.isPending ||
+      typeof IntersectionObserver === "undefined"
+    ) {
       return;
     }
 
     const observador = new IntersectionObserver(
       (entradas) => {
-        if (entradas[0]?.isIntersecting && hayMas && !cargandoMas) {
-          void fetchNextPage();
+        if (
+          entradas[0]?.isIntersecting &&
+          catalogo.hayMas &&
+          !catalogo.cargandoMas
+        ) {
+          void catalogo.fetchNextPage();
         }
       },
       { rootMargin: "400px" },
     );
-
     observador.observe(nodo);
-
     return () => observador.disconnect();
-  }, [hayMas, isPending, cargandoMas, fetchNextPage]);
+  }, [
+    catalogo.hayMas,
+    catalogo.isPending,
+    catalogo.cargandoMas,
+    catalogo.fetchNextPage,
+  ]);
 
-  const titulo = filtros.categoria
-    ? `Atractivos de ${filtros.categoria}`
-    : "Todos los destinos de La Paz";
+  function cambiarUbicacion(nuevaUbicacion: UbicacionSeleccionada | null) {
+    setUbicacion(nuevaUbicacion);
+    setUsarCercanos(nuevaUbicacion !== null);
+  }
 
-  // Hay una recarga en curso sobre datos ya visibles (cambio de filtro).
-  const actualizando = modoCercanos
-    ? isFetchingCercanos && !isPendingCercanos
-    : isFetching && !isPending;
+  function gestionarRuta(atractivo: Atractivo) {
+    const yaIncluido = contiene(atractivo.id);
+    alternar(atractivo);
+    if (!yaIncluido) {
+      const siguiente = new URLSearchParams(parametros);
+      siguiente.set("vista", "armar");
+      navigate(`/destinos?${siguiente.toString()}`);
+    }
+  }
+
+  function recargar() {
+    if (modoCercanos) {
+      void cercanos.refetch();
+    } else {
+      void catalogo.recargar();
+    }
+  }
+
   const queryActiva = parametros.toString();
 
   return (
-    <main className="min-h-screen bg-[#F3EBDD] text-[#263029]">
-      {/* =========================================================
-          ENCABEZADO
-      ========================================================== */}
-      <header className="relative overflow-hidden border-b border-[#5B3A29]/[0.08] bg-[#233128]">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-25"
-          style={{
-            backgroundImage: `
-              linear-gradient(45deg, rgba(233,223,201,.35) 25%, transparent 25%),
-              linear-gradient(-45deg, rgba(233,223,201,.35) 25%, transparent 25%)
-            `,
-            backgroundSize: "52px 52px",
-          }}
-          aria-hidden="true"
-        />
-
-        <div
-          className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[#C6923B]/25 blur-[120px]"
-          aria-hidden="true"
-        />
-        <div
-          className="pointer-events-none absolute -bottom-20 left-10 h-56 w-56 rounded-full bg-[#6F8064]/20 blur-[90px]"
-          aria-hidden="true"
-        />
-
-        <div className="contenedor-amplio relative px-4 py-10 sm:px-8 lg:px-10 lg:py-14">
-          {/* Navegación */}
-          <nav className="flex items-center justify-between gap-4">
-            <Link
-              to="/"
-              className="group flex w-fit items-center gap-3 text-[#F3EBDD] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]"
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E9DFC9]/25 bg-[#F5EFE4]/10 text-lg backdrop-blur-xl transition group-hover:bg-[#F5EFE4]/20">
-                ⛰
-              </span>
-
-              <span className="text-base font-black tracking-tight">
-                Turismo{" "}
-                <span className="font-medium text-[#E7B75F]">La Paz</span>
-              </span>
-            </Link>
-
-            <div className="flex items-center gap-3">
-              <Link
-                to="/"
-                className="hidden text-sm font-semibold text-[#F3EBDD]/75 transition hover:text-[#F3EBDD] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B] sm:inline"
-              >
-                Inicio
-              </Link>
-
-              <Link
-                to={isAuthenticated ? "/mi-cuenta" : "/login"}
-                className="rounded-full bg-[#F3EBDD] px-5 py-2.5 text-sm font-black text-[#233128] transition hover:bg-[#FFFDF8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]"
-              >
-                {isAuthenticated ? "Mi cuenta" : "Iniciar sesión"}
-              </Link>
-            </div>
-          </nav>
-
-          {/* Titular */}
-          <div className="mt-10 flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
-            <div className="max-w-3xl">
-              <p className="inline-flex items-center gap-2.5 rounded-full border border-[#E9DFC9]/20 bg-[#1A241C]/45 px-4 py-2 text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#F1D79D] backdrop-blur-xl">
-                <span className="h-2 w-2 rounded-full bg-[#E7B75F]" aria-hidden="true" />
-                La Paz se vive · Catálogo turístico
-              </p>
-
-              <h1 className="mt-6 text-[clamp(2.2rem,6vw,4.2rem)] font-black leading-[0.96] tracking-[-0.04em] text-[#FFFDF8]">
-                Descubre La Paz
-                <span className="block text-[#E8D8B7]">
-                  atractivo por atractivo.
-                </span>
-              </h1>
-
-              <p className="mt-5 max-w-xl text-sm leading-7 text-[#F5EFE4]/78 sm:text-base">
-                Historia, cultura, miradores y sabores paceños. Explora el catálogo completo o descubre destinos cercanos para planificar tu próxima visita con claridad.
-              </p>
-            </div>
-
-            <EncabezadoImagen
-              prioritaria
-              className="h-24 w-auto max-w-[46%] shrink-0 sm:h-40 lg:h-52"
-            />
-          </div>
-        </div>
-      </header>
-
-      {/* =========================================================
-          FILTROS
-      ========================================================== */}
-      <div className="relative z-30 border-b border-[#5B3A29]/[0.08] bg-[#F3EBDD]/94 backdrop-blur-xl">
-        <div className="contenedor-amplio px-4 py-4 sm:px-8 lg:px-10">
-          <section
-            aria-label="Elegir modo de exploración"
-            className="mt-2 rounded-[1.5rem] border border-[#5B3A29]/10 bg-[#FFFDF8]/70 p-3 sm:p-4"
-          >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <p className="text-[0.62rem] font-black uppercase tracking-[0.18em] text-[#8A8177]">
-                  {modoCercanos ? "Modo activo: destinos cercanos" : "Modo activo: catálogo completo"}
-                </p>
-                <p className="mt-1 text-sm leading-6 text-[#514B43]">
-                  {modoCercanos
-                    ? `Viendo resultados cerca de ${origenUbicacion} (radio aproximado: 2 km). Puedes volver al catálogo completo en cualquier momento.`
-                    : "Explora todo La Paz con búsqueda y filtros combinables. Usa la ubicación si quieres ver solo opciones cercanas."}
-                </p>
-              </div>
-              {modoCercanos && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUsarCercanos(false);
-                    setUbicacion(null);
-                  }}
-                  className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-[#2F4B3B]/20 bg-[#FFFDF8] px-4 py-2.5 text-sm font-black text-[#2F4B3B] transition hover:border-[#2F4B3B] hover:bg-[#2F4B3B] hover:text-[#FFFDF8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]"
-                >
-                  Volver al catálogo completo
-                </button>
-              )}
-            </div>
-
-            <div className="mt-4">
-              <LocationSelector onUbicacionChange={handleUbicacionChange} />
-            </div>
-
-            {modoCercanos && ubicacion && (
-              <div
-                className="mt-3 rounded-2xl border border-[#2F4B3B]/12 bg-[#2F4B3B]/[0.05] px-4 py-3"
-                role="status"
-                aria-live="polite"
-              >
-                <p className="text-sm font-bold text-[#233128]">
-                  Mostrando destinos cercanos según {origenUbicacion}.
-                </p>
-                <p className="mt-1 text-xs leading-5 text-[#5E5A52]">
-                  Los filtros del catálogo no reemplazan esta búsqueda por proximidad; usa &quot;Volver al catálogo completo&quot; para aplicar filtros sobre todo el listado.
-                </p>
-              </div>
-            )}
-          </section>
-
-          <div className={modoCercanos ? "mt-4 opacity-[0.88]" : "mt-4"}>
-            {!modoCercanos && (
-              <p className="mb-2 text-[0.62rem] font-black uppercase tracking-[0.18em] text-[#8A8177]">
-                Buscar y filtrar el catálogo
-              </p>
-            )}
-            {modoCercanos && (
-              <p className="mb-2 text-[0.62rem] font-black uppercase tracking-[0.18em] text-[#8A8177]">
-                Filtros del catálogo (disponibles al volver al catálogo completo)
-              </p>
-            )}
-            <CatalogoFiltros
-              filtros={filtros}
-              borrador={borrador}
-              facetas={facetas ?? null}
-              disabled={isPendingActual}
-              onBuscar={setBorrador}
-              onLimpiarTexto={limpiarTexto}
-              onCategoria={setCategoria}
-              onZona={setZona}
-              onPrecio={setRangoPrecio}
-              onLimpiar={limpiar}
-            />
-
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-              {!isErrorActual && (
-                <p
-                  className="text-sm font-semibold text-[#5E5A52]"
-                  aria-live="polite"
-                >
-                  <span className="font-black text-[#233128]">{total}</span>{" "}
-                  {total === 1 ? "destino" : "destinos"}
-                  {modoCercanos
-                    ? ` cercanos a ${origenUbicacion}`
-                    : activos > 0
-                      ? ` · ${activos} ${activos === 1 ? "filtro activo" : "filtros activos"}`
-                      : " en el catálogo"}
-                </p>
-              )}
-
-              {actualizando && (
-                <p
-                  className="inline-flex items-center gap-2 rounded-full bg-[#9A5B3C]/10 px-3 py-1.5 text-xs font-bold text-[#8D4F32]"
-                  role="status"
-                >
-                  <span
-                    className="h-2 w-2 animate-pulse rounded-full bg-[#9A5B3C]"
-                    aria-hidden="true"
-                  />
-                  {modoCercanos ? "Actualizando destinos cercanos…" : "Actualizando resultados…"}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* =========================================================
-          CUADRÍCULA
-      ========================================================== */}
-      <div className="contenedor-amplio px-4 py-8 sm:px-8 lg:px-10 lg:py-12">
-        <h2 className="sr-only">{titulo}</h2>
-
-        {isErrorActual && <CatalogoError onReintentar={() => void recargarActual()} />}
-
-        {/* Esqueletos de carga */}
-        {isPendingActual && (
-          <section aria-label="Cargando destinos" aria-busy="true">
-            <p className="mb-6 text-sm font-semibold text-[#5E5A52]" role="status">
-              {modoCercanos
-                ? `Buscando destinos cercanos a ${origenUbicacion}…`
-                : "Cargando destinos turísticos del catálogo…"}
-            </p>
-
-            <ul
-              className="grid gap-x-5 gap-y-7 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-3 2xl:grid-cols-4"
-              data-testid="catalogo-skeletons"
-            >
-              {Array.from({ length: SKELETONS }).map((_, indice) => (
-                <li key={indice} className="h-full min-w-0">
-                  <DestinoCardSkeleton />
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Sin resultados */}
-        {!isPendingActual && !isErrorActual && destinos.length === 0 && (
+    <div className="chuki-page min-h-screen bg-[var(--color-canvas)]">
+      <SiteHeader />
+      <main id="contenido-principal">
+        {vistaArmarRuta ? (
           <>
-            {modoCercanos ? (
-              <section
-                className="rounded-[2rem] border border-dashed border-[#5B3A29]/20 bg-[#FFFDF8]/75 px-5 py-14 text-center sm:px-6 sm:py-16"
-                aria-label="Sin destinos cercanos"
-              >
-                <span
-                  className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#2F4B3B]/10 text-[#2F4B3B]"
-                  aria-hidden="true"
-                >
-                  <Icono nombre="ubicacion" className="h-8 w-8" />
-                </span>
-                <h3 className="mt-6 text-xl font-black tracking-tight text-[#233128]">
-                  No encontramos destinos cercanos en este momento
-                </h3>
-                <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[#514B43]">
-                  No hay atractivos registrados en un radio aproximado de 2 km desde {origenUbicacion}. Prueba con otra ubicación o explora el catálogo completo para ver todas las opciones disponibles.
-                </p>
-                <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUsarCercanos(false);
-                      setUbicacion(null);
-                    }}
-                    className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#2F4B3B] px-6 py-3 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]"
-                  >
-                    Ver todo el catálogo
-                  </button>
-                </div>
-              </section>
-            ) : (
-              <CatalogoVacio
-                categoria={filtros.categoria}
-                filtrosActivos={activos}
-                onLimpiar={limpiar}
-              />
-            )}
+            <header className="contenedor-amplio max-w-[84rem] px-4 pb-2 pt-6 sm:px-8 sm:pt-8">
+              <h1 className="text-2xl font-black sm:text-3xl">Planifica tu recorrido</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--color-text-muted)]">
+                Elige tus paradas, revisa los detalles y organiza tu visita a La Paz.
+              </p>
+            </header>
+            <section className="contenedor-amplio max-w-[84rem] px-4 pb-8 pt-4 sm:px-8 sm:pb-12">
+              <RutaBuilderPage embebido />
+            </section>
           </>
-        )}
-
-        {/* Tarjetas */}
-        {!isPendingActual && !isErrorActual && destinos.length > 0 && (
+        ) : (
           <>
-            <ul
-              className={[
-                "grid gap-x-5 gap-y-7 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-8 lg:grid-cols-3 2xl:grid-cols-4",
-                actualizando ? "opacity-75 transition-opacity duration-200" : "",
-              ].join(" ")}
-            >
-              {destinos.map((atractivo) => {
-                const distanciaM = (atractivo as { distancia_m?: number | null }).distancia_m;
-
-                return (
-                  <li key={atractivo.id} className="h-full min-w-0">
-                    <DestinoCard atractivo={atractivo} busqueda={queryActiva} />
-                    {distanciaM !== undefined && distanciaM !== null && (
-                      <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#FFFDF8]/80 px-3 py-1 text-xs font-semibold text-[#5E5A52]">
-                        <Icono nombre="ubicacion" className="h-3.5 w-3.5 text-[#8D4F32]" />
-                        A {(distanciaM / 1000).toFixed(2)} km
-                      </p>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-
-            {/* Centinela del scroll infinito - solo para catálogo normal */}
-            {!modoCercanos && <div ref={centinela} aria-hidden="true" className="h-px" />}
-
-            {/* Fallback accesible: botón "Cargar más" siempre disponible. */}
-            {!modoCercanos && (
-              <div className="mt-12 flex flex-col items-center gap-4">
-                {hayMas ? (
-                  <button
-                    type="button"
-                    onClick={() => void fetchNextPage()}
-                    disabled={cargandoMas}
-                    className="inline-flex min-h-12 items-center gap-3 rounded-full border border-[#2F4B3B]/25 bg-[#FFFDF8] px-7 py-3.5 text-sm font-black text-[#2F4B3B] transition hover:border-[#2F4B3B] hover:bg-[#2F4B3B] hover:text-[#FFFDF8] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B] disabled:opacity-60"
+            <header className="relative isolate min-h-[32rem] overflow-hidden bg-[var(--lp-night)] text-white">
+              <img
+                src="/images/catalogo-illimani.jpg"
+                alt=""
+                width="1280"
+                height="850"
+                fetchPriority="high"
+                className="absolute inset-0 -z-20 h-full w-full object-cover object-center"
+              />
+              <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(7,25,45,.96)_0%,rgba(7,25,45,.72)_52%,rgba(7,25,45,.2)_100%),linear-gradient(0deg,rgba(7,25,45,.75),transparent_55%)]" />
+              <div className="lp-topographic absolute inset-0 -z-10 opacity-50" />
+              <div className="contenedor-amplio flex min-h-[32rem] items-end py-12 sm:py-16">
+                <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
+                  <div className="max-w-3xl">
+                    <p className="font-data text-sm font-bold text-[var(--lp-sun)]">
+                      EXPLORA LA HOYADA
+                    </p>
+                    <h1 className="lp-editorial-title mt-4 text-[clamp(3.5rem,7vw,7.5rem)] leading-[0.82]">
+                      Encuentra la vista que no vas a olvidar
+                    </h1>
+                    <p className="mt-6 max-w-2xl text-base leading-7 text-white/75">
+                      Montañas, mercados, memoria y sabores. Empieza por lo que te mueve y añade cada hallazgo a tu viaje.
+                    </p>
+                  </div>
+                  <div className="lp-catalog-tabs grid grid-cols-2 gap-2 border border-white/25 bg-[var(--lp-night)]/55 p-1 backdrop-blur-md">
+                    <ButtonLink to="/destinos" variante="secondary">
+                      Explorar
+                    </ButtonLink>
+                    <ButtonLink
+                      to="/destinos?vista=armar"
+                      variante="quiet"
+                      className="text-white hover:bg-white/10"
+                    >
+                      Planificar
+                      <span className="font-data">{ruta.length}</span>
+                    </ButtonLink>
+                  </div>
+                </div>
+              </div>
+            </header>
+            <section className="sticky top-[69px] z-30 border-b border-[var(--color-border)] bg-[var(--color-canvas)]/95 py-4 backdrop-blur-md">
+              <div className="contenedor-amplio flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-bold">
+                    <span className="font-data">{total}</span>{" "}
+                    {total === 1 ? "destino" : "destinos"}
+                    {modoCercanos ? ` cerca de ${origen}` : ""}
+                  </p>
+                  <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                    {activos > 0
+                      ? `${activos} ${activos === 1 ? "filtro activo" : "filtros activos"}`
+                      : "Catálogo completo"}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {modoCercanos && (
+                    <Button
+                      variante="quiet"
+                      onClick={() => {
+                        setUsarCercanos(false);
+                        setUbicacion(null);
+                      }}
+                    >
+                      Ver todo
+                    </Button>
+                  )}
+                  <Button
+                    ref={botonFiltrosRef}
+                    variante="secondary"
+                    onClick={() => setFiltrosAbiertos(true)}
+                    aria-haspopup="dialog"
+                    aria-expanded={filtrosAbiertos}
                   >
-                    {cargandoMas ? "Cargando más destinos…" : "Cargar más destinos"}
-                    <Icono nombre="flecha" className="h-4 w-4 rotate-90" aria-hidden="true" />
-                  </button>
-                ) : (
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#8A8177]">
-                    Fin del catálogo · {destinos.length} de {total}
+                    <Icono nombre="buscar" className="h-4 w-4" />
+                    Filtros y búsqueda
+                    {activos > 0 && (
+                      <span className="font-data text-xs">{activos}</span>
+                    )}
+                  </Button>
+                </div>
+                {actualizando && (
+                  <p className="w-full text-xs font-bold text-[var(--color-brand)]" role="status">
+                    Actualizando resultados…
                   </p>
                 )}
               </div>
+            </section>
+
+            {filtrosAbiertos && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Cerrar panel de filtros"
+                  onClick={() => setFiltrosAbiertos(false)}
+                  className="fixed inset-0 z-[60] bg-[var(--color-text)]/55"
+                />
+                <aside
+                  ref={panelFiltrosRef}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Filtros del catálogo"
+                  tabIndex={-1}
+                  className="fixed bottom-0 right-0 top-0 z-[70] w-full max-w-md overflow-y-auto overscroll-contain bg-[var(--color-surface)] p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[var(--lp-shadow-float)] outline-none sm:p-7"
+                >
+                  <div className="flex items-start justify-between gap-4 border-b border-[var(--color-border)] pb-5">
+                    <div>
+                      <h2 className="text-2xl font-black">Buscar y filtrar</h2>
+                      <p className="mt-2 text-sm leading-6 text-[var(--color-text-muted)]">
+                        Empieza por una búsqueda. Añade filtros solo si los necesitas.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFiltrosAbiertos(false)}
+                      aria-label="Cerrar filtros"
+                      className="grid h-11 w-11 shrink-0 place-items-center rounded-md border border-[var(--color-border-strong)]"
+                    >
+                      <Icono nombre="cerrar" className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <div className="mt-6 space-y-5">
+                    <LocationSelector
+                      onUbicacionChange={cambiarUbicacion}
+                      compacto
+                    />
+                    <CatalogoFiltros
+                      filtros={filtros}
+                      borrador={borrador}
+                      facetas={facetas ?? null}
+                      disabled={pendiente}
+                      onBuscar={setBorrador}
+                      onLimpiarTexto={limpiarTexto}
+                      onCategoria={setCategoria}
+                      onZona={setZona}
+                      onPrecio={setRangoPrecio}
+                      onLimpiar={limpiar}
+                      siempreAbierto
+                    />
+                  </div>
+                  <Button
+                    variante="primary"
+                    className="mt-6 w-full"
+                    onClick={() => setFiltrosAbiertos(false)}
+                  >
+                    Ver {total} {total === 1 ? "resultado" : "resultados"}
+                  </Button>
+                </aside>
+              </>
             )}
 
-            {modoCercanos && (
-              <div className="mt-12 flex flex-col items-center gap-4">
-                <p className="rounded-full bg-[#FFFDF8]/70 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#746D63]">
-                  {destinos.length} {destinos.length === 1 ? "destino cercano" : "destinos cercanos"}
-                </p>
+            <section className="contenedor-amplio py-8 sm:py-12">
+              <h2 className="sr-only">Resultados del catálogo</h2>
+              {error && <CatalogoError onReintentar={recargar} />}
+
+              {pendiente && (
+                <div aria-label="Cargando destinos" aria-busy="true">
+                  <p className="mb-5 text-sm text-[var(--color-text-muted)]" role="status">
+                    Cargando destinos turísticos…
+                  </p>
+                  <ul
+                    className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                    data-testid="catalogo-skeletons"
+                  >
+                    {Array.from({ length: SKELETONS }).map((_, indice) => (
+                      <li key={indice}>
+                        <DestinoCardSkeleton />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {!pendiente && !error && destinos.length === 0 && (
+                modoCercanos ? (
+                  <div className="lp-panel px-6 py-14 text-center">
+                    <Icono nombre="ubicacion" className="mx-auto h-9 w-9 text-[var(--color-route)]" />
+                    <h3 className="mt-5 text-xl font-black">No hay destinos registrados cerca</h3>
+                    <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-[var(--color-text-muted)]">
+                      Prueba otra ubicación o vuelve al catálogo completo.
+                    </p>
+                    <Button
+                      variante="primary"
+                      className="mt-6"
+                      onClick={() => {
+                        setUsarCercanos(false);
+                        setUbicacion(null);
+                      }}
+                    >
+                      Ver todos los destinos
+                    </Button>
+                  </div>
+                ) : (
+                  <CatalogoVacio
+                    categoria={filtros.categoria}
+                    filtrosActivos={activos}
+                    onLimpiar={limpiar}
+                  />
+                )
+              )}
+
+              {!pendiente && !error && destinos.length > 0 && (
+                <>
+                   <ul
+                    className={`catalogo-mosaico ${
+                      actualizando ? "opacity-60" : ""
+                    }`}
+                  >
+                    {destinos.map((atractivo) => (
+                      <li key={atractivo.id} className="min-w-0">
+                        <DestinoCard
+                          atractivo={atractivo}
+                          busqueda={queryActiva}
+                          enRuta={contiene(atractivo.id)}
+                          onAlternarRuta={() => gestionarRuta(atractivo)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                  {!modoCercanos && <div ref={centinela} className="h-px" aria-hidden="true" />}
+                  {!modoCercanos && catalogo.hayMas && (
+                    <div className="mt-10 flex justify-center">
+                      <Button
+                        variante="secondary"
+                        onClick={() => void catalogo.fetchNextPage()}
+                        disabled={catalogo.cargandoMas}
+                      >
+                        {catalogo.cargandoMas ? "Cargando más destinos…" : "Cargar más destinos"}
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </section>
+
+            {ruta.length > 0 && (
+              <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-3 pb-[max(.75rem,env(safe-area-inset-bottom))] shadow-[0_-12px_30px_rgb(16_42_67_/_0.14)]">
+                <div className="contenedor-medio flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="font-bold">Mi viaje</p>
+                    <p className="truncate text-xs text-[var(--color-text-muted)]">
+                      {ruta.length} {ruta.length === 1 ? "destino añadido" : "destinos añadidos"}
+                    </p>
+                  </div>
+                  <ButtonLink to="/destinos?vista=armar" variante="route">
+                    Organizar recorrido
+                  </ButtonLink>
+                </div>
               </div>
             )}
           </>
         )}
-      </div>
-
-      {/* =========================================================
-          PIE
-      ========================================================== */}
-      <footer className="border-t border-[#5B3A29]/[0.08] px-6 py-10 text-center sm:px-8">
-        <p className="text-[0.6rem] font-black uppercase tracking-[0.22em] text-[#8A8177]">
-          Turismo La Paz · Bolivia
-        </p>
-
-        <p className="mt-3 text-xs text-[#746D63]">
-          ¿No encuentras el destino que buscas?{" "}
-          <Link
-            to="/"
-            className="font-bold text-[#8D4F32] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C6923B]"
-          >
-            Vuelve al inicio
-          </Link>
-        </p>
-      </footer>
-    </main>
+      </main>
+      <SiteFooter />
+      <ChatFlotanteCatalogo destinos={destinos} />
+    </div>
   );
 }

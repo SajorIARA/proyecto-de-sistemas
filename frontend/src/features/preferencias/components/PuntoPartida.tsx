@@ -98,9 +98,9 @@ export function PuntoPartida({
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[#8D4F32]">
+        <span className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[var(--color-brand)]">
           Punto de partida
-          <span className="ml-2 normal-case tracking-normal text-[#8A8177]">
+          <span className="ml-2 normal-case tracking-normal text-[var(--color-text-muted)]">
             (opcional)
           </span>
         </span>
@@ -110,7 +110,7 @@ export function PuntoPartida({
             type="button"
             onClick={usarUbicacion}
             disabled={disabled || buscando}
-            className="rounded-full border border-[#2F4B3B]/25 bg-[#2F4B3B]/[0.07] px-4 py-2 text-xs font-black text-[#2F4B3B] transition hover:border-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-55"
+            className="rounded-full border border-[var(--color-border-strong)] bg-[var(--color-route-strong)]/[0.07] px-4 py-2 text-xs font-black text-[var(--color-brand)] transition hover:border-[var(--color-border-strong)] disabled:cursor-not-allowed disabled:opacity-55"
           >
             {buscando ? "Ubicando…" : "Usar mi ubicación"}
           </button>
@@ -120,7 +120,7 @@ export function PuntoPartida({
               type="button"
               onClick={limpiar}
               disabled={disabled}
-              className="rounded-full border border-[#5B3A29]/15 px-4 py-2 text-xs font-black text-[#746D63] transition hover:border-[#9A5B3C]/45 hover:text-[#8D4F32] disabled:cursor-not-allowed disabled:opacity-55"
+              className="rounded-full border border-[var(--color-border)] px-4 py-2 text-xs font-black text-[var(--color-text-muted)] transition hover:border-[var(--color-brand)] hover:text-[var(--color-brand)] disabled:cursor-not-allowed disabled:opacity-55"
             >
               Limpiar
             </button>
@@ -130,7 +130,7 @@ export function PuntoPartida({
 
       <div className="mt-3 grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[#8A8177]">
+          <span className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
             Latitud
           </span>
 
@@ -145,16 +145,16 @@ export function PuntoPartida({
             aria-describedby={error ? "punto-partida-error" : undefined}
             data-testid="input-latitud"
             className={[
-              "mt-2 w-full rounded-2xl border bg-[#F3EBDD]/60 px-4 py-3 text-sm text-[#263029] transition",
+              "mt-2 w-full rounded-2xl border bg-[var(--color-surface-muted)] px-4 py-3 text-sm text-[var(--color-text)] transition",
               error
-                ? "border-[#9A5B3C] focus:border-[#9A5B3C]"
-                : "border-[#5B3A29]/15 focus:border-[#2F4B3B]",
+                ? "border-[var(--color-brand)] focus:border-[var(--color-brand)]"
+                : "border-[var(--color-border)] focus:border-[var(--color-border-strong)]",
             ].join(" ")}
           />
         </label>
 
         <label className="block">
-          <span className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[#8A8177]">
+          <span className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
             Longitud
           </span>
 
@@ -169,10 +169,10 @@ export function PuntoPartida({
             aria-describedby={error ? "punto-partida-error" : undefined}
             data-testid="input-longitud"
             className={[
-              "mt-2 w-full rounded-2xl border bg-[#F3EBDD]/60 px-4 py-3 text-sm text-[#263029] transition",
+              "mt-2 w-full rounded-2xl border bg-[var(--color-surface-muted)] px-4 py-3 text-sm text-[var(--color-text)] transition",
               error
-                ? "border-[#9A5B3C] focus:border-[#9A5B3C]"
-                : "border-[#5B3A29]/15 focus:border-[#2F4B3B]",
+                ? "border-[var(--color-brand)] focus:border-[var(--color-brand)]"
+                : "border-[var(--color-border)] focus:border-[var(--color-border-strong)]",
             ].join(" ")}
           />
         </label>
@@ -180,7 +180,7 @@ export function PuntoPartida({
 
       <div className="mt-4">
         <label className="block">
-          <span className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[#8A8177]">
+          <span className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
             Macrodistrito (selección manual)
           </span>
 
@@ -189,7 +189,7 @@ export function PuntoPartida({
             onChange={(evento) => elegirMacrodistrito(evento.target.value)}
             disabled={disabled}
             data-testid="select-macrodistrito"
-            className="mt-2 w-full rounded-2xl border border-[#5B3A29]/15 bg-[#F3EBDD]/60 px-4 py-3 text-sm text-[#263029] transition focus:border-[#2F4B3B] disabled:cursor-not-allowed disabled:opacity-55"
+            className="mt-2 w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-muted)] px-4 py-3 text-sm text-[var(--color-text)] transition focus:border-[var(--color-border-strong)] disabled:cursor-not-allowed disabled:opacity-55"
           >
             <option value="">— Elegir un macrodistrito —</option>
             {MACRODISTRITOS_LA_PAZ.map((macro) => (
@@ -199,7 +199,7 @@ export function PuntoPartida({
             ))}
           </select>
 
-          <p className="mt-1 text-xs text-[#746D63]">
+          <p className="mt-1 text-xs text-[var(--color-text-muted)]">
             Para quien no comparte su GPS: se usa el centroide del macrodistrito
             como punto de partida.
           </p>
@@ -210,19 +210,19 @@ export function PuntoPartida({
         <div
           role="status"
           data-testid="confirmacion-punto"
-          className="mt-3 flex items-center gap-3 rounded-2xl border border-[#2F4B3B]/20 bg-[#2F4B3B]/[0.06] px-4 py-3 text-sm text-[#233128]"
+          className="mt-3 flex items-center gap-3 rounded-2xl border border-[var(--color-border-strong)] bg-[var(--color-route-strong)]/[0.06] px-4 py-3 text-sm text-[var(--color-text)]"
         >
           <span
             aria-hidden="true"
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2F4B3B] text-xs font-black text-[#F3EBDD]"
+            className="flex h-7 w-7 items-center justify-center rounded-full bg-[var(--color-route-strong)] text-xs font-black text-[var(--color-text)]"
           >
             ✓
           </span>
           <div className="min-w-0">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[#2F4B3B]">
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--color-brand)]">
               Punto de partida seleccionado
             </p>
-            <p className="truncate text-xs text-[#514B43]">
+            <p className="truncate text-xs text-[var(--color-text-muted)]">
               {macrodistrito
                 ? `${macrodistrito} · `
                 : ""}
@@ -232,12 +232,12 @@ export function PuntoPartida({
         </div>
       )}
 
-      <p className="mt-2 text-xs text-[#746D63]">
+      <p className="mt-2 text-xs text-[var(--color-text-muted)]">
         Dentro del área de La Paz: {BBOX_TEXTO}.
       </p>
 
       {avisoUbicacion && (
-        <p role="alert" className="mt-2 text-xs font-semibold text-[#9A3B2E]">
+        <p role="alert" className="mt-2 text-xs font-semibold text-[var(--color-danger)]">
           {avisoUbicacion}
         </p>
       )}
@@ -246,7 +246,7 @@ export function PuntoPartida({
         <p
           id="punto-partida-error"
           role="alert"
-          className="mt-1 text-xs font-semibold text-[#9A3B2E]"
+          className="mt-1 text-xs font-semibold text-[var(--color-danger)]"
         >
           {error}
         </p>

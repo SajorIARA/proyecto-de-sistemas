@@ -68,6 +68,16 @@ describe("responderAsistente", () => {
     expect(respuesta).toContain("Centro");
   });
 
+  it("responde un saludo aunque todavía no exista un ranking", () => {
+    const respuesta = responderAsistente("Hola", {
+      ...CONTEXTO,
+      recomendaciones: [],
+    });
+
+    expect(respuesta).toContain("Hola, soy tu asistente de viaje");
+    expect(respuesta).not.toContain("Todavía no tengo un ranking");
+  });
+
   it("recomienda el destino con mayor afinidad", () => {
     const respuesta = responderAsistente("¿cuál es la mejor opción?", CONTEXTO);
 

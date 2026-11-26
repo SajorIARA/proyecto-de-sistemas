@@ -1,13 +1,11 @@
 /**
  * Accesos rápidos que montan sobre el borde inferior del hero.
  *
- * Tres entradas de uso frecuente: el catálogo, el mapa de zonas y la
- * planificación de la visita. La tercera cambia de destino según haya
- * sesión activa.
+ * Tres entradas de uso frecuente con intenciones distintas: el catálogo,
+ * el mapa de zonas y las rutas ya guardadas.
  */
 
 import { Link } from "react-router-dom";
-import { useAuth } from "../../features/auth/context/AuthContext";
 import { Icono, type NombreIcono } from "../../components/site/Iconos";
 
 interface Acceso {
@@ -18,8 +16,6 @@ interface Acceso {
 }
 
 export function AccesosRapidos() {
-  const { isAuthenticated } = useAuth();
-
   const accesos: Acceso[] = [
     {
       titulo: "Catálogo turístico",
@@ -34,9 +30,9 @@ export function AccesosRapidos() {
       icono: "mapa",
     },
     {
-      titulo: "Planifica tu visita",
-      descripcion: "Guarda tus favoritos y arma tu propia ruta.",
-      destino: isAuthenticated ? "/mi-cuenta" : "/registro",
+      titulo: "Mis rutas guardadas",
+      descripcion: "Revisa tus recorridos y sigue armándolos.",
+      destino: "/ruta",
       icono: "ruta",
     },
   ];
@@ -44,34 +40,34 @@ export function AccesosRapidos() {
   return (
     <section
       aria-label="Accesos rápidos"
-      className="relative z-20 bg-[#F3EBDD] pt-10 sm:pt-12"
+      className="relative z-20 bg-[var(--color-surface-muted)] pt-10 sm:pt-12"
     >
       <div className="contenedor-sitio">
         <ul className="grid gap-3 sm:grid-cols-3 sm:gap-4">
           {accesos.map((acceso) => {
             const contenido = (
               <>
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#2F4B3B] text-[#F3EBDD] transition group-hover:bg-[#9A5B3C]">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--color-route-strong)] text-[var(--color-text)] transition group-hover:bg-[var(--color-action)] group-hover:text-[var(--lp-night)]">
                   <Icono nombre={acceso.icono} className="h-5 w-5" />
                 </span>
 
                 <span className="min-w-0 flex-1">
-                  <span className="block text-base font-black tracking-[-0.01em] text-[#233128]">
+                  <span className="block text-base font-black tracking-[-0.01em] text-[var(--color-text)]">
                     {acceso.titulo}
                   </span>
-                  <span className="mt-1 block text-xs leading-5 text-[#746D63]">
+                  <span className="mt-1 block text-xs leading-5 text-[var(--color-text-muted)]">
                     {acceso.descripcion}
                   </span>
                 </span>
 
-                <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#5B3A29]/15 text-[#9A5B3C] transition group-hover:border-[#9A5B3C] group-hover:bg-[#9A5B3C] group-hover:text-[#FFFDF8]">
+                <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] text-[var(--color-brand)] transition group-hover:border-[var(--color-brand)] group-hover:bg-[var(--color-action)] group-hover:text-[var(--lp-night)]">
                   <Icono nombre="flecha" className="h-4 w-4" />
                 </span>
               </>
             );
 
             const clases =
-              "group flex h-full items-start gap-4 rounded-[1.4rem] border border-[#5B3A29]/10 bg-[#FFFDF8] p-5 shadow-[0_18px_45px_rgba(72,55,38,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_60px_rgba(72,55,38,0.18)]";
+              "group flex h-full items-start gap-4 rounded-[1.4rem] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_18px_45px_rgba(72,55,38,0.12)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_26px_60px_rgba(72,55,38,0.18)]";
 
             return (
               <li key={acceso.titulo}>

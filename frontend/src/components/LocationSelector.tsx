@@ -14,6 +14,8 @@ interface LocationSelectorProps {
   ubicacionInicial?: UbicacionSeleccionada | null;
   guardarEnLocalStorage?: boolean;
   localStorageKey?: string;
+  /** Variante apilada para superficies estrechas como el panel lateral. */
+  compacto?: boolean;
 }
 
 const DEFAULT_LOCAL_STORAGE_KEY = "turismo_ubicacion_seleccionada";
@@ -23,6 +25,7 @@ export function LocationSelector({
   ubicacionInicial = null,
   guardarEnLocalStorage = true,
   localStorageKey = DEFAULT_LOCAL_STORAGE_KEY,
+  compacto = false,
 }: LocationSelectorProps) {
   const { coords, loading, error, errorMessage, getCurrentPosition } =
     useGeolocation();
@@ -174,13 +177,13 @@ export function LocationSelector({
   };
 
   return (
-    <div className="w-full rounded-[1.25rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] p-4 shadow-[0_8px_30px_rgba(72,55,38,0.06)]">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-black uppercase tracking-[0.18em] text-[#8D4F32]">
+    <div className="w-full rounded-[1.25rem] border border-[var(--color-border)]/[0.08] bg-[var(--color-surface)] p-4 shadow-[0_8px_30px_rgba(72,55,38,0.06)]">
+      <div className={compacto ? "flex flex-col gap-2" : "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"}>
+        <div className={compacto ? "flex flex-wrap items-center gap-2" : "flex items-center gap-3"}>
+          <span className="text-xs font-black uppercase tracking-[0.18em] text-[var(--color-brand)]">
             Ubicación
           </span>
-          <span className="inline-flex items-center rounded-full border border-[#2F4B3B]/20 bg-[#2F4B3B]/[0.06] px-3 py-1 text-[0.7rem] font-bold text-[#2F4B3B]">
+          <span className="inline-flex items-center rounded-full border border-[var(--color-border-strong)] bg-[var(--color-route-strong)]/[0.06] px-3 py-1 text-[0.7rem] font-bold text-[var(--color-brand)]">
             {obtenerEtiquetaActiva()}
           </span>
         </div>
@@ -188,19 +191,19 @@ export function LocationSelector({
           <button
             type="button"
             onClick={handleLimpiarUbicacion}
-            className="text-xs font-bold text-[#8D4F32] underline-offset-4 hover:underline"
+            className="text-xs font-bold text-[var(--color-brand)] underline-offset-4 hover:underline"
           >
             Limpiar ubicación / Ver todos
           </button>
         )}
       </div>
 
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+      <div className={compacto ? "mt-3 flex flex-col gap-2" : "mt-3 flex flex-col gap-2 sm:flex-row"}>
         <button
           type="button"
           onClick={handleUsarUbicacionActual}
           disabled={loading}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-[#2F4B3B] px-5 py-2.5 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128] disabled:cursor-not-allowed disabled:opacity-55"
+          className={`inline-flex items-center justify-center gap-2 bg-[var(--color-route-strong)] px-5 py-2.5 text-sm font-black text-[var(--color-text)] transition hover:bg-[var(--color-surface)] disabled:cursor-not-allowed disabled:opacity-55 ${compacto ? "w-full rounded-xl" : "rounded-full"}`}
         >
           {loading ? (
             <>
@@ -256,7 +259,7 @@ export function LocationSelector({
         <select
           value={macrodistritoSeleccionado}
           onChange={(e) => handleSeleccionarMacrodistrito(e.target.value)}
-          className="flex-1 rounded-full border border-[#5B3A29]/15 bg-[#FFFDF8] px-4 py-2.5 text-sm font-semibold text-[#514B43] transition hover:border-[#2F4B3B]/40 focus:border-[#2F4B3B] focus:outline-none"
+          className={`min-w-0 flex-1 border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2.5 text-sm font-semibold text-[var(--color-text-muted)] transition hover:border-[var(--color-border-strong)] focus:border-[var(--color-border-strong)] focus:outline-none ${compacto ? "w-full rounded-xl" : "rounded-full"}`}
         >
           <option value="">Seleccionar macrodistrito manualmente</option>
           {MACRODISTRITOS_LA_PAZ.map((macrodistrito: Macrodistrito) => (
@@ -268,7 +271,7 @@ export function LocationSelector({
       </div>
 
       {error && errorMessage && (
-        <div className="mt-3 rounded-2xl border border-[#9A5B3C]/30 bg-[#9A5B3C]/[0.06] p-3 text-xs font-semibold text-[#8D4F32]">
+        <div className="mt-3 rounded-2xl border border-[var(--color-brand)] bg-[var(--color-action)]/[0.06] p-3 text-xs font-semibold text-[var(--color-brand)]">
           <p>{errorMessage}</p>
         </div>
       )}
