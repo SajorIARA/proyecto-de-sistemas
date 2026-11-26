@@ -35,20 +35,20 @@ export function RoleRoute({
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#F3EBDD] px-5 py-12 text-[#263029] sm:px-8">
-      <div className="w-full max-w-lg overflow-hidden rounded-[2rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] shadow-[0_20px_60px_rgba(72,55,38,0.08)]">
-        <div className="h-[3px] w-full bg-[#9A5B3C]" aria-hidden="true" />
+    <main className="flex min-h-screen items-center justify-center bg-[var(--color-surface-muted)] px-5 py-12 text-[var(--color-text)] sm:px-8">
+      <div className="w-full max-w-lg overflow-hidden rounded-[2rem] border border-[var(--color-border)]/[0.08] bg-[var(--color-surface)] shadow-[0_20px_60px_rgba(72,55,38,0.08)]">
+        <div className="h-[3px] w-full bg-[var(--color-action)]" aria-hidden="true" />
 
         <div className="px-7 py-9 sm:px-10 sm:py-11">
-          <p className="text-[0.6rem] font-black uppercase tracking-[0.24em] text-[#8D4F32]">
+          <p className="text-[0.6rem] font-black uppercase tracking-[0.24em] text-[var(--color-brand)]">
             Acceso restringido
           </p>
 
-          <h1 className="mt-4 text-3xl font-black leading-[1.02] tracking-[-0.04em] text-[#233128]">
+          <h1 className="mt-4 text-3xl font-black leading-[1.02] tracking-[-0.04em] text-[var(--color-text)]">
             Esta sección es solo para administradores.
           </h1>
 
-          <p className="mt-4 text-sm leading-7 text-[#514B43]">
+          <p className="mt-4 text-sm leading-7 text-[var(--color-text-muted)]">
             Tu cuenta no tiene el permiso necesario para ver este contenido.
             Si creés que es un error, pedile a un administrador que revise tu
             rol.
@@ -56,7 +56,7 @@ export function RoleRoute({
 
           {roles.length > 0 && (
             <div className="mt-6 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-bold text-[#746D63]">
+              <span className="text-xs font-bold text-[var(--color-text-muted)]">
                 Tu rol actual:
               </span>
 
@@ -67,14 +67,14 @@ export function RoleRoute({
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               to="/destinos"
-              className="rounded-full bg-[#2F4B3B] px-6 py-3 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128]"
+              className="rounded-full bg-[var(--color-route-strong)] px-6 py-3 text-sm font-black text-[var(--color-text)] transition hover:bg-[var(--color-surface)]"
             >
               Ir al catálogo
             </Link>
 
             <Link
               to="/mi-cuenta"
-              className="rounded-full border border-[#2F4B3B]/25 px-6 py-3 text-sm font-black text-[#2F4B3B] transition hover:border-[#2F4B3B]"
+              className="rounded-full border border-[var(--color-border-strong)] px-6 py-3 text-sm font-black text-[var(--color-brand)] transition hover:border-[var(--color-border-strong)]"
             >
               Volver a mi perfil
             </Link>

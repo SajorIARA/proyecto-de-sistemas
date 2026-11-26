@@ -39,9 +39,9 @@ export function FormField({
       <label
         htmlFor={id}
         className={[
-          "mb-2.5 block text-sm font-black tracking-[-0.01em] text-[#26342B]",
+          "mb-2.5 block text-sm font-black tracking-[-0.01em] text-[var(--color-text)]",
           required
-            ? "after:ml-1 after:text-[#9A5B3C] after:content-['*']"
+            ? "after:ml-1 after:text-[var(--color-brand)] after:content-['*']"
             : "",
         ].join(" ")}
       >
@@ -61,13 +61,13 @@ export function FormField({
             w-full
             rounded-[1.15rem]
             border
-            bg-[#FFFDF8]
+            bg-[var(--color-surface)]
             px-4
             py-3.5
             ${trailing ? "pr-[6.2rem]" : ""}
             text-sm
             font-semibold
-            text-[#242B25]
+            text-[var(--color-text)]
             caret-[#9A5B3C]
             outline-none
 
@@ -77,30 +77,30 @@ export function FormField({
             duration-300
 
             placeholder:font-medium
-            placeholder:text-[#857C70]
+            placeholder:text-[var(--color-text-muted)]
 
-            hover:border-[#6F8064]/45
+            hover:border-[var(--color-border)]
 
-            focus:bg-white
+            focus:bg-[var(--color-surface)]
             focus:shadow-[0_12px_34px_rgba(47,75,59,0.11)]
             focus:ring-4
-            focus:ring-[#2F4B3B]/10
+            focus:ring-[var(--color-border-strong)]
 
             disabled:cursor-not-allowed
-            disabled:bg-[#EFE9DE]
-            disabled:text-[#8B8174]
+            disabled:bg-[var(--color-surface-muted)]
+            disabled:text-[var(--color-text-muted)]
             disabled:opacity-70
 
             ${
               error
                 ? `
-                  border-[#9A5B3C]/55
-                  focus:border-[#9A5B3C]
-                  focus:ring-[#9A5B3C]/10
+                  border-[var(--color-brand)]
+                  focus:border-[var(--color-brand)]
+                  focus:ring-[var(--color-brand)]
                 `
                 : `
-                  border-[#5B3A29]/20
-                  focus:border-[#2F4B3B]/75
+                  border-[var(--color-border)]
+                  focus:border-[var(--color-border-strong)]
                 `
             }
 
@@ -122,11 +122,11 @@ export function FormField({
         <span
           id={`${id}-error`}
           role="alert"
-          className="mt-2 flex items-center gap-2 text-xs font-bold text-[#7B3F2D]"
+          className="mt-2 flex items-center gap-2 text-xs font-bold text-[var(--color-brand)]"
         >
           <span
             aria-hidden="true"
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#9A5B3C]/10 text-[0.65rem] font-black"
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--color-action)] text-[0.65rem] font-black"
           >
             !
           </span>
@@ -136,7 +136,7 @@ export function FormField({
       ) : hint ? (
         <span
           id={`${id}-hint`}
-          className="mt-2 block text-xs font-medium leading-5 text-[#81796F]"
+          className="mt-2 block text-xs font-medium leading-5 text-[var(--color-text-muted)]"
         >
           {hint}
         </span>

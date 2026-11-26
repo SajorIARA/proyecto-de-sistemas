@@ -12,6 +12,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from .health import health_detallado
+
 
 @extend_schema(
     auth=[],
@@ -38,6 +40,8 @@ def _root_payload() -> dict:
         "/api/recomendaciones/",
         "/api/recommendations/",
         "/api/preferences/",
+        "/api/viajes/",
+        "/api/health/detallado/",
     ]
     if settings.SERVE_DOCS:
         endpoints += ["/api/schema/", "/api/docs/", "/api/redoc/"]
@@ -64,12 +68,14 @@ urlpatterns = [
     path("", root),
     path("api/", api_root),
     path("api/health/", health),
+    path("api/health/detallado/", health_detallado),
     path("api/auth/", include("usuarios.urls")),
     path("api/turismo/", include("turismo.urls")),
     path("api/conocimiento/", include("conocimiento.urls")),
     path("api/recomendaciones/", include("recomendaciones.urls")),
     path("api/recommendations/", include("recomendaciones.urls_ingles")),
     path("api/preferences/", include("recomendaciones.urls_propias")),
+    path("api/viajes/", include("viajes.urls")),
 ]
 
 if settings.SERVE_DOCS:

@@ -1,0 +1,49 @@
+/**
+ * Fuente única de verdad del tema Chukiyapu.
+ *
+ * La aplicación no tiene selector de tema: la paleta oscura es la identidad
+ * visual de todo el sitio. Este archivo se importa después de los tokens
+ * semánticos y antes de `home.css`, de modo que portada, catálogo, cuenta,
+ * administración y cualquier componente suelto heredan exactamente los mismos
+ * colores. Los scopes `.chuki-*` de `home.css` solo aportan fondos y texturas;
+ * ya no redefinen tokens con valores divergentes.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Superficies y texto */
+  --color-canvas: #061c29;
+  --color-surface: #102f3d;
+  --color-surface-muted: #0b2b38;
+  --color-text: #f5f8fa;
+  --color-text-muted: #b6d0d4;
+  --color-border: #36e8da55;
+  --color-border-strong: #49e6d780;
+
+  /* Acentos */
+  --color-brand: #49e6d7;
+  --color-brand-strong: #21bdb2;
+  --color-action: #ffd05c;
+  --color-action-hover: #ffc64c;
+  --color-route: #49e6d7;
+  --color-route-strong: #0b666b;
+  --color-warning: #ffd05c;
+  --color-focus: #49e6d7;
+
+  /* Estados: legibles sobre superficies oscuras */
+  --color-danger: #ff9b9b;
+  --color-success: #5ee0c8;
+
+  /* Componentes derivados del tema */
+  --button-primary-bg: #ffc64c;
+  --button-primary-bg-hover: #ffd978;
+  --button-primary-fg: #08232b;
+  --button-secondary-bg: #143b49;
+  --button-secondary-border: #3be5d5;
+  --button-secondary-fg: #f5f8fa;
+  --field-bg: #082b38;
+  --field-border: #49e6d780;
+  --panel-bg: #102f3d;
+  --panel-border: #54d9d755;
+}

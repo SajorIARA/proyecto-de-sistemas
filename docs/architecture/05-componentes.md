@@ -3,8 +3,11 @@
 > Estado real: SPA React con Leaflet + axios con interceptor de refresh y
 > React Query; backend Django + DRF en 4 apps con RBAC por roles; medios
 > en Cloudinary (directo + Celery async); docs OpenAPI con drf-spectacular.
-> El ranking multicriterio está operativo. El scraper, la vectorización local
-> y Ollama están implementados; el endpoint conversacional RAG sigue pendiente.
+> El ranking multicriterio y el endpoint conversacional RAG (`POST
+> /api/conocimiento/consultar/`, con citas verificables) están operativos. El
+> scraper, la vectorización local, Ollama y el descubrimiento de lugares en
+> fuentes abiertas (Overpass/Wikidata) están implementados. Google Maps no se
+> extrae ni se indexa: solo se ofrece como enlace externo.
 
 ```mermaid
 flowchart TB
@@ -18,6 +21,7 @@ flowchart TB
         Cuenta[Módulo Cuenta<br/>perfil · password · admin usuarios]
         Catalogo[Módulo Catálogo<br/>filtros · detalle · mapa Leaflet]
         AdminTurismo[Módulo Admin Turismo<br/>destinos · fotos]
+        AdminFuentes[Módulo Admin Fuentes<br/>importar · revisar · aprobar<br/>vectorizar · ver estado RAG]
         Preferencias[Módulo Preferencias]
         Sistema[Módulo Sistema<br/>BackendStatus]
         HTTPClient[Axios + interceptor refresh<br/>Bearer + reintento 401]
@@ -36,7 +40,7 @@ flowchart TB
         Throttle[Throttles<br/>anon 100/h · user 1000/h · auth 30/min]
         ViewsUsuarios[usuarios — login · register<br/>refresh · logout · password · admin]
         ViewsTurismo[turismo — catálogo · cercanos<br/>facetas · admin · firma · subir · estado]
-        ViewsConocimiento[conocimiento — fuentes · fragmentos<br/>scraping · vectorización]
+        ViewsConocimiento[conocimiento — fuentes · fragmentos<br/>scraping · vectorización · RAG con citas<br/>admin importaciones / candidatos (IsAdmin)]
         ViewsReco[recomendaciones — preferencias<br/>consultas · ranking Top-K]
         Serializers[Serializers DRF<br/>UbicacionField · PuntoPartidaField]
         DocsAPI[OpenAPI — drf-spectacular<br/>/schema /docs /redoc]
@@ -55,7 +59,7 @@ flowchart TB
     subgraph Database["Base de Datos — PostgreSQL + PostGIS + pgvector"]
         PostGIS[PostGIS — ubicacion · area<br/>punto_partida · GiST]
         pgvector[pgvector — embedding 768<br/>HNSW cosine]
-        Tables[(13 tablas: usuario · rol · usuario_rol<br/>atractivo · foto · categoria · atractivo_categoria<br/>horario · tipo_tarifa · tarifa<br/>fuente_documental · fragmento_documental<br/>usuario_preferencia · consulta_recomendacion)]
+        Tables[(15 tablas: usuario · rol · usuario_rol<br/>atractivo · foto · categoria · atractivo_categoria<br/>horario · tipo_tarifa · tarifa<br/>fuente_documental · fragmento_documental<br/>importacion_lugares · lugar_candidato<br/>usuario_preferencia · consulta_recomendacion)]
     end
 
     subgraph Media["Medios — Cloudinary"]
@@ -73,11 +77,13 @@ flowchart TB
     SPA --> Cuenta
     SPA --> Catalogo
     SPA --> AdminTurismo
+    SPA --> AdminFuentes
     SPA --> Preferencias
     SPA --> Sistema
     AuthUI --> RQ
     Catalogo --> RQ
     AdminTurismo --> RQ
+    AdminFuentes --> RQ
     Preferencias --> RQ
     RQ --> HTTPClient
     HTTPClient --> TokenStore
@@ -89,6 +95,7 @@ flowchart TB
     RBAC --> ViewsUsuarios
     RBAC --> ViewsTurismo
     RBAC --> ViewsConocimiento
+    AdminFuentes -->|solo REST al backend; nunca Overpass/Wikidata/Google| Nginx
     RBAC --> ViewsReco
     ViewsTurismo --> Serializers
     ViewsConocimiento --> Serializers

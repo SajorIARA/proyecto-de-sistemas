@@ -10,7 +10,7 @@
  * expone un `ModelViewSet` completo para destinos.
  */
 
-import { Link } from "react-router-dom";
+import { ButtonLink } from "../../../../design-system/components/Button";
 import { PrivateShell } from "../../../cuenta/components/PrivateShell";
 import { DestinosAdminTabla } from "../components/DestinosAdminTabla";
 
@@ -22,13 +22,13 @@ export function AdminDestinosPage() {
       descripcion="Alta, edición y baja de los destinos del catálogo. Un destino dado de baja deja de aparecer en el catálogo público, pero acá queda siempre y se puede reactivar."
     >
       <div className="mb-6">
-        <Link
+        <ButtonLink
           to="/mi-cuenta/destinos/nuevo"
-          className="inline-flex items-center gap-2.5 rounded-full bg-[#2F4B3B] px-6 py-3 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128]"
+          variante="primary"
         >
           <span aria-hidden="true">+</span>
           Nuevo destino
-        </Link>
+        </ButtonLink>
       </div>
 
       <DestinosAdminTabla />

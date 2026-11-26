@@ -44,24 +44,24 @@ const DATOS: readonly DatoUtil[] = [
 
 export function DatosUtiles() {
   return (
-    <section id="datos" className="scroll-mt-24 bg-[#FFFDF8] py-20 sm:py-28">
+    <section id="datos" className="scroll-mt-24 bg-[var(--color-surface)] py-14 sm:py-20">
       <div className="contenedor-sitio">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="text-[0.62rem] font-black uppercase tracking-[0.26em] text-[#9A5B3C]">
+            <p className="text-[0.7rem] font-black uppercase tracking-[0.16em] text-[var(--color-brand)]">
               Información general
             </p>
 
-            <h2 className="font-display mt-5 text-[clamp(2.4rem,5vw,4.2rem)] font-black leading-[0.98] tracking-[-0.045em] text-[#233128]">
+            <h2 className="font-display mt-5 text-[clamp(2.4rem,5vw,4.2rem)] font-black leading-[0.98] tracking-[-0.045em] text-[var(--color-text)]">
               Lo que conviene saber{" "}
-              <span className="font-editorial font-normal italic text-[#9A5B3C]">
+              <span className="font-editorial font-normal italic text-[var(--color-brand)]">
                 antes de llegar
               </span>
               .
             </h2>
           </div>
 
-          <p className="max-w-md text-sm leading-7 text-[#5C574E] sm:text-base">
+          <p className="max-w-md text-sm leading-7 text-[var(--color-text-muted)] sm:text-base">
             Cuatro datos que conviene tener a mano. Son referenciales y no
             reemplazan las recomendaciones oficiales de cada atractivo.
           </p>
@@ -71,21 +71,21 @@ export function DatosUtiles() {
           {DATOS.map((dato) => (
             <li
               key={dato.titulo}
-              className="flex h-full flex-col rounded-[1.4rem] border border-[#5B3A29]/10 bg-[#F3EBDD]/60 p-6"
+              className="flex h-full flex-col rounded-[1.4rem] border border-[var(--color-border)] bg-[var(--color-surface-muted)] p-6"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#2F4B3B] text-[#F3EBDD]">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--color-route-strong)] text-[var(--color-text)]">
                 <Icono nombre={dato.icono} className="h-5 w-5" />
               </span>
 
-              <h3 className="mt-6 text-[0.68rem] font-black uppercase tracking-[0.2em] text-[#9A5B3C]">
+              <h3 className="mt-6 text-[0.7rem] font-black uppercase tracking-[0.16em] text-[var(--color-brand)]">
                 {dato.titulo}
               </h3>
 
-              <p className="font-display mt-2 text-xl font-black tracking-[-0.02em] text-[#233128]">
+              <p className="font-display mt-2 text-xl font-black tracking-[-0.02em] text-[var(--color-text)]">
                 {dato.valor}
               </p>
 
-              <p className="mt-3 text-sm leading-6 text-[#746D63]">
+              <p className="mt-3 text-sm leading-6 text-[var(--color-text-muted)]">
                 {dato.detalle}
               </p>
             </li>

@@ -68,8 +68,8 @@ export function DestinoImagen({
           ⛰
         </span>
 
-        <span className="relative z-10 w-full bg-gradient-to-t from-black/55 to-transparent px-5 pb-4 pt-14 text-[0.6rem] font-black uppercase tracking-[0.22em] text-white/75">
-          Fotografía pendiente
+        <span className="relative z-10 w-full bg-gradient-to-t from-black/55 to-transparent px-5 pb-4 pt-14 text-[0.7rem] font-black uppercase tracking-[0.16em] text-white/85">
+          Imagen por publicar
         </span>
       </div>
     );
