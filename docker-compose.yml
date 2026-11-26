@@ -31,13 +31,15 @@ services:
     restart: always
     network_mode: host
     volumes:
-      - ./backend:/app:ro
+      # El código se monta en /code: montar /app/staging dentro de un /app
+      # read-only falla porque Docker no puede crear el punto de montaje.
+      - ./backend:/code:ro
       - staging_data:/app/staging
     environment:
       EGRESS_PROXY_SOCKET: ${EGRESS_PROXY_SOCKET:-/app/staging/egress-proxy.sock}
       EGRESS_PROXY_TIMEOUT: ${EGRESS_PROXY_TIMEOUT:-30}
       EGRESS_PROXY_ALLOWED_HOSTS: ${EGRESS_PROXY_ALLOWED_HOSTS:-overpass-api.de,maps.mail.ru,overpass.kumi.systems,www.wikidata.org,query.wikidata.org,nominatim.openstreetmap.org,lapaz.bo,www.lapaz.bo,miteleferico.bo,www.miteleferico.bo,commons.wikimedia.org,upload.wikimedia.org,thumb.wikimedia.org,api.cloudinary.com,es.wikipedia.org,en.wikipedia.org,www.openstreetmap.org,sitservicios.lapaz.bo,www.aecid.es,ccelp.aecid.es,laboliviana.com,www.laboliviana.com,larufinabolivia.com,www.larufinabolivia.com,www.instagram.com,www.facebook.com,www.tiktok.com}
-    command: python /app/scripts/egress_proxy.py
+    command: python /code/scripts/egress_proxy.py
     healthcheck:
       test: ["CMD", "python", "-c", "import os,socket; s=socket.socket(socket.AF_UNIX); s.connect(os.getenv('EGRESS_PROXY_SOCKET', '/app/staging/egress-proxy.sock')); s.close()"]
       interval: 5s
