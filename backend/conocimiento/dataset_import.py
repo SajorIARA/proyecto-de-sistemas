@@ -43,7 +43,9 @@ def _leer_fragmentos(csv_path: Path) -> list[str]:
             )
         fragmentos = []
         for numero, fila in enumerate(lector, start=1):
-            valores = {columna: (fila.get(columna) or "").strip() for columna in CSV_COLUMNS}
+            valores = {
+                columna: (fila.get(columna) or "").strip() for columna in CSV_COLUMNS
+            }
             if not any(valores.values()):
                 continue
             fragmentos.append(

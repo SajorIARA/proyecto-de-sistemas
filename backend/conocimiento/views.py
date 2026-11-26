@@ -387,12 +387,8 @@ class VectorizarImportacionAdminView(APIView):
             )
         importacion.estado_vectorizacion = ImportacionLugares.VECTORIZACION_PENDIENTE
         importacion.error_vectorizacion = ""
-        importacion.save(
-            update_fields=["estado_vectorizacion", "error_vectorizacion"]
-        )
-        transaction.on_commit(
-            lambda: encolar_vectorizacion(importacion.id_importacion)
-        )
+        importacion.save(update_fields=["estado_vectorizacion", "error_vectorizacion"])
+        transaction.on_commit(lambda: encolar_vectorizacion(importacion.id_importacion))
         return Response(
             ResultadoVectorizacionSerializer(
                 {

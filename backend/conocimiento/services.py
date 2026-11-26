@@ -333,7 +333,9 @@ def aprobar_lugar_candidato(
 
         contenido = _texto_candidato(candidato, categoria_limpia, duracion)
         digest = hashlib.sha256(contenido.encode("utf-8")).hexdigest()
-        url_fuente = candidato.url_fuente or f"{candidato.fuente}://{candidato.id_externo}"
+        url_fuente = (
+            candidato.url_fuente or f"{candidato.fuente}://{candidato.id_externo}"
+        )
         fuente = FuenteDocumental.objects.filter(url=url_fuente).first()
         if fuente is None:
             fuente = FuenteDocumental(
@@ -383,9 +385,7 @@ def aprobar_lugar_candidato(
         importacion = ImportacionLugares.objects.get(pk=candidato.importacion_id)
         importacion.estado_vectorizacion = ImportacionLugares.VECTORIZACION_PENDIENTE
         importacion.error_vectorizacion = ""
-        importacion.save(
-            update_fields=["estado_vectorizacion", "error_vectorizacion"]
-        )
+        importacion.save(update_fields=["estado_vectorizacion", "error_vectorizacion"])
 
     estado_envio = {"encolada": True}
 

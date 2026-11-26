@@ -31,7 +31,10 @@ class ImportarDatasetTurismoTests(TestCase):
         self.assertIsNone(fuente.atractivo)
         self.assertEqual(fuente.estado_scraping, FuenteDocumental.ESTADO_COMPLETADO)
         self.assertEqual(FragmentoDocumental.objects.filter(fuente=fuente).count(), 2)
-        self.assertIn("Ubicación declarada: Lugar A.", fuente.fragmentos.get(numero_fragmento=0).contenido)
+        self.assertIn(
+            "Ubicación declarada: Lugar A.",
+            fuente.fragmentos.get(numero_fragmento=0).contenido,
+        )
 
         call_command("importar_dataset_turismo", csv=str(self.csv_path))
 
@@ -39,7 +42,9 @@ class ImportarDatasetTurismoTests(TestCase):
         self.assertEqual(FragmentoDocumental.objects.filter(fuente=fuente).count(), 2)
 
     def test_rechaza_csv_sin_columnas_requeridas(self):
-        self.csv_path.write_text("Location,Country\nLugar A,Bolivia\n", encoding="utf-8")
+        self.csv_path.write_text(
+            "Location,Country\nLugar A,Bolivia\n", encoding="utf-8"
+        )
 
         with self.assertRaisesMessage(
             Exception, "El CSV no contiene las columnas requeridas"

@@ -106,7 +106,10 @@ def _asegurar_atractivo(
 
 
 def _asegurar_fuente(
-    atractivo: Atractivo, destino: DestinoSolicitado, enriquecido: DestinoEnriquecido, atribucion: str
+    atractivo: Atractivo,
+    destino: DestinoSolicitado,
+    enriquecido: DestinoEnriquecido,
+    atribucion: str,
 ) -> int:
     contenido = texto_para_rag(
         destino.nombre,

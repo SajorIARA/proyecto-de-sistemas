@@ -86,9 +86,7 @@ class AtractivoAdminCalidadDatosTests(TestCase):
         self.assertTrue(serializer.is_valid(), serializer.errors)
 
     def test_reactivar_borrador_incompleto_patch_falla(self) -> None:
-        borrador = _atractivo(
-            "Borrador", activo=False, duracion_minutos=None
-        )
+        borrador = _atractivo("Borrador", activo=False, duracion_minutos=None)
         serializer = AtractivoAdminSerializer(
             instance=borrador, data={"activo": True}, partial=True
         )
@@ -273,9 +271,7 @@ class SanealarCatalogoTests(TestCase):
                 con_ambas.categorias.values_list("id_categoria", flat=True)
             ),
             "preferencias": list(
-                UsuarioPreferencia.objects.values_list(
-                    "categoria_id", "nivel_interes"
-                )
+                UsuarioPreferencia.objects.values_list("categoria_id", "nivel_interes")
             ),
             "duplicada_activa": Categoria.objects.get(pk=self.duplicada.pk).activo,
         }
@@ -289,9 +285,7 @@ class SanealarCatalogoTests(TestCase):
                 con_ambas.categorias.values_list("id_categoria", flat=True)
             ),
             "preferencias": list(
-                UsuarioPreferencia.objects.values_list(
-                    "categoria_id", "nivel_interes"
-                )
+                UsuarioPreferencia.objects.values_list("categoria_id", "nivel_interes")
             ),
             "duplicada_activa": Categoria.objects.get(pk=self.duplicada.pk).activo,
         }

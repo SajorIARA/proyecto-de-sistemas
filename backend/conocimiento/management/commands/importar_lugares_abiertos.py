@@ -37,15 +37,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options) -> None:
         fuentes = tuple(
-            fuente.strip()
-            for fuente in options["fuentes"].split(",")
-            if fuente.strip()
+            fuente.strip() for fuente in options["fuentes"].split(",") if fuente.strip()
         )
         desconocidas = [f for f in fuentes if f not in FUENTES_DISPONIBLES]
         if desconocidas:
-            raise CommandError(
-                "Fuentes no soportadas: " + ", ".join(desconocidas)
-            )
+            raise CommandError("Fuentes no soportadas: " + ", ".join(desconocidas))
         limite = options["limite"]
         if not 1 <= limite <= settings.FUENTES_ABIERTAS_MAX_LIMITE:
             raise CommandError(

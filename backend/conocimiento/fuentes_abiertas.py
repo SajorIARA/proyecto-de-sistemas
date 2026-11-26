@@ -185,9 +185,7 @@ def _terminos_de_busqueda(termino: str, ciudad: str) -> list[str]:
     """Quita ciudad y palabras vacías; conserva solo términos útiles."""
 
     tokens = re.findall(r"\w+", _sin_tildes(termino).lower(), re.UNICODE)
-    de_la_ciudad = set(
-        re.findall(r"\w+", _sin_tildes(ciudad).lower(), re.UNICODE)
-    )
+    de_la_ciudad = set(re.findall(r"\w+", _sin_tildes(ciudad).lower(), re.UNICODE))
     utiles = [
         token
         for token in tokens
@@ -218,8 +216,7 @@ def _consulta_overpass(
             filtros.add(f'nwr["{clave}"="{valor}"]({caja});')
         variantes.update(_variantes(palabra))
     palabras = "|".join(
-        re.escape(variante)
-        for variante in sorted(variantes, key=len, reverse=True)
+        re.escape(variante) for variante in sorted(variantes, key=len, reverse=True)
     ) or re.escape(termino)
     # El nombre es complemento de la etiqueta OSM: "bar" no debe encontrar
     # "Barrio" ni "Casabar". Overpass usa regex POSIX, sin \b.
@@ -293,7 +290,10 @@ def _descargar_por_socket(
     destino = url
     if datos is not None:
         cuerpo = urlencode(datos).encode("utf-8")
-        cabeceras = {**cabeceras, "Content-Type": "application/x-www-form-urlencoded; charset=utf-8"}
+        cabeceras = {
+            **cabeceras,
+            "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
+        }
     else:
         separador = "&" if "?" in url else "?"
         destino = url + separador + urlencode(params or {})
@@ -312,14 +312,18 @@ def _descargar_por_socket(
             with cliente.makefile("rb") as lector:
                 linea = lector.readline(settings.FUENTES_ABIERTAS_MAX_BYTES * 2)
         except OSError as exc:
-            raise ConnectionError(f"No se pudo contactar al descargador: {exc}") from exc
+            raise ConnectionError(
+                f"No se pudo contactar al descargador: {exc}"
+            ) from exc
 
     if not linea:
         raise ConnectionError("El descargador no respondió.")
     try:
         respuesta = json.loads(linea.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise ConnectionError("El descargador devolvió una respuesta inválida.") from exc
+        raise ConnectionError(
+            "El descargador devolvió una respuesta inválida."
+        ) from exc
     if "error" in respuesta:
         raise ConnectionError(f"Descargador: {respuesta['error']}")
     estado = int(respuesta.get("estado", 200))
@@ -452,9 +456,9 @@ def buscar_en_overpass(
                 longitud=float(longitud) if longitud is not None else None,
                 direccion=_direccion_overpass(tags),
                 horario_declarado=tags.get("opening_hours", "").strip()[:200],
-                sitio_web=(tags.get("website") or tags.get("contact:website") or "").strip()[
-                    :500
-                ],
+                sitio_web=(
+                    tags.get("website") or tags.get("contact:website") or ""
+                ).strip()[:500],
                 url_fuente=f"https://www.openstreetmap.org/{id_externo}",
                 licencia=LICENCIA_OVERPASS,
             )
@@ -539,9 +543,7 @@ def buscar_en_wikidata(
         if not (sur <= latitud <= norte and oeste <= longitud <= este):
             continue
         descripcion = (
-            (entidad.get("descriptions") or {})
-            .get("es", {})
-            .get("value", "")
+            (entidad.get("descriptions") or {}).get("es", {}).get("value", "")
             or descripciones_busqueda.get(identificador, "")
         ).strip()
         nombre = (

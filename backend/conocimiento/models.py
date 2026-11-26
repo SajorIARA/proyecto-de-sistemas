@@ -218,14 +218,14 @@ class LugarCandidato(models.Model):
     id_candidato: models.UUIDField[uuid.UUID, uuid.UUID] = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False
     )
-    importacion: models.ForeignKey[
-        ImportacionLugares, ImportacionLugares
-    ] = models.ForeignKey(
-        ImportacionLugares,
-        db_column="id_importacion",
-        on_delete=models.CASCADE,
-        related_name="candidatos",
-        db_index=False,
+    importacion: models.ForeignKey[ImportacionLugares, ImportacionLugares] = (
+        models.ForeignKey(
+            ImportacionLugares,
+            db_column="id_importacion",
+            on_delete=models.CASCADE,
+            related_name="candidatos",
+            db_index=False,
+        )
     )
     fuente: models.CharField[str, str] = models.CharField(max_length=30)
     id_externo: models.CharField[str, str] = models.CharField(max_length=200)

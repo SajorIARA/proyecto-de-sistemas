@@ -13,6 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Create shared AI network
+        # Ollama vive en una Compose aparte; el stack principal solo necesita
+        # que la red externa exista antes de levantar backend y worker.
+        run: docker network create proyectodesistemas3_ia-network || true
       - name: Start environment
         env:
           POSTGRES_DB: turismo_melgarejo

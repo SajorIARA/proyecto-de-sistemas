@@ -190,7 +190,11 @@ class AprobarCandidatoSerializer(serializers.Serializer):
 
 class RechazarCandidatoSerializer(serializers.Serializer):
     notas = serializers.CharField(
-        max_length=2000, trim_whitespace=True, required=False, allow_blank=True, default=""
+        max_length=2000,
+        trim_whitespace=True,
+        required=False,
+        allow_blank=True,
+        default="",
     )
 
 

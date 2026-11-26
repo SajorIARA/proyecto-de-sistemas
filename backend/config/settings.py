@@ -100,9 +100,7 @@ if DATABASE_URL:
         DB_CONN_MAX_AGE = 600
     # Supabase exige TLS. En local con DEBUG=1 se puede desactivar, pero
     # DB_SSL_REQUIRE=1 permite usar el mismo Supabase en desarrollo.
-    DB_SSL_REQUIRE = (
-        os.getenv("DB_SSL_REQUIRE") or ("0" if DEBUG else "1")
-    ) == "1"
+    DB_SSL_REQUIRE = (os.getenv("DB_SSL_REQUIRE") or ("0" if DEBUG else "1")) == "1"
     DATABASES["default"] = dj_database_url.parse(
         DATABASE_URL,
         engine="django.contrib.gis.db.backends.postgis",
@@ -318,9 +316,9 @@ FUENTES_ABIERTAS_USER_AGENT = os.getenv(
 )
 # Vacío = sin proxy (el opener ignora HTTP_PROXY del entorno). En el Compose
 # local apunta al proxy allowlistado que corre en el host.
-FUENTES_ABIERTAS_PROXY_URL = os.getenv(
-    "FUENTES_ABIERTAS_PROXY_URL", ""
-).strip().rstrip("/")
+FUENTES_ABIERTAS_PROXY_URL = (
+    os.getenv("FUENTES_ABIERTAS_PROXY_URL", "").strip().rstrip("/")
+)
 FUENTES_ABIERTAS_MAX_LIMITE = 50
 
 # Inferencia local aislada (Ollama). En el compose de IA el worker y el
@@ -357,9 +355,9 @@ if RAG_MAX_PREGUNTA < 1:
 # público de demostración; un despliegue puede apuntar a su propia instancia
 # con RUTEO_URL, o dejarlo vacío para desactivar el trazado (el frontend
 # entonces muestra un trazado aproximado y lo rotula como tal).
-RUTEO_URL = os.getenv(
-    "RUTEO_URL", "https://router.project-osrm.org"
-).strip().rstrip("/")
+RUTEO_URL = (
+    os.getenv("RUTEO_URL", "https://router.project-osrm.org").strip().rstrip("/")
+)
 RUTEO_TIMEOUT_SECONDS = float(os.getenv("RUTEO_TIMEOUT_SECONDS", "6"))
 RUTEO_MAX_PUNTOS = int(os.getenv("RUTEO_MAX_PUNTOS", "25"))
 

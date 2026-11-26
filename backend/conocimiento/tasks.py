@@ -129,9 +129,7 @@ def vectorizar_importacion_task(self, id_importacion: str) -> dict:
     except Exception as exc:
         importacion.estado_vectorizacion = ImportacionLugares.VECTORIZACION_ERROR
         importacion.error_vectorizacion = str(exc)[:500]
-        importacion.save(
-            update_fields=["estado_vectorizacion", "error_vectorizacion"]
-        )
+        importacion.save(update_fields=["estado_vectorizacion", "error_vectorizacion"])
         raise
     importacion.estado_vectorizacion = ImportacionLugares.VECTORIZACION_COMPLETADO
     importacion.error_vectorizacion = ""

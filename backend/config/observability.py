@@ -45,9 +45,9 @@ class JsonFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         datos: dict[str, Any] = {
-            "ts": datetime.fromtimestamp(
-                record.created, tz=timezone.utc
-            ).isoformat(timespec="milliseconds"),
+            "ts": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(
+                timespec="milliseconds"
+            ),
             "nivel": record.levelname,
             "logger": record.name,
             "mensaje": record.getMessage(),
@@ -69,9 +69,9 @@ def instantanea() -> dict[str, Any]:
             "por_metodo": dict(_contadores["por_metodo"]),
             "por_estado": dict(_contadores["por_estado"]),
             "errores_5xx": _contadores["errores_5xx"],
-            "duracion_promedio_ms": round(
-                _contadores["duracion_total_ms"] / total, 1
-            ) if total else 0.0,
+            "duracion_promedio_ms": (
+                round(_contadores["duracion_total_ms"] / total, 1) if total else 0.0
+            ),
             "desde_inicio_del_proceso": True,
         }
 
@@ -87,9 +87,7 @@ def registrar(
     """Actualiza métricas y emite la línea estructurada."""
     with _bloqueo:
         _contadores["peticiones"] += 1
-        _contadores["por_metodo"][metodo] = (
-            _contadores["por_metodo"].get(metodo, 0) + 1
-        )
+        _contadores["por_metodo"][metodo] = _contadores["por_metodo"].get(metodo, 0) + 1
         clave_estado = str(estado)
         _contadores["por_estado"][clave_estado] = (
             _contadores["por_estado"].get(clave_estado, 0) + 1

@@ -34,7 +34,9 @@ class Command(BaseCommand):
         aplicar = bool(options["apply"])
         self.stdout.write(
             self.style.WARNING(
-                "Modo: APLICANDO cambios." if aplicar else "Modo: DRY RUN (sin cambios)."
+                "Modo: APLICANDO cambios."
+                if aplicar
+                else "Modo: DRY RUN (sin cambios)."
             )
         )
 
@@ -140,9 +142,7 @@ class Command(BaseCommand):
                         categoria=canonica
                     )
             else:
-                conservar = (
-                    preferencia.nivel_interes > canonica_pref.nivel_interes
-                )
+                conservar = preferencia.nivel_interes > canonica_pref.nivel_interes
                 self.stdout.write(
                     f"{'Unificando' if aplicar else 'Unificaría'} preferencias de "
                     f"{correo} (nivel conservado: "

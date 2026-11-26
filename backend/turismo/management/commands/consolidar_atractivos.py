@@ -17,7 +17,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for duplicado_nombre, canonico_nombre in FUSIONES.items():
-            candidatos = list(Atractivo.objects.filter(nombre=duplicado_nombre).order_by("url"))
+            candidatos = list(
+                Atractivo.objects.filter(nombre=duplicado_nombre).order_by("url")
+            )
             if duplicado_nombre == canonico_nombre:
                 candidatos = [item for item in candidatos if not item.url]
             canonico = Atractivo.objects.filter(
@@ -29,7 +31,9 @@ class Command(BaseCommand):
                 if duplicado.pk == canonico.pk:
                     continue
                 if not options["apply"]:
-                    self.stdout.write(f"Fusionar {duplicado.nombre} -> {canonico.nombre}")
+                    self.stdout.write(
+                        f"Fusionar {duplicado.nombre} -> {canonico.nombre}"
+                    )
                     continue
                 with transaction.atomic():
                     canonico.categorias.add(*duplicado.categorias.all())

@@ -92,7 +92,9 @@ class ImportacionServiceTests(TestCase):
         # Cada búsqueda genera su propio lote, pero no clona los candidatos.
         self.assertNotEqual(primera.id_importacion, segunda.id_importacion)
 
-    def test_aprobacion_crea_destino_fuente_fragmentos_y_encola_vectorizacion(self) -> None:
+    def test_aprobacion_crea_destino_fuente_fragmentos_y_encola_vectorizacion(
+        self,
+    ) -> None:
         crear_importacion("mercado", ciudad="La Paz", limite=5)
         candidato = LugarCandidato.objects.get()
         with (
@@ -101,9 +103,7 @@ class ImportacionServiceTests(TestCase):
                 "conocimiento.tasks.vectorizar_importacion_task.delay"
             ) as encolar,
         ):
-            aprobar_lugar_candidato(
-                candidato, categoria="Compras", duracion_minutos=45
-            )
+            aprobar_lugar_candidato(candidato, categoria="Compras", duracion_minutos=45)
 
         candidato.refresh_from_db()
         self.assertEqual(candidato.estado, LugarCandidato.ESTADO_APROBADO)
@@ -120,12 +120,8 @@ class ImportacionServiceTests(TestCase):
         self.assertEqual(candidato.importacion.estado_vectorizacion, "pendiente")
         encolar.assert_called_once()
 
-        with mock.patch(
-            "conocimiento.tasks.vectorizar_importacion_task.delay"
-        ):
-            aprobar_lugar_candidato(
-                candidato, categoria="Compras", duracion_minutos=45
-            )
+        with mock.patch("conocimiento.tasks.vectorizar_importacion_task.delay"):
+            aprobar_lugar_candidato(candidato, categoria="Compras", duracion_minutos=45)
         self.assertEqual(Atractivo.objects.count(), 1)
         self.assertEqual(FuenteDocumental.objects.count(), 1)
         self.assertEqual(FragmentoDocumental.objects.count(), 1)
@@ -140,9 +136,7 @@ class ImportacionServiceTests(TestCase):
         self.assertEqual(Atractivo.objects.count(), 0)
         self.assertEqual(FuenteDocumental.objects.count(), 0)
         with self.assertRaises(ValueError):
-            aprobar_lugar_candidato(
-                candidato, categoria="Compras", duracion_minutos=45
-            )
+            aprobar_lugar_candidato(candidato, categoria="Compras", duracion_minutos=45)
 
     def test_fallo_del_broker_no_reporta_vectorizacion_encolada(self) -> None:
         crear_importacion("mercado", ciudad="La Paz", limite=5)
@@ -159,20 +153,17 @@ class ImportacionServiceTests(TestCase):
     def test_fallo_de_ollama_marca_error_en_la_importacion(self) -> None:
         crear_importacion("mercado", ciudad="La Paz", limite=5)
         candidato = LugarCandidato.objects.get()
-        with on_commit_inmediato(), mock.patch(
-            "conocimiento.tasks.vectorizar_importacion_task.delay"
+        with (
+            on_commit_inmediato(),
+            mock.patch("conocimiento.tasks.vectorizar_importacion_task.delay"),
         ):
-            aprobar_lugar_candidato(
-                candidato, categoria="Compras", duracion_minutos=45
-            )
+            aprobar_lugar_candidato(candidato, categoria="Compras", duracion_minutos=45)
         with mock.patch(
             "conocimiento.tasks.vectorizar_fragmentos",
             side_effect=OllamaNoDisponible("sin modelo"),
         ):
             with self.assertRaises(OllamaNoDisponible):
-                vectorizar_importacion_task.run(
-                    str(candidato.importacion_id)
-                )
+                vectorizar_importacion_task.run(str(candidato.importacion_id))
         candidato.importacion.refresh_from_db()
         self.assertEqual(candidato.importacion.estado_vectorizacion, "error")
         self.assertIn("sin modelo", candidato.importacion.error_vectorizacion)
@@ -260,9 +251,7 @@ class ImportacionAdminAPITests(TestCase):
                 {"consulta": "mercado", "ciudad": "La Paz", "limite": 5},
                 format="json",
             )
-        self.assertEqual(
-            respuesta.status_code, status.HTTP_503_SERVICE_UNAVAILABLE
-        )
+        self.assertEqual(respuesta.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
         importacion = ImportacionLugares.objects.get()
         self.assertEqual(importacion.estado, "error")
         self.assertIn("Redis caído", importacion.error)
@@ -294,8 +283,9 @@ class ImportacionAdminAPITests(TestCase):
         self.assertEqual(len(respuesta.data), 1)
         id_candidato = respuesta.data[0]["id_candidato"]
 
-        with on_commit_inmediato(), mock.patch(
-            "conocimiento.tasks.vectorizar_importacion_task.delay"
+        with (
+            on_commit_inmediato(),
+            mock.patch("conocimiento.tasks.vectorizar_importacion_task.delay"),
         ):
             aprobacion = self.cliente.post(
                 f"{self.CAND}{id_candidato}/aprobar/",
@@ -305,8 +295,9 @@ class ImportacionAdminAPITests(TestCase):
         self.assertEqual(aprobacion.status_code, status.HTTP_200_OK)
         id_atractivo = aprobacion.data["id_atractivo"]
 
-        with on_commit_inmediato(), mock.patch(
-            "conocimiento.tasks.vectorizar_importacion_task.delay"
+        with (
+            on_commit_inmediato(),
+            mock.patch("conocimiento.tasks.vectorizar_importacion_task.delay"),
         ):
             vectorizacion = self.cliente.post(
                 f"{self.IMP}{id_importacion}/vectorizar/", format="json"
@@ -369,14 +360,13 @@ class ImportacionAdminAPITests(TestCase):
     def test_valida_cuerpo_y_rechaza_candidato_aprobado(self) -> None:
         importacion = self._crear_importacion()
         self.assertEqual(
-            self.cliente.post(
-                self.IMP, {"consulta": "ab"}, format="json"
-            ).status_code,
+            self.cliente.post(self.IMP, {"consulta": "ab"}, format="json").status_code,
             status.HTTP_400_BAD_REQUEST,
         )
         candidato = LugarCandidato.objects.get()
-        with on_commit_inmediato(), mock.patch(
-            "conocimiento.tasks.vectorizar_importacion_task.delay"
+        with (
+            on_commit_inmediato(),
+            mock.patch("conocimiento.tasks.vectorizar_importacion_task.delay"),
         ):
             self.cliente.post(
                 f"{self.CAND}{candidato.id_candidato}/aprobar/",
@@ -390,8 +380,6 @@ class ImportacionAdminAPITests(TestCase):
         )
         self.assertEqual(respuesta.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(
-            self.cliente.get(
-                f"{self.IMP}{importacion['id_importacion']}/"
-            ).status_code,
+            self.cliente.get(f"{self.IMP}{importacion['id_importacion']}/").status_code,
             status.HTTP_200_OK,
         )

@@ -49,9 +49,7 @@ ALLOWED_POR_DEFECTO = (
     "www.facebook.com",
     "www.tiktok.com",
 )
-RUTA_SOCKET = os.getenv(
-    "EGRESS_PROXY_SOCKET", "/app/staging/egress-proxy.sock"
-)
+RUTA_SOCKET = os.getenv("EGRESS_PROXY_SOCKET", "/app/staging/egress-proxy.sock")
 TIEMPO_ESPERA = float(os.getenv("EGRESS_PROXY_TIMEOUT", "30"))
 MAX_RESPUESTA = int(os.getenv("EGRESS_PROXY_MAX_BYTES", str(3 * 1024 * 1024)))
 MAX_SOLICITUD = 8 * 1024 * 1024
@@ -68,7 +66,9 @@ class SinRedirecciones(urllib.request.HTTPRedirectHandler):
 
 def hosts_permitidos() -> set[str]:
     crudo = os.getenv("EGRESS_PROXY_ALLOWED_HOSTS", ",".join(ALLOWED_POR_DEFECTO))
-    return {host.strip().lower().rstrip(".") for host in crudo.split(",") if host.strip()}
+    return {
+        host.strip().lower().rstrip(".") for host in crudo.split(",") if host.strip()
+    }
 
 
 def validar_url(url: str) -> str:
@@ -129,9 +129,7 @@ class ManejadorDescarga(socketserver.StreamRequestHandler):
             opener = urllib.request.build_opener(SinRedirecciones)
             # El host sí tiene salida; no heredamos proxies del entorno.
             opener.add_handler(urllib.request.ProxyHandler({}))
-            with opener.open(
-                peticion, timeout=TIEMPO_ESPERA
-            ) as respuesta:
+            with opener.open(peticion, timeout=TIEMPO_ESPERA) as respuesta:
                 estado = respuesta.status
                 crudo = respuesta.read(MAX_RESPUESTA + 1)
             if len(crudo) > MAX_RESPUESTA:

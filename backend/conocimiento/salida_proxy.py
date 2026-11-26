@@ -96,7 +96,9 @@ def solicitar(
             return base64.b64decode(respuesta.get("cuerpo", ""), validate=True)
         except (SalidaNoDisponible, ValueError, TypeError) as exc:
             ultimo_error = (
-                exc if isinstance(exc, SalidaNoDisponible) else SalidaNoDisponible(str(exc))
+                exc
+                if isinstance(exc, SalidaNoDisponible)
+                else SalidaNoDisponible(str(exc))
             )
             mensaje = str(exc)
             transient = (

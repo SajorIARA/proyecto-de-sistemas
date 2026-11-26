@@ -52,9 +52,7 @@ def crear_importacion(
                 encontrados=len(candidatos),
             )
         else:
-            importacion = ImportacionLugares.objects.filter(
-                pk=id_importacion
-            ).first()
+            importacion = ImportacionLugares.objects.filter(pk=id_importacion).first()
             if importacion is None:
                 raise ValueError("La importación indicada no existe.")
             importacion.consulta = consulta

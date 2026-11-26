@@ -73,7 +73,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         configuracion = settings.CLOUDINARY
         if not all(
-            configuracion.get(clave) for clave in ("cloud_name", "api_key", "api_secret")
+            configuracion.get(clave)
+            for clave in ("cloud_name", "api_key", "api_secret")
         ):
             raise CommandError("Cloudinary no está configurado.")
         try:

@@ -44,7 +44,11 @@ def _estado_rag() -> dict:
     except (OSError, ValueError) as exc:
         logger.info(
             "rag_no_alcanzable",
-            extra={"evento": "rag_no_alcanzable", "host": url.hostname, "error": type(exc).__name__},
+            extra={
+                "evento": "rag_no_alcanzable",
+                "host": url.hostname,
+                "error": type(exc).__name__,
+            },
         )
     return resultado
 
@@ -89,9 +93,5 @@ def health_detallado(request):
         "degradado": degradado,
         "metricas": instantanea(),
     }
-    codigo = (
-        status.HTTP_503_SERVICE_UNAVAILABLE
-        if degradado
-        else status.HTTP_200_OK
-    )
+    codigo = status.HTTP_503_SERVICE_UNAVAILABLE if degradado else status.HTTP_200_OK
     return Response(payload, status=codigo)

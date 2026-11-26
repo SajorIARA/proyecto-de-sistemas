@@ -43,9 +43,7 @@ PARAMETRO_PARADA = OpenApiParameter(
 def _reemplazar_paradas(viaje: Viaje, ids_atractivo: list[uuid.UUID]) -> None:
     """Sustituye todas las paradas conservando el estado de visita previo."""
 
-    anteriores = {
-        parada.atractivo_id: parada for parada in viaje.paradas.all()
-    }
+    anteriores = {parada.atractivo_id: parada for parada in viaje.paradas.all()}
     ParadaViaje.objects.filter(viaje=viaje).delete()
     ParadaViaje.objects.bulk_create(
         [

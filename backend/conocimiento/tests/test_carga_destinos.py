@@ -31,7 +31,9 @@ class FichasOficialesTests(TestCase):
     def test_extrae_secciones_declaradas(self):
         secciones = extraer_secciones(FICHA, url="https://lapaz.bo/turismo/prueba/")
         self.assertIn("descripcion", secciones)
-        self.assertEqual(valor_seccion(secciones, "horario"), "LUNES A VIERNES 09:00 - 17:00")
+        self.assertEqual(
+            valor_seccion(secciones, "horario"), "LUNES A VIERNES 09:00 - 17:00"
+        )
         self.assertEqual(valor_seccion(secciones, "costo"), "INGRESO GRATUITO")
         self.assertEqual(valor_seccion(secciones, "direccion"), "No verificado")
 
@@ -68,7 +70,9 @@ class ImagenesDestinosTests(TestCase):
         }}}}"""
         imagen = obtener_imagen("Prueba.jpg")
         self.assertIsNotNone(imagen)
-        self.assertEqual(imagen.atribucion, "Autora Prueba, Wikimedia Commons, CC BY-SA 4.0.")
+        self.assertEqual(
+            imagen.atribucion, "Autora Prueba, Wikimedia Commons, CC BY-SA 4.0."
+        )
 
 
 class CargaDestinosSolicitadosTests(TestCase):
@@ -88,7 +92,9 @@ class CargaDestinosSolicitadosTests(TestCase):
             primera = cargar_destinos(con_imagenes=True)
             self.assertEqual(primera.errores, ())
             self.assertEqual(primera.atractivos_creados, 30)
-            self.assertEqual(FuenteDocumental.objects.filter(tipo="ficha_oficial").count(), 30)
+            self.assertEqual(
+                FuenteDocumental.objects.filter(tipo="ficha_oficial").count(), 30
+            )
             self.assertGreaterEqual(FragmentoDocumental.objects.count(), 30)
 
             segunda = cargar_destinos(con_imagenes=True)

@@ -101,7 +101,13 @@ class RuteoView(APIView):
                 peticion, timeout=settings.RUTEO_TIMEOUT_SECONDS
             ) as respuesta:
                 datos = json.loads(respuesta.read().decode("utf-8"))
-        except (urllib.error.URLError, socket.timeout, TimeoutError, OSError, ValueError):
+        except (
+            urllib.error.URLError,
+            socket.timeout,
+            TimeoutError,
+            OSError,
+            ValueError,
+        ):
             logger.warning("Ruteo: OSRM no disponible al pedir la ruta.")
             return Response(
                 {"detail": "El servicio de ruteo no está disponible."},

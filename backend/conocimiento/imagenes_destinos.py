@@ -122,13 +122,14 @@ def descargar_imagen(imagen: ImagenDestino) -> bytes | None:
         return None
 
 
-def subir_imagen(atractivo: Atractivo, imagen: ImagenDestino, archivo: bytes) -> Foto | None:
+def subir_imagen(
+    atractivo: Atractivo, imagen: ImagenDestino, archivo: bytes
+) -> Foto | None:
     """Sube la foto a Cloudinary por el proxy y guarda su atribución."""
 
     configuracion = settings.CLOUDINARY
     if not all(
-        configuracion.get(clave)
-        for clave in ("cloud_name", "api_key", "api_secret")
+        configuracion.get(clave) for clave in ("cloud_name", "api_key", "api_secret")
     ):
         return None
     # Un mismo archivo puede ilustrar varios destinos: cada atractivo guarda su

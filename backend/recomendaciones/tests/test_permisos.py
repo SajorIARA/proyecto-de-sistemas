@@ -103,7 +103,9 @@ class RecomendacionesPermisosTests(TestCase):
             format="json",
         )
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED, resp.content)
-        consulta = ConsultaRecomendacion.objects.get(id_consulta=resp.data["id_consulta"])
+        consulta = ConsultaRecomendacion.objects.get(
+            id_consulta=resp.data["id_consulta"]
+        )
         self.assertEqual(consulta.usuario_id, self.turista.id_usuario)
         self.assertNotEqual(consulta.usuario_id, self.otro.id_usuario)
 
@@ -133,6 +135,8 @@ class RecomendacionesPermisosTests(TestCase):
         )
 
         admin = APIClient()
-        admin.credentials(HTTP_AUTHORIZATION=f"Bearer {_login(admin, self.admin.email)}")
+        admin.credentials(
+            HTTP_AUTHORIZATION=f"Bearer {_login(admin, self.admin.email)}"
+        )
         resp = admin.get("/api/recomendaciones/consultas/")
         self.assertEqual(resp.data["count"], 2)

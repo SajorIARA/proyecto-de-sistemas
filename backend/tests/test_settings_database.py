@@ -25,9 +25,7 @@ class DatabaseUrlSettingsTests(SimpleTestCase):
                 "DJANGO_SETTINGS_MODULE": "config.settings",
                 "DJANGO_SECRET_KEY": "test-secret",
                 "DJANGO_DEBUG": "0",
-                "DATABASE_URL": (
-                    "postgresql://user:pass@db.example.com:5432/postgres"
-                ),
+                "DATABASE_URL": ("postgresql://user:pass@db.example.com:5432/postgres"),
                 "DB_SSL_REQUIRE": "1",
             }
         )

@@ -44,7 +44,9 @@ def extraer_secciones(html: bytes, *, url: str = "") -> dict[str, str]:
         if actual:
             secciones[actual].append(linea.strip())
     return {
-        clave: " ".join(parte for parte in partes if parte)[: _LONGITUDES.get(clave, 300)]
+        clave: " ".join(parte for parte in partes if parte)[
+            : _LONGITUDES.get(clave, 300)
+        ]
         for clave, partes in secciones.items()
     }
 

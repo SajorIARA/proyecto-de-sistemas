@@ -79,9 +79,7 @@ class FuentesAbiertasTests(SimpleTestCase):
         self.assertEqual(candidato.descripcion, "")
         self.assertEqual(candidato.direccion, "Calle Linares")
         self.assertEqual(candidato.horario_declarado, "Mo-Sa 10:00-18:00")
-        self.assertEqual(
-            candidato.url_fuente, "https://www.openstreetmap.org/node/123"
-        )
+        self.assertEqual(candidato.url_fuente, "https://www.openstreetmap.org/node/123")
         consulta_enviada = descarga.call_args.kwargs["datos"]["data"]
         self.assertIn("[out:json]", consulta_enviada)
         self.assertIn("-16.63,-68.22,-16.45,-68.0", consulta_enviada)
@@ -153,7 +151,8 @@ class FuentesAbiertasTests(SimpleTestCase):
     @override_settings(FUENTES_ABIERTAS_OVERPASS_URLS=[])
     def test_miradores_usan_etiqueta_viewpoint(self) -> None:
         with mock.patch(
-            "conocimiento.fuentes_abiertas._descargar_json", return_value={"elements": []}
+            "conocimiento.fuentes_abiertas._descargar_json",
+            return_value={"elements": []},
         ) as descarga:
             buscar_en_overpass("miradores de La Paz", ciudad="La Paz")
 
@@ -209,6 +208,6 @@ class FuentesAbiertasTests(SimpleTestCase):
         validar_termino("Museo de la Calle Jaén")
         validar_ciudad("La Paz")
         with self.assertRaises(ValueError):
-            validar_termino("x\";nwr")
+            validar_termino('x";nwr')
         with self.assertRaises(ValueError):
             validar_ciudad("Quito")

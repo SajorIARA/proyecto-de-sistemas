@@ -135,7 +135,15 @@ class AnonimizarMisDatosView(APIView):
         usuario.nombre = "Usuario anonimizado"
         usuario.activo = False
         usuario.set_unusable_password()
-        usuario.save(update_fields=["email", "nombre", "activo", "password", "fecha_actualizacion"])
+        usuario.save(
+            update_fields=[
+                "email",
+                "nombre",
+                "activo",
+                "password",
+                "fecha_actualizacion",
+            ]
+        )
         usuario.roles.clear()
         OutstandingToken.objects.filter(user=usuario).delete()
 
