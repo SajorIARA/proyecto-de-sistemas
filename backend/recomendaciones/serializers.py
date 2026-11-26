@@ -126,7 +126,9 @@ class ConsultaRecomendacionSerializer(serializers.ModelSerializer):
             "macrodistrito",
             "fecha_consulta",
         ]
-        read_only_fields = ["id_consulta", "fecha_consulta"]
+        # ``usuario`` se toma del JWT (nunca del cuerpo): un turista no puede
+        # atribuirle una consulta a otra cuenta ni suplantar a un administrador.
+        read_only_fields = ["id_consulta", "fecha_consulta", "usuario"]
         # Replica los CHECK ck_consulta_presupuesto (>= 0) y
         # ck_consulta_tiempo (> 0) para responder 400 en vez de 500.
         extra_kwargs = {"presupuesto_bob": {"min_value": 0}}

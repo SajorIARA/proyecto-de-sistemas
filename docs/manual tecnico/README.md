@@ -210,6 +210,12 @@ Una duración nula equivale a 120 minutos. El orden de desempate es puntaje desc
 
 En `dev` y `Qa`, `/mi-cuenta/recomendaciones` permite ajustar presupuesto, duración, radio, top-k y origen, visualizar tarjetas del ranking y usar un asistente local determinista basado en el contexto del ranking. Este asistente de interfaz no se debe confundir con una API RAG pública integrada en las tres ramas principales.
 
+### 7.5 Constructor de ruta y punto de partida
+
+En `/destinos?vista=armar` el panel de filtros permite fijar un **punto de partida** con la ubicación actual del turista (GPS) o marcando un punto en el mapa de Leaflet/OpenStreetMap. El punto se valida contra el bbox de La Paz y se guarda en la URL (`origen_lat`, `origen_lon`, `origen_tipo`) para poder compartirlo y conservarlo entre pasos; no se persiste en el viaje guardado.
+
+El origen se antepone a las paradas en `POST /api/turismo/ruteo/`, así que los kilómetros y minutos del traslado son los que devuelve OSRM **desde el punto elegido**, incluso con una sola parada. Si el ruteo falla, el mapa dibuja una línea recta rotulada como aproximada y el resumen indica «No verificado»: no se inventa un tiempo con velocidades fijas. Las tarjetas de recomendaciones mantienen su estimación propia e independiente.
+
 ## 8. Preferencias y consultas históricas
 
 `UsuarioPreferencia` asocia usuario, categoría y `nivel_interes` entre 0 y 1. La relación es única por usuario/categoría. La ruta `/api/preferences/` fuerza la identidad desde JWT; el cliente no puede elegir otro usuario en el body.
@@ -222,9 +228,25 @@ En las tres ramas principales se documentan fuentes y fragmentos, scraping contr
 
 El scraping se protege con allowlist, user agent, timeout, máximo de bytes, límites de redirección e intervalo mínimo. El pipeline esperado es fuente autorizada → descarga/normalización → chunking → fragmento sin embedding → vectorización → búsqueda semántica.
 
-La consulta HTTP generativa RAG no forma parte del contrato consolidado de `main`, `dev` ni `Qa`; no debe documentarse como endpoint disponible en estas ramas. Antes de agregarla a una rama principal se debe incluir ruta, serializers, throttle, pruebas OpenAPI, pruebas de recuperación y evidencia de modelo disponible.
+`POST /api/conocimiento/consultar/` ya forma parte del contrato de la API: devuelve `origen="rag"`, `respuesta`, `citas` (con `id_fuente`, título, URL, fragmento y similitud), `recuperados`, `modelo` y `generado_en`. Acepta `id_fuente` e `id_atractivo` para acotar el contexto y tiene throttles propios. Si no hay embeddings o el modelo no responde, la respuesta lo indica; no se inventa contenido ni se simula éxito.
 
-**[DIAGRAMA PENDIENTE: Fuente autorizada → scraping → fragmentos → embeddings → índice vectorial — RESALTAR EN AMARILLO]**
+### 9.1 Descubrimiento en fuentes abiertas (panel `/mi-cuenta/fuentes`)
+
+Solo ADMIN. El backend consulta Overpass (OpenStreetMap) y Wikidata dentro de bounding boxes permitidos (La Paz y El Alto), con timeout, máximo de bytes, user agent e intervalo mínimo entre llamadas. La consulta no exige la frase exacta: combina etiquetas OSM (`amenity=bar`, `tourism=viewpoint`, `tourism=museum`, etc.) con un regex de nombre con límites de palabra, para que «bares de La Paz» encuentre bares y no confunda «Barrio» con «bar». Overpass se intenta en varios espejos con reintentos ante 429/504; el primero que responde gana. En el entorno local, donde los bridges de Docker no tienen salida, el servicio `egress-proxy` corre en el host y se usa mediante un socket Unix compartido (`FUENTES_ABIERTAS_PROXY_URL=unix:///app/staging/egress-proxy.sock`); solo descarga hosts allowlistados y nunca Google Maps. Déjalo vacío donde los contenedores ya tengan internet. Google Maps queda fuera del dataset: sus condiciones no permiten extraer/indexar contenido de Places; solo se ofrece como enlace externo. Tampoco se descargan imágenes de Wikimedia sin metadata de licencia. Cada candidato conserva fuente, id externo, URL original, licencia y hash de contenido.
+
+El flujo es: `POST /api/conocimiento/admin/importaciones/` crea el lote en `pendiente`, encola `importar_lugares_abiertos_task` y responde `202` con el `id_importacion` (si el broker falla, responde `503` y deja el error en el registro) → el worker completa descarga y candidatos → revisión admin completando categoría y duración → aprobación crea/actualiza `Atractivo`, `FuenteDocumental` y `FragmentoDocumental` → vectorización en segundo plano → consulta RAG con citas. El panel hace polling mientras el lote o su vectorización siguen `pendiente`: la etiqueta «En cola» no se interpreta como éxito. Los datos que la fuente no declaró se escriben explícitamente como «No verificado»; la duración nunca se inventa. Rechazar no publica nada y guarda el `notas_revision` que escribió el administrador. Las importaciones repetidas no duplican candidatos por `fuente + id_externo` y no sobrescriben decisiones ya tomadas. `ImportacionLugares` separa el estado de descarga del estado de vectorización (`sin_vectorizar` / `pendiente` / `completado` / `error`). Un fallo de Ollama, de una fuente o del broker al encolar deja `error` con mensaje visible: nunca se reporta éxito sin embeddings reales.
+
+Comando administrativo: `python manage.py importar_lugares_abiertos --consulta "museos de La Paz" --ciudad "La Paz" --limite 20` (dry-run; agregar `--apply` para guardar; sigue siendo síncrono y se usa para pruebas/operación puntual). La API equivalente es: `GET/POST /api/conocimiento/admin/importaciones/`, `GET .../candidatos/`, `POST .../vectorizar/`, `POST /api/conocimiento/admin/candidatos/{id}/aprobar/` y `.../rechazar/` (cuerpo `{ "notas": "..." }`).
+
+Verificación E2E en navegador (sin credenciales en el repositorio): al crear una importación se vio el estado «En cola» y el histórico pasó a «Error» con el motivo real de red cuando el contenedor no tenía salida a Overpass/Wikidata; el navegador solo llamó a `/api/...` (cero peticiones a Overpass, Wikidata o Google). Tras habilitar el descargador allowlistado, las importaciones reales «bares de La Paz» y «Miradores de La Paz» terminaron en `completado` con candidatos de `overpass` y URLs de `openstreetmap.org` (20 y 7 respectivamente); un espejo devolvió 504 transitorio y el reintento/reencolado completó el lote. El panel avisa que el procesamiento puede tardar alrededor de un minuto y muestra el error real si las fuentes no responden. Con un candidato semilla aprobado desde la UI se crearon destino, fuente y fragmento; la vectorización mostró «Error — Ollama no está disponible después de 3 intentos» y el fragmento quedó sin embedding. Los datos de esa prueba semilla se eliminaron al terminar; los lotes reales de bares y miradores se conservan para revisión administrativa.
+
+### 9.2 Carga directa de los 30 destinos solicitados
+
+`python manage.py cargar_destinos_solicitados` publica una lista curada de 30 destinos sin pasar por la aprobación administrativa; la aprobación sigue vigente para futuras importaciones. El comando es idempotente: busca por nombre y por URL de fuente, republica los fragmentos solo si cambia el hash y no duplica fotos. Cada destino guarda descripción, dirección, coordenadas, categoría y foto con autoría, licencia y página de origen de Wikimedia Commons; la subida a Cloudinary y la consulta a Commons pasan por `egress-proxy`. Los horarios, costos y coordenadas declarados por cada fuente se incluyen en el texto vectorizado; lo que no se pudo verificar se escribe como «No verificado», sin inventar duración, precio ni horario. La carga llama a `encolar_vectorizacion()` al terminar; el resultado real fue 30 fuentes, 68 fragmentos y 0 fragmentos sin embedding con `embeddinggemma:300m`.
+
+Cuando la pregunta nombra un solo destino, `POST /api/conocimiento/consultar/` acota la recuperación a ese `atractivo` antes de invocar al modelo. Esto evita que un modelo pequeño mezcle horarios o tarifas de dos fuentes distintas; las preguntas comparativas y las que no nombran un destino conservan el contexto completo. El prompt además declara que cada fragmento es independiente y que el contexto es dato, no instrucción. Fotografías y créditos de esta carga están en `frontend/public/images/CREDITOS.md`.
+
+**[DIAGRAMA PENDIENTE: Importación → candidatos → aprobación → catálogo → fragmentos → embeddings → RAG con citas — RESALTAR EN AMARILLO]**
 
 ## 10. Frontend
 
@@ -241,6 +263,7 @@ La consulta HTTP generativa RAG no forma parte del contrato consolidado de `main
 | `/mi-cuenta/recomendaciones` | Top-K y asistente local | JWT en dev/Qa. |
 | `/mi-cuenta/usuarios` | Gestión de usuarios | JWT + ADMIN. |
 | `/mi-cuenta/destinos` y subrutas | Gestión de destinos | JWT + ADMIN. |
+| `/mi-cuenta/fuentes` | Importación, revisión y vectorización de fuentes abiertas | JWT + ADMIN. |
 
 ### 10.2 Sesión HTTP
 
@@ -327,7 +350,7 @@ python backend/manage.py test
 Actualizar este manual en el mismo PR que cambie modelos, restricciones, serializers, rutas, permisos, contratos OpenAPI, variables, arquitectura o tareas. No incluir tokens, contraseñas, secretos, dumps, URLs con credenciales ni datos personales reales.
 
 ## 16. Anexo A — Catálogo exhaustivo OpenAPI de Qa
-Este anexo reemplaza listados representativos: enumera las **81 operaciones** generadas desde la especificación de `Qa`. La ruta `/api/conocimiento/consultar/` no aparece porque no forma parte del contrato de las tres ramas principales documentadas.
+Este anexo reemplaza listados representativos: enumera las **81 operaciones** generadas desde la especificación histórica de `Qa` y se conserva como referencia. El contrato actual del árbol de trabajo tiene **102 operaciones** e incluye `/api/conocimiento/consultar/` y las siete rutas del panel admin de fuentes; la fuente de verdad es el schema generado por drf-spectacular y `backend/tests/test_openapi.py`.
 | Método | Ruta | Acceso | Implementación | Request/response principal |
 |---|---|---|---|---|
 | `GET` | `/api/` | Público | `backend/config/urls.py` | Salida: 200 |
@@ -413,7 +436,7 @@ Este anexo reemplaza listados representativos: enumera las **81 operaciones** ge
 | `DELETE` | `/api/turismo/tipos-tarifa/{id_tipo_tarifa}/` | JWT | `backend/turismo/views_catalogo.py` | Salida: 204 |
 
 ## 17. Anexo B — Especificación consumible
-El archivo [`openapi.yaml`](openapi.yaml) contiene la especificación completa usada para este manual. Puede importarse en Swagger UI, Postman, Insomnia o generadores de cliente. Regenerar desde la rama objetivo: 
+El archivo [`openapi.yaml`](openapi.yaml) contiene la especificación completa del contrato actual del árbol de trabajo (102 operaciones, incluidas las rutas del panel de fuentes). El anexo A es un inventario histórico de `Qa`. Puede importarse en Swagger UI, Postman, Insomnia o generadores de cliente. Regenerar desde la rama objetivo:
 
 ```bash
 python backend/manage.py spectacular --validate --file "docs/manual tecnico/openapi.yaml"
@@ -445,7 +468,7 @@ El repositorio es un monorepo. La siguiente matriz identifica el propósito de c
 | Automatización | `.github/workflows/*.yml`, `.github/dependabot.yml` | CI, análisis, builds, release, despliegue manual y actualización de dependencias. |
 | Documentación | `docs/architecture/`, `docs/database/`, `docs/integracion-ci-cd.md`, este manual | Evidencia de arquitectura, modelo de datos y operación. |
 
-La composición actual define los servicios `db`, `backend`, `frontend`, `proxy`, `redis`, `worker`, `beat` y `flower` (local); la composición de operación omite `flower` y usa servidor WSGI. El overlay de IA agrega el servicio de inferencia aislado. Solo el proxy publica un puerto al host.
+La composición actual define los servicios `db`, `backend`, `frontend`, `proxy`, `redis`, `worker`, `beat`, `flower` y `egress-proxy` (local); la composición de operación omite `flower` y usa servidor WSGI. El overlay de IA agrega el servicio de inferencia aislado. `egress-proxy` corre con `network_mode: host` y comparte `staging_data` solo para el socket Unix de descargas allowlistadas; no publica un puerto TCP. Solo el proxy publica un puerto al host.
 
 ### 19.1 Ramas, cambios y trazabilidad
 
@@ -714,6 +737,12 @@ Los siguientes puntos son hallazgos de documentación y revisión del código; n
 | Media | Workflows no uniformemente fijados por SHA | Algunos actions están versionados por etiqueta mayor. | Fijar por commit todos los actions y revisar actualizaciones. |
 | Media | Observabilidad | No hay configuración versionada de métricas/tracing/alertas centralizadas. | Definir SLO, métricas, dashboards, alertas y retención antes de operación crítica. |
 | Baja | Documento/operación | Backups se prueban con sonda, no con un ejercicio completo de recuperación medido. | Ejecutar y registrar simulacros periódicos de restore. |
+| Media | Despliegue Railway | Intento de despliegue fallido por `RAILWAY_TOKEN` ausente/inválido; no se publicó ni se hizo push. | Configurar el secreto en el entorno y repetir el despliegue con autorización explícita. |
+| Media | `.github/workflows/recommender.yml` | No registra ejecuciones recientes; no hay evidencia de que el job especializado corra. | Verificar disparadores/permisos y ejecutar una corrida controlada. |
+| Media | Verificación E2E | La validación de extremo a extremo es únicamente HTTP smoke; no cubre navegación real en navegador ni el flujo completo de importación en producción. | Incorporar un smoke E2E con navegador sobre un entorno efímero. |
+| Media | `proxy` y `redis` en Compose | Contenedores con usuario root y healthchecks débiles (no miden latencia, colas ni integridad de datos). | Ejecutar como usuario no root y endurecer healthchecks/sondas. |
+| Media | Promoción `dev → Qa` | PR con conflictos de integración al corte documental; no hay releases ni tags publicados. | Resolver conflictos, publicar versión inmutable y registrar release/tag. |
+| Baja | Plantillas de documentación | Hay diagramas marcados como `[DIAGRAMA PENDIENTE]` y secciones vacías heredadas. | Completarlos en un PR documental dedicado; no son parte de este corte funcional. |
 
 ## 27. Checklist técnico de aceptación
 

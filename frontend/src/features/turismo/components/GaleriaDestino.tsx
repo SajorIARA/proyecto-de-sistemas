@@ -24,13 +24,13 @@ export function GaleriaDestino({ atractivo }: GaleriaDestinoProps) {
   // marcador de `DestinoImagen` (que ya pinta el degradado de marca).
   if (imagenes.length === 0) {
     return (
-      <div className="relative overflow-hidden rounded-[2rem] border border-[#5B3A29]/10">
+      <div className="relative h-full min-h-[30rem] overflow-hidden bg-[var(--lp-night)]">
         <DestinoImagen
           atractivo={atractivo}
           categoria={categoria}
           prioritaria
           sizes="100vw"
-          className="aspect-[16/9] w-full"
+          className="h-full min-h-[30rem] w-full object-cover"
         />
       </div>
     );
@@ -41,21 +41,21 @@ export function GaleriaDestino({ atractivo }: GaleriaDestinoProps) {
   const angulo = anguloDe(atractivo.id);
 
   return (
-    <div className="grid gap-3 sm:grid-cols-4 sm:grid-rows-2">
-      <figure className="overflow-hidden rounded-[1.85rem] sm:col-span-3 sm:row-span-2">
+    <div className="grid h-full gap-1 bg-[var(--lp-night)] sm:grid-cols-4 sm:grid-rows-2">
+      <figure className="overflow-hidden sm:col-span-3 sm:row-span-2">
         <CarruselImagenes
           imagenes={imagenes}
           alt={atractivo.nombre}
           prioritaria
           sizes="(min-width: 640px) 60vw, 100vw"
-          className="h-full min-h-[16rem] w-full"
+          className="h-full min-h-[30rem] w-full"
         />
       </figure>
 
       {secundarias.slice(0, 3).map((url, indice) => (
         <figure
           key={url}
-          className="hidden overflow-hidden rounded-[1.6rem] sm:block"
+          className="hidden overflow-hidden sm:block"
         >
           <img
             src={url}
@@ -72,7 +72,7 @@ export function GaleriaDestino({ atractivo }: GaleriaDestinoProps) {
         (_, indice) => (
           <div
             key={`hueco-${indice}`}
-            className="hidden rounded-[1.6rem] sm:block"
+            className="hidden sm:block"
             style={{
               backgroundImage: `linear-gradient(${(angulo + indice * 40) % 360}deg, ${desde}, ${hasta})`,
             }}

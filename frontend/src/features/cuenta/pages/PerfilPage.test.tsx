@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AuthProvider } from "../../auth/context/AuthContext";
+import { RutaProvider } from "../../turismo/context/RutaContext";
 import { authApi } from "../../auth/api/authApi";
 import { cuentaApi, CuentaApiError } from "../api/cuentaApi";
 import { PerfilPage } from "./PerfilPage";
@@ -32,6 +33,7 @@ vi.mock("../api/cuentaApi", async () => {
       ...real.cuentaApi,
       cambiarPassword: vi.fn(),
       listarUsuarios: vi.fn(),
+      anonimizarMisDatos: vi.fn(),
     },
   };
 });
@@ -71,19 +73,21 @@ function renderPerfil() {
     <QueryClientProvider client={cliente()}>
       <MemoryRouter initialEntries={["/mi-cuenta"]}>
         <AuthProvider>
-          <Routes>
-            <Route path="/mi-cuenta" element={<PerfilPage />} />
+          <RutaProvider>
+            <Routes>
+              <Route path="/mi-cuenta" element={<PerfilPage />} />
 
-            <Route
-              path="/mi-cuenta/usuarios"
-              element={<h1>Panel de usuarios</h1>}
-            />
+              <Route
+                path="/mi-cuenta/usuarios"
+                element={<h1>Panel de usuarios</h1>}
+              />
 
-            <Route
-              path="/"
-              element={<h1>Página principal</h1>}
-            />
-          </Routes>
+              <Route
+                path="/"
+                element={<h1>Página principal</h1>}
+              />
+            </Routes>
+          </RutaProvider>
         </AuthProvider>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -154,7 +158,7 @@ describe("PerfilPage", () => {
     renderPerfil();
 
     expect(
-      screen.getAllByText("Turista").length,
+      screen.getAllByText("Viajero").length,
     ).toBeGreaterThan(0);
 
     expect(
@@ -402,5 +406,38 @@ describe("PerfilPage", () => {
     expect(
       localStorage.getItem("turismo_auth_user"),
     ).toBeNull();
+  });
+
+  // ----------------------------------------------------------
+  // TEST 8: BORRAR CUENTA
+  // ----------------------------------------------------------
+
+  it("borra la cuenta al confirmar con BORRAR", async () => {
+    sesion();
+
+    vi.mocked(cuentaApi.anonimizarMisDatos).mockResolvedValue(undefined);
+    vi.mocked(authApi.logout).mockResolvedValue(undefined);
+
+    renderPerfil();
+
+    expect(
+      screen.getByRole("heading", { name: "Borrar cuenta" }),
+    ).toBeInTheDocument();
+
+    const confirmacion = screen.getByLabelText(/confirmación/i);
+    expect(confirmacion).toHaveAttribute("placeholder", "BORRAR");
+
+    const boton = screen.getByRole("button", { name: /borrar cuenta/i });
+    expect(boton).toBeDisabled();
+
+    fireEvent.change(confirmacion, { target: { value: "borrar" } });
+    expect(boton).toBeEnabled();
+
+    fireEvent.click(boton);
+
+    await waitFor(() => {
+      expect(cuentaApi.anonimizarMisDatos).toHaveBeenCalledTimes(1);
+    });
+    expect(authApi.logout).toHaveBeenCalled();
   });
 });

@@ -1,18 +1,6 @@
-# syntax=docker/dockerfile:1
-# Imagen PostgreSQL + PostGIS + pgvector
-# Basada en postgres:17 (Debian bookworm, con soporte de seguridad hasta 2028)
-# con PostGIS y pgvector desde el repositorio APT de PGDG.
-FROM postgres:17-bookworm
-
-RUN apt-get update \
-    && apt-get upgrade -y \
-    && apt-get install -y --no-install-recommends \
-        postgresql-17-postgis-3 \
-        postgresql-17-pgvector \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -f /usr/local/bin/gosu /usr/bin/gosu
-
-# El esquema (extensiones, tablas, índices) lo crean las migraciones de
-# Django con `manage.py migrate` en el primer arranque del backend.
+# PostGIS y pgvector ya vienen en la imagen base versionada. Evita APT durante
+# las reconstrucciones normales; actualizar esta base es una tarea explícita.
+ARG BASE_IMAGE=raisiar/proyecto-de-sistemas-db:latest
+FROM ${BASE_IMAGE}
 
 USER postgres

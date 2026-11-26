@@ -1,0 +1,17 @@
+:root {
+  --button-height: 2.875rem;
+  --button-radius: var(--lp-radius-md);
+  --button-primary-bg: var(--color-action);
+  --button-primary-bg-hover: var(--color-action-hover);
+  --button-primary-fg: var(--lp-night);
+  --button-secondary-bg: var(--color-surface);
+  --button-secondary-fg: var(--color-text);
+  --button-secondary-border: var(--color-border-strong);
+  --field-height: 3rem;
+  --field-bg: var(--color-surface);
+  --field-border: var(--color-border-strong);
+  --field-radius: var(--lp-radius-md);
+  --panel-bg: var(--color-surface);
+  --panel-border: var(--color-border);
+  --panel-radius: var(--lp-radius-lg);
+}

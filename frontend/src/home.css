@@ -1,0 +1,1594 @@
+.chuki-home,
+.chuki-home * {
+  box-sizing: border-box;
+}
+
+.chuki-home {
+  min-height: 100vh;
+  background: var(--color-canvas);
+  color: var(--color-text);
+  font: 16px system-ui, sans-serif;
+}
+
+.chuki-home::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 80% 20%, #135a60 0, transparent 50%),
+    radial-gradient(ellipse at 10% 90%, #543426 0, transparent 45%);
+}
+
+.chuki-site-header {
+  position: sticky;
+  z-index: 50;
+  top: 0;
+  border-bottom: 1px solid #36e8da55;
+  background: #061c29e8;
+  color: var(--color-text);
+  backdrop-filter: blur(18px);
+}
+
+.chuki-site-header__inner {
+  display: flex;
+  min-height: 76px;
+  width: min(100%, 1600px);
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: auto;
+  padding: 10px 5%;
+}
+
+.chuki-site-header__nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chuki-site-header__nav a {
+  min-height: 44px;
+  padding: 12px 14px;
+  border-radius: 30px;
+  color: #d5e6e9;
+  font-size: 0.84rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.chuki-site-header__nav a.active,
+.chuki-site-header__nav a:hover {
+  background: var(--color-route-strong);
+  box-shadow: 0 0 18px #23e8d755;
+  color: white;
+}
+
+.chuki-site-header__search {
+  display: flex;
+  min-height: 44px;
+  min-width: 180px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid #36e8da55;
+  border-radius: 30px;
+  background: #0b2b38;
+  color: var(--color-brand);
+}
+
+.chuki-site-header__search input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: white;
+}
+
+.chuki-site-header__search input::placeholder {
+  color: #88a8ad;
+}
+
+.chuki-site-header__action {
+  border-color: #3be5d580 !important;
+  background: var(--button-secondary-bg) !important;
+  color: white !important;
+}
+
+.chuki-site-header__action:hover {
+  border-color: var(--color-brand) !important;
+  box-shadow: 0 0 18px #23e8d74d;
+}
+
+.chuki-site-header__menu {
+  display: none;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #3be5d580;
+  border-radius: 50%;
+  background: var(--button-secondary-bg);
+  color: white;
+}
+
+.chuki-site-header__mobile {
+  display: none;
+  padding: 16px 5% 22px;
+  border-top: 1px solid #36e8da33;
+  background: var(--color-canvas);
+  color: white;
+}
+
+.chuki-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse at 85% 15%, #135a6040 0, transparent 40%),
+    var(--color-canvas);
+  color: var(--color-text);
+}
+
+.chuki-page .lp-panel,
+.chuki-page .chuki-catalog-card {
+  border: 1px solid #54d9d755;
+  border-radius: 22px;
+  background: var(--color-surface) !important;
+  box-shadow: 0 12px 35px #0005;
+}
+
+.chuki-page .chuki-catalog-card {
+  color: var(--color-text);
+}
+
+.chuki-page .chuki-catalog-card:hover {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 25px #28e9d955;
+}
+
+.chuki-page .lp-button--secondary:hover {
+  border-color: var(--color-brand);
+  background: var(--color-route-strong);
+  color: white;
+}
+
+.chuki-page .lp-button--quiet {
+  color: #d5e6e9;
+}
+
+.chuki-page .lp-button--quiet:hover {
+  background: var(--button-secondary-bg);
+  color: white;
+}
+
+.chuki-page input,
+.chuki-page textarea,
+.chuki-page select {
+  color-scheme: dark;
+}
+
+/* En el constructor, los filtros tienen scroll propio sin bloquear el de la página. */
+.chuki-route-filters {
+  max-height: 70vh;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+}
+
+@media (min-width: 1024px) {
+  .chuki-route-filters {
+    position: sticky;
+    top: 6rem;
+    align-self: start;
+    max-height: calc(100vh - 7rem);
+  }
+}
+
+/* Mantiene el itinerario compacto y desplazable frente al mapa de la revisión. */
+.chuki-route-itinerary {
+  max-height: 70vh;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+}
+
+@media (min-width: 1280px) {
+  .chuki-route-itinerary {
+    position: sticky;
+    top: 6rem;
+    align-self: start;
+    max-height: calc(100vh - 7rem);
+  }
+}
+
+/* El constructor usa los filtros públicos dentro de una superficie nocturna. */
+.chuki-page .chuki-builder-filters {
+  border: 0;
+  border-top: 1px solid #36e8da33;
+  border-radius: 0;
+  background: #0b2b38;
+  box-shadow: none;
+}
+
+.chuki-page .chuki-builder-filters > div {
+  border-color: #36e8da33;
+}
+
+.chuki-page .chuki-builder-filters p,
+.chuki-page .chuki-builder-filters label {
+  color: var(--color-text-muted) !important;
+}
+
+.chuki-page
+  .chuki-builder-filters
+  span:has(+ [role="group"][aria-labelledby]),
+.chuki-page
+  .chuki-builder-filters
+  [aria-label="Filtros activos"]
+  > span:first-child,
+.chuki-page .chuki-builder-filters .pointer-events-none {
+  color: var(--color-text-muted);
+}
+
+.chuki-page .chuki-builder-filters input,
+.chuki-page .chuki-builder-filters select {
+  border-color: #49e6d780;
+  background: var(--color-canvas);
+  color: var(--color-text);
+  box-shadow: none;
+}
+
+.chuki-page .chuki-builder-filters input::placeholder {
+  color: #8fb2b7;
+}
+
+.chuki-page .chuki-builder-filters input ~ button {
+  background: var(--button-secondary-bg);
+  color: var(--color-text);
+}
+
+.chuki-page .chuki-builder-filters input:focus,
+.chuki-page .chuki-builder-filters select:focus {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px #49e6d733;
+}
+
+.chuki-page .chuki-builder-filters [data-testid^="rango-precio-"] {
+  border-color: #49e6d766;
+  background: var(--color-surface);
+  color: #d5e6e9;
+  box-shadow: none;
+}
+
+.chuki-page
+  .chuki-builder-filters
+  [data-testid^="rango-precio-"][aria-pressed="true"] {
+  border-color: var(--color-action);
+  background: var(--color-action);
+  color: #08232b;
+}
+
+.chuki-page .chuki-builder-filters [aria-label="Filtros activos"] > span:not(:first-child) {
+  border-color: #49e6d780;
+  background: #0b4b4d;
+  color: #eafffc;
+}
+
+.chuki-page .chuki-builder-filters [aria-label="Filtros activos"] button {
+  background: #49e6d733;
+  color: #eafffc;
+}
+
+.chuki-page .chuki-builder-filters > div:nth-child(2) > button,
+.chuki-page
+  .chuki-builder-filters
+  [aria-label="Filtros activos"]
+  > button:last-child {
+  color: var(--color-action);
+}
+
+.chuki-page [data-testid="catalogo-error"],
+.chuki-page [data-testid="catalogo-vacio"] {
+  border-color: #54d9d755 !important;
+  background: var(--color-surface) !important;
+}
+
+.chuki-page [data-testid="catalogo-error"] h3,
+.chuki-page [data-testid="catalogo-error"] p,
+.chuki-page [data-testid="catalogo-vacio"] h3,
+.chuki-page [data-testid="catalogo-vacio"] p {
+  color: #d5e6e9 !important;
+}
+
+.chuki-page .chuki-info-panel {
+  border-color: #54d9d755 !important;
+  background: var(--color-surface) !important;
+  box-shadow: 0 12px 35px #0005;
+}
+
+.chuki-page .chuki-info-panel > header {
+  border-color: #36e8da33 !important;
+  background: #0b2b38;
+}
+
+.chuki-page .chuki-info-panel h3,
+.chuki-page .chuki-info-panel p,
+.chuki-page .chuki-info-panel li > span {
+  color: #d5e6e9 !important;
+}
+
+.chuki-page .chuki-info-panel header > div > p,
+.chuki-page .chuki-info-panel header > p {
+  color: var(--color-action) !important;
+}
+
+.chuki-page .chuki-info-panel > div:last-child {
+  border-color: #36e8da33 !important;
+}
+
+.chuki-page main > header {
+  border-color: #36e8da55 !important;
+  background:
+    linear-gradient(90deg, #041722f2, #0b3b44d9),
+    url("/images/cierre-atardecer.jpg") center / cover !important;
+  color: white;
+}
+
+.chuki-header {
+  position: sticky;
+  z-index: 50;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 5%;
+  border-bottom: 1px solid #36e8da55;
+  background: #061c29d9;
+  backdrop-filter: blur(18px);
+}
+
+.chuki-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.chuki-header nav a {
+  padding: 9px 12px;
+  border-radius: 30px;
+}
+
+.chuki-header nav a.active,
+.chuki-header nav a:hover {
+  background: var(--color-route-strong);
+  box-shadow: 0 0 18px #23e8d755;
+}
+
+.chuki-brand {
+  color: var(--color-action);
+  font-weight: 900;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+.chuki-brand small {
+  display: block;
+  color: white;
+  font-size: 9px;
+}
+
+.chuki-hero {
+  position: relative;
+  display: flex;
+  min-height: 65vh;
+  align-items: center;
+  overflow: hidden;
+  padding: 7%;
+  isolation: isolate;
+}
+
+.chuki-hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    linear-gradient(90deg, #041722e8, transparent 90%),
+    url("/images/chukiyapu-hero.jpg") center / cover;
+  animation: chuki-zoom 18s alternate infinite;
+}
+
+.chuki-hero::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, #ffbd35, #29ffe6, #ff75c7, #ffbd35);
+  background-size: 200%;
+  box-shadow: 0 0 25px #20e9dc;
+  animation: chuki-flow 4s linear infinite;
+}
+
+.chuki-hero > div {
+  max-width: 650px;
+}
+
+.chuki-clima {
+  position: absolute;
+  right: 5%;
+  bottom: 2.5rem;
+  display: flex;
+  min-width: 15rem;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #3be5d580;
+  border-radius: 18px;
+  background: #082b38d9;
+  box-shadow:
+    0 0 24px #23e8d72e,
+    0 16px 36px #0006;
+  backdrop-filter: blur(14px);
+}
+
+.chuki-clima__icono {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid #3be5d580;
+  border-radius: 50%;
+  color: var(--color-action);
+  box-shadow: inset 0 0 14px #23e8d71f;
+}
+
+.chuki-clima__contenido,
+.chuki-clima__contenido strong,
+.chuki-clima__contenido span,
+.chuki-clima__contenido small {
+  display: block;
+}
+
+.chuki-clima__contenido small {
+  color: var(--color-brand);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.chuki-clima__contenido strong {
+  margin-top: 0.15rem;
+  color: var(--color-action);
+  font-family: Georgia, serif;
+  font-size: 1.5rem;
+  font-style: italic;
+  line-height: 1.1;
+}
+
+.chuki-clima__contenido > span {
+  margin-top: 0.15rem;
+  color: #d5e6e9;
+  font-size: 0.72rem;
+}
+
+.chuki-home h1,
+.chuki-home h2 {
+  font-family: Georgia, serif;
+  font-style: italic;
+  line-height: 1.05;
+}
+
+.chuki-home h1 {
+  margin: 12px 0;
+  font-size: clamp(42px, 7vw, 105px);
+}
+
+.chuki-home h2 {
+  font-size: 36px;
+}
+
+.chuki-home p {
+  color: #c6dce1;
+  line-height: 1.6;
+}
+
+.chuki-eyebrow {
+  color: var(--color-action);
+  font-size: 12px;
+  letter-spacing: 4px;
+}
+
+.chuki-hero h1 span {
+  color: var(--color-action-hover);
+}
+
+.chuki-btn,
+.chuki-add {
+  display: inline-block;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 30px;
+  background: var(--color-action-hover);
+  box-shadow: 0 0 18px #ffb93345;
+  color: #08232b;
+  cursor: pointer;
+  font-weight: 750;
+  transition:
+    transform 0.3s,
+    box-shadow 0.3s;
+}
+
+.chuki-btn:hover,
+.chuki-add:hover {
+  box-shadow: 0 0 26px #ffb933aa;
+  transform: translateY(-3px);
+}
+
+.chuki-secondary {
+  border: 1px solid #3be5d5;
+  background: var(--button-secondary-bg);
+  color: white;
+}
+
+.chuki-main {
+  width: min(100%, 1600px);
+  margin: auto;
+  padding: 42px 6%;
+}
+
+.chuki-section {
+  margin-top: 72px;
+  padding-top: 64px;
+  border-top: 1px solid #36e8da55;
+}
+
+.chuki-section__intro {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 32px;
+  margin-bottom: 28px;
+}
+
+.chuki-section__intro h2 {
+  max-width: 760px;
+  margin: 10px 0 0;
+}
+
+.chuki-section__intro > p {
+  max-width: 440px;
+  margin: 0;
+}
+
+.chuki-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 22px;
+}
+
+.chuki-tile {
+  overflow: hidden;
+  border: 1px solid #54d9d755;
+  border-radius: 22px;
+  background: #102f3dc9;
+  box-shadow: 0 12px 35px #0005;
+  animation: chuki-enter 0.7s both;
+  transition:
+    transform 0.4s,
+    box-shadow 0.4s;
+}
+
+.chuki-tile:hover {
+  box-shadow: 0 0 25px #28e9d988;
+  transform: perspective(900px) rotateY(-4deg) translateY(-8px);
+}
+
+.chuki-tile > img {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  transition: 0.6s;
+}
+
+.chuki-tile:hover > img {
+  transform: scale(1.06);
+}
+
+.chuki-pad {
+  padding: 22px;
+}
+
+.chuki-tile h3 {
+  margin: 6px 0;
+}
+
+.chuki-tag {
+  color: var(--color-brand);
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.chuki-add {
+  padding-inline: 17px;
+}
+
+.chuki-experience-grid,
+.chuki-zone-grid,
+.chuki-plan-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.chuki-experience-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.chuki-experience {
+  position: relative;
+  display: block;
+  min-height: 280px;
+  overflow: hidden;
+  border: 1px solid #54d9d755;
+  border-radius: 22px;
+  background: var(--color-surface);
+  box-shadow: 0 12px 35px #0005;
+  transition:
+    border-color 0.3s,
+    transform 0.3s,
+    box-shadow 0.3s;
+}
+
+.chuki-experience:hover {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 25px #28e9d955;
+  transform: translateY(-5px);
+}
+
+.chuki-experience > img,
+.chuki-zone > img,
+.chuki-plan > img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.chuki-experience:hover > img,
+.chuki-zone:hover > img,
+.chuki-plan:hover > img {
+  transform: scale(1.06);
+}
+
+.chuki-experience__shade,
+.chuki-zone__shade,
+.chuki-plan__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, #061c29f5 0%, #061c2999 58%, #061c291f 100%);
+}
+
+.chuki-experience__icon {
+  position: absolute;
+  z-index: 1;
+  top: 20px;
+  left: 20px;
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border: 1px solid #49e6d780;
+  border-radius: 50%;
+  color: var(--color-action);
+  box-shadow: inset 0 0 18px #23e8d71f;
+  background: #082b38bf;
+  backdrop-filter: blur(8px);
+}
+
+.chuki-experience__copy {
+  position: absolute;
+  z-index: 1;
+  right: 24px;
+  bottom: 24px;
+  left: 24px;
+}
+
+.chuki-experience h3,
+.chuki-experience small,
+.chuki-zone strong,
+.chuki-zone small,
+.chuki-plan strong,
+.chuki-plan small {
+  display: block;
+}
+
+.chuki-experience h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-family: Georgia, serif;
+  font-size: 1.35rem;
+  font-style: italic;
+}
+
+.chuki-experience small,
+.chuki-zone small,
+.chuki-plan small {
+  margin-top: 5px;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.chuki-experience__arrow {
+  position: absolute;
+  z-index: 1;
+  top: 24px;
+  right: 24px;
+  color: var(--color-brand);
+  font-size: 1.4rem;
+}
+
+.chuki-zones {
+  position: relative;
+}
+
+.chuki-zone-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.chuki-zone {
+  position: relative;
+  min-height: 190px;
+  overflow: hidden;
+  border: 1px solid #36e8da40;
+  border-radius: 18px;
+  background: #082b38a6;
+  color: var(--color-brand);
+  transition:
+    background 0.3s,
+    border-color 0.3s,
+    transform 0.3s;
+}
+
+.chuki-zone:hover {
+  border-color: var(--color-action);
+  background: #103c49;
+  transform: translateY(-3px);
+}
+
+.chuki-zone__copy {
+  position: absolute;
+  z-index: 1;
+  right: 20px;
+  bottom: 18px;
+  left: 20px;
+  display: grid;
+  align-items: center;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  color: var(--color-brand);
+}
+
+.chuki-zone__arrow {
+  position: absolute;
+  z-index: 1;
+  top: 18px;
+  right: 20px;
+  color: var(--color-brand);
+}
+
+.chuki-zone strong {
+  color: var(--color-text);
+  font-size: 1.05rem;
+}
+
+.chuki-planning {
+  padding-bottom: 64px;
+}
+
+.chuki-plan-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.chuki-plan {
+  position: relative;
+  display: block;
+  min-height: 300px;
+  overflow: hidden;
+  border: 1px solid #ffcf5c80;
+  border-radius: 22px;
+  background:
+    linear-gradient(145deg, #16434c, #0a2836);
+  box-shadow: 0 12px 35px #0005;
+  transition:
+    transform 0.3s,
+    box-shadow 0.3s;
+}
+
+.chuki-plan__content::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -30px;
+  bottom: -55px;
+  width: 150px;
+  height: 150px;
+  border: 1px solid #49e6d733;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 18px #49e6d70d,
+    0 0 0 36px #49e6d70a;
+}
+
+.chuki-plan:hover {
+  box-shadow: 0 0 28px #ffb93366;
+  transform: translateY(-5px);
+}
+
+.chuki-plan__content {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  padding: 28px;
+  overflow: hidden;
+  color: var(--color-action);
+}
+
+.chuki-plan__content strong {
+  margin-top: 28px;
+  color: var(--color-text);
+  font-family: Georgia, serif;
+  font-size: 1.55rem;
+  font-style: italic;
+}
+
+.chuki-plan__content > span:last-child {
+  margin-top: auto;
+  color: var(--color-brand);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.chuki-footer {
+  border-top: 1px solid #3ce8d655;
+  background:
+    radial-gradient(circle at 15% 20%, #135a6040, transparent 35%),
+    #041722;
+  color: var(--color-text-muted);
+}
+
+.chuki-footer__main {
+  display: grid;
+  width: min(100%, 1600px);
+  margin: auto;
+  grid-template-columns: minmax(260px, 1.6fr) repeat(3, minmax(140px, 0.7fr));
+  gap: 48px;
+  padding: 56px 6%;
+}
+
+.chuki-footer__brand {
+  max-width: 380px;
+}
+
+.chuki-footer__brand > p:not(.chuki-brand) {
+  margin: 20px 0 24px;
+}
+
+.chuki-footer h2 {
+  margin: 0 0 18px;
+  color: var(--color-action);
+  font-family: system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-style: normal;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.chuki-footer nav,
+.chuki-footer__info {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chuki-footer nav a,
+.chuki-footer__info a {
+  min-height: 32px;
+  color: #d5e6e9;
+  font-size: 0.9rem;
+}
+
+.chuki-footer nav a:hover,
+.chuki-footer__info a:hover {
+  color: var(--color-brand);
+}
+
+.chuki-footer__info p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.chuki-footer__bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 6%;
+  border-top: 1px solid #3ce8d633;
+  color: #88a8ad;
+  font-size: 0.75rem;
+}
+
+@keyframes chuki-zoom {
+  to {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes chuki-flow {
+  to {
+    background-position: 200%;
+  }
+}
+
+@keyframes chuki-enter {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1100px) {
+  .chuki-site-header__inner > .chuki-site-header__search,
+  .chuki-site-header__inner > div {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .chuki-site-header__nav {
+    display: none;
+  }
+
+  .chuki-site-header__menu,
+  .chuki-site-header__mobile {
+    display: grid;
+  }
+
+  .chuki-site-header__mobile .chuki-site-header__search {
+    display: flex;
+  }
+
+  .chuki-header {
+    position: relative;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .chuki-hero {
+    min-height: 560px;
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2rem;
+  }
+
+  .chuki-clima {
+    position: static;
+    min-width: min(100%, 19rem);
+  }
+
+  .chuki-section__intro {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .chuki-zone-grid,
+  .chuki-plan-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chuki-footer__main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .chuki-header nav {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .chuki-header nav a {
+    min-height: 44px;
+  }
+
+  .chuki-main {
+    padding-inline: 5%;
+  }
+
+  .chuki-section {
+    margin-top: 52px;
+    padding-top: 48px;
+  }
+
+  .chuki-experience-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chuki-experience {
+    min-height: 250px;
+  }
+
+  .chuki-home h2 {
+    font-size: 32px;
+  }
+
+  .chuki-footer__main {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    padding-block: 44px;
+  }
+
+  .chuki-footer__bottom {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chuki-home *,
+  .chuki-home *::before,
+  .chuki-home *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ================================================================
+   CUENTA Y ADMINISTRACIÓN · CHUKIYAPU
+   ================================================================ */
+
+.chuki-auth {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: var(--color-canvas);
+  color: var(--color-text);
+}
+
+.chuki-auth__layout {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: minmax(23rem, 0.9fr) minmax(31rem, 1.1fr);
+}
+
+.chuki-auth__visual {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: #082430;
+}
+
+.chuki-auth__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, #061c2940 0%, #061c29d9 72%, var(--color-canvas) 100%),
+    linear-gradient(90deg, #08313c33, #0b666b55);
+}
+
+.chuki-auth__visual-content {
+  position: relative;
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(2rem, 5vw, 4.5rem);
+}
+
+.chuki-auth__manifesto {
+  max-width: 38rem;
+}
+
+.chuki-auth__manifesto > p:first-child,
+.chuki-auth__eyebrow {
+  color: var(--color-action);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.chuki-auth__manifesto h1 {
+  max-width: 11ch;
+  margin: 1rem 0 1.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(3.4rem, 6vw, 6.6rem);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 0.86;
+  letter-spacing: -0.055em;
+}
+
+.chuki-auth__manifesto > p:last-child {
+  max-width: 34rem;
+  color: #d5e6e9;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.chuki-auth__altitude {
+  color: #9ab9be;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.chuki-auth__form-side {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(2rem, 5vw, 5rem);
+  background:
+    radial-gradient(circle at 85% 12%, #0b666b5e, transparent 30%),
+    repeating-radial-gradient(
+      ellipse at 110% -10%,
+      transparent 0 28px,
+      #36e8da0b 29px,
+      transparent 30px
+    ),
+    var(--color-canvas);
+}
+
+.chuki-auth__form-wrap {
+  width: min(100%, 39rem);
+}
+
+.chuki-auth__mobile-brand {
+  display: none;
+  margin-bottom: 2.5rem;
+}
+
+.chuki-auth__title {
+  max-width: 12ch;
+  margin: 0.7rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+}
+
+.chuki-auth__subtitle {
+  max-width: 34rem;
+  margin: 1.25rem 0 0;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.chuki-auth__card {
+  margin-top: 2rem;
+  padding: clamp(1.4rem, 4vw, 2.2rem);
+  border: 1px solid #54d9d755;
+  border-radius: 26px;
+  background: #102f3df2;
+  box-shadow: 0 24px 70px #0007, inset 0 1px #ffffff0d;
+}
+
+.chuki-auth .chuki-auth__card label,
+.chuki-auth .chuki-auth__card form label,
+.chuki-auth .chuki-auth__card form label * {
+  color: #effafb !important;
+}
+
+.chuki-auth .chuki-auth__card input {
+  border-color: #49e6d766 !important;
+  background: var(--field-bg) !important;
+  color: var(--color-text) !important;
+  caret-color: var(--color-action) !important;
+  box-shadow: inset 0 1px #ffffff0a !important;
+  color-scheme: dark;
+}
+
+.chuki-auth .chuki-auth__card input::placeholder {
+  color: #8fadb2 !important;
+}
+
+.chuki-auth .chuki-auth__card input:focus {
+  border-color: var(--color-brand) !important;
+  box-shadow: 0 0 0 4px #49e6d71f, 0 0 24px #28e9d92e !important;
+}
+
+.chuki-auth__card form button[type="submit"] {
+  min-height: 52px;
+  border-radius: 999px;
+  background: var(--color-action-hover) !important;
+  color: #08232b !important;
+  box-shadow: 0 14px 34px #ffc64c2e !important;
+}
+
+.chuki-auth__card form button[type="submit"]:hover {
+  background: #ffda77 !important;
+}
+
+.chuki-auth__card a {
+  color: #7cf1e7 !important;
+}
+
+.chuki-auth .chuki-auth__card > p,
+.chuki-auth .chuki-auth__card form + div,
+.chuki-auth .chuki-auth__card form + div + p,
+.chuki-auth .chuki-auth__card form p {
+  color: var(--color-text-muted) !important;
+}
+
+.chuki-auth .chuki-auth__card form > div > div > span,
+.chuki-auth .chuki-auth__card > div:first-child p,
+.chuki-auth .chuki-auth__card > div:first-child > div > span {
+  color: var(--color-action) !important;
+}
+
+.chuki-auth__card [role="alert"] {
+  border-color: #ff987a66 !important;
+  background: #4a202bcc !important;
+  color: #ffd7ce !important;
+}
+
+.chuki-auth__card [role="status"] {
+  border-color: #49e6d755 !important;
+  background: #0b4b4dcc !important;
+  color: #d8fffb !important;
+}
+
+.chuki-auth__card [aria-live="polite"] {
+  border-color: #49e6d744 !important;
+  background: var(--field-bg) !important;
+}
+
+.chuki-auth__privacy {
+  margin-top: 1.25rem;
+  color: #88a8ad;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.chuki-private {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 92% 8%, #0b666b42, transparent 26rem),
+    var(--color-canvas);
+  color: var(--color-text);
+}
+
+.chuki-private--admin {
+  background:
+    linear-gradient(135deg, #ffd05c08 0 28%, transparent 28% 100%),
+    radial-gradient(circle at 92% 8%, #0b666b42, transparent 26rem),
+    var(--color-canvas);
+}
+
+.chuki-private__header {
+  position: sticky;
+  z-index: 50;
+  top: 0;
+  border-bottom: 1px solid #36e8da42;
+  background: #061c29ed;
+  backdrop-filter: blur(18px);
+}
+
+.chuki-private__header-inner {
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.chuki-private__logout {
+  border-color: #49e6d766 !important;
+}
+
+.chuki-private__layout {
+  display: grid;
+  min-height: calc(100vh - 77px);
+  grid-template-columns: 16rem minmax(0, 1fr);
+}
+
+.chuki-private__sidebar {
+  padding: 2rem 1.4rem 3rem 0;
+  border-right: 1px solid #36e8da33;
+}
+
+.chuki-private__identity {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1.6rem;
+  padding: 0 1rem 1.4rem;
+  border-bottom: 1px solid #36e8da33;
+  color: var(--color-action);
+}
+
+.chuki-private__identity strong,
+.chuki-private__identity span {
+  display: block;
+}
+
+.chuki-private__identity strong {
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+.chuki-private__identity span {
+  margin-top: 0.2rem;
+  color: #88a8ad;
+  font-size: 0.7rem;
+}
+
+.chuki-private__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.chuki-private__nav-link {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  color: #a9c4c8;
+  font-size: 0.84rem;
+  font-weight: 800;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.chuki-private__nav-link:hover {
+  border-color: #36e8da33;
+  background: var(--color-surface);
+  color: white;
+}
+
+.chuki-private__nav-link--active {
+  border-color: #49e6d766;
+  background: var(--color-route-strong);
+  box-shadow: 0 0 20px #23e8d733;
+  color: white;
+}
+
+.chuki-private__nav-link--back {
+  margin-top: 1rem;
+  color: var(--color-action);
+}
+
+.chuki-private__main {
+  min-width: 0;
+  padding: clamp(2rem, 5vw, 4.5rem);
+}
+
+.chuki-private__intro {
+  max-width: 56rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #36e8da42;
+}
+
+.chuki-private__intro > p:first-child {
+  color: var(--color-action);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.chuki-private__intro h1 {
+  max-width: 15ch;
+  margin: 0.6rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(3.2rem, 6vw, 6.5rem);
+  font-style: italic;
+  font-weight: 500;
+  line-height: 0.88;
+  letter-spacing: -0.05em;
+}
+
+.chuki-private__intro > p:last-child {
+  max-width: 45rem;
+  margin-top: 1.2rem;
+  color: var(--color-text-muted);
+  line-height: 1.75;
+}
+
+.chuki-private .lp-panel {
+  border-color: #54d9d755 !important;
+  background-color: var(--color-surface) !important;
+  color: var(--color-text);
+}
+
+.chuki-private .lp-panel {
+  border-radius: 22px;
+  box-shadow: 0 16px 45px #0004;
+}
+
+.chuki-private input,
+.chuki-private textarea,
+.chuki-private select {
+  border-color: #49e6d766 !important;
+  border-radius: 12px;
+  background-color: var(--field-bg) !important;
+  color: var(--color-text) !important;
+  color-scheme: dark;
+}
+
+.chuki-private input::placeholder,
+.chuki-private textarea::placeholder {
+  color: #8fadb2 !important;
+}
+
+.chuki-private input:focus,
+.chuki-private textarea:focus,
+.chuki-private select:focus {
+  border-color: var(--color-brand) !important;
+  box-shadow: 0 0 0 4px #49e6d71a;
+  outline: none;
+}
+
+.chuki-private table thead tr {
+  background: var(--field-bg) !important;
+}
+
+.chuki-private table tbody tr:hover {
+  background: var(--button-secondary-bg) !important;
+}
+
+.chuki-private table th {
+  color: var(--color-action) !important;
+}
+
+.chuki-account-journey {
+  overflow: hidden;
+  border: 1px solid #49e6d766;
+  border-radius: 22px;
+  background:
+    linear-gradient(115deg, #0b666bd9, #102f3df2),
+    url("/images/cierre-atardecer.jpg") center / cover;
+  box-shadow: 0 18px 50px #0005;
+  color: white;
+}
+
+.chuki-account-access__item {
+  min-height: 14rem;
+  border: 1px solid #54d9d755;
+  border-radius: 20px;
+  background: var(--color-surface);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.chuki-account-access__item:hover {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 24px #28e9d93b;
+  transform: translateY(-3px);
+}
+
+.chuki-account-dialog {
+  border: 1px solid #54d9d766;
+  border-radius: 22px;
+  background: var(--color-surface);
+}
+
+.chuki-private [role="dialog"] > div,
+.chuki-private [aria-modal="true"] > div {
+  border: 1px solid #54d9d766 !important;
+  border-radius: 22px;
+  background: var(--color-surface) !important;
+  color: var(--color-text);
+}
+
+.chuki-private .lp-button--secondary {
+  border-color: #49e6d766;
+  background: var(--button-secondary-bg);
+  color: var(--color-text);
+}
+
+.chuki-private .lp-button--secondary:hover {
+  border-color: var(--color-brand);
+  background: var(--color-route-strong);
+}
+
+@media (max-width: 1024px) {
+  .chuki-auth__layout {
+    display: block;
+  }
+
+  .chuki-auth__visual {
+    display: none;
+  }
+
+  .chuki-auth__mobile-brand {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chuki-private__layout {
+    display: block;
+  }
+
+  .chuki-private__sidebar {
+    padding: 1rem 0;
+    border-right: 0;
+    border-bottom: 1px solid #36e8da33;
+  }
+
+  .chuki-private__identity {
+    display: none;
+  }
+
+  .chuki-private__nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+  }
+
+  .chuki-private__nav-link {
+    flex: 0 0 auto;
+  }
+
+  .chuki-private__nav-link--back {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .chuki-auth__form-side {
+    align-items: flex-start;
+    padding: 1.4rem 1rem 3rem;
+  }
+
+  .chuki-auth__card {
+    padding: 1.25rem;
+    border-radius: 20px;
+  }
+
+  .chuki-private__header-inner {
+    min-height: 68px;
+  }
+
+  .chuki-private__header .chuki-brand small,
+  .chuki-private__header-inner > div > div {
+    display: none;
+  }
+
+  .chuki-private__main {
+    padding: 2rem 0 3rem;
+  }
+
+  .chuki-private__intro h1 {
+    font-size: clamp(2.8rem, 14vw, 4.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chuki-auth *,
+  .chuki-private * {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

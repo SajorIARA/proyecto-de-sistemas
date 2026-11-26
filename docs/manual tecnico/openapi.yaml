@@ -68,6 +68,54 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/auth/mis-datos/:
+    get:
+      operationId: auth_mis_datos_retrieve
+      description: Devuelve los datos personales del usuario en sesión y el historial
+        que le pertenece. Nunca incluye la contraseña ni hashes.
+      tags:
+      - cuenta
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/auth/mis-datos/anonimizar/:
+    post:
+      operationId: auth_mis_datos_anonimizar_create
+      description: Anonimiza la cuenta y la da de baja. Conserva el historial sin
+        datos personales; revoca los tokens pendientes.
+      tags:
+      - cuenta
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmacionBaja'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConfirmacionBaja'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConfirmacionBaja'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '400':
+          description: Confirmación incorrecta.
   /api/auth/password/change/:
     post:
       operationId: auth_password_change_create
@@ -177,6 +225,234 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedUsuarioListList'
           description: ''
+  /api/conocimiento/admin/candidatos/{id_candidato}/aprobar/:
+    post:
+      operationId: conocimiento_admin_candidatos_aprobar_create
+      description: Publica un candidato revisado en el catálogo y en el corpus RAG.
+      parameters:
+      - in: path
+        name: id_candidato
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - conocimiento-admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AprobarCandidato'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AprobarCandidato'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AprobarCandidato'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultadoAprobacion'
+          description: ''
+        '400':
+          description: Faltan datos revisados por el admin.
+        '409':
+          description: El candidato ya fue rechazado.
+  /api/conocimiento/admin/candidatos/{id_candidato}/rechazar/:
+    post:
+      operationId: conocimiento_admin_candidatos_rechazar_create
+      description: Descarta un candidato sin publicarlo.
+      parameters:
+      - in: path
+        name: id_candidato
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - conocimiento-admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RechazarCandidato'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RechazarCandidato'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RechazarCandidato'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LugarCandidato'
+          description: ''
+        '409':
+          description: El candidato ya fue aprobado.
+  /api/conocimiento/admin/importaciones/:
+    get:
+      operationId: conocimiento_admin_importaciones_list
+      description: Devuelve las últimas importaciones, más recientes primero.
+      tags:
+      - conocimiento-admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImportacionLugares'
+          description: ''
+    post:
+      operationId: conocimiento_admin_importaciones_create
+      description: Crea la importación en estado «pendiente» y encola la consulta
+        a Overpass y Wikidata en el backend. Consultar el detalle o el listado para
+        seguir el progreso; los candidatos aparecen al completarse.
+      tags:
+      - conocimiento-admin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearImportacion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CrearImportacion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CrearImportacion'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportacionLugares'
+          description: ''
+        '400':
+          description: Parámetros de búsqueda inválidos.
+        '503':
+          description: No se pudo encolar la importación.
+  /api/conocimiento/admin/importaciones/{id_importacion}/:
+    get:
+      operationId: conocimiento_admin_importaciones_retrieve
+      description: Detalle de una importación, incluido el estado de vectorización.
+      parameters:
+      - in: path
+        name: id_importacion
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - conocimiento-admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportacionLugares'
+          description: ''
+  /api/conocimiento/admin/importaciones/{id_importacion}/candidatos/:
+    get:
+      operationId: conocimiento_admin_importaciones_candidatos_list
+      description: Candidatos de una importación para revisión administrativa.
+      parameters:
+      - in: path
+        name: id_importacion
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - conocimiento-admin
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LugarCandidato'
+          description: ''
+  /api/conocimiento/admin/importaciones/{id_importacion}/vectorizar/:
+    post:
+      operationId: conocimiento_admin_importaciones_vectorizar_create
+      description: Encola embeddings solo para fuentes aprobadas. Si Ollama falla,
+        el estado pasa a «error»; nunca se simula éxito RAG.
+      parameters:
+      - in: path
+        name: id_importacion
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - conocimiento-admin
+      security:
+      - jwtAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultadoVectorizacion'
+          description: ''
+        '400':
+          description: No hay candidatos aprobados aún.
+  /api/conocimiento/consultar/:
+    post:
+      operationId: conocimiento_consultar_create
+      description: Recupera fragmentos por similitud coseno y responde solo con el
+        contexto encontrado. Si no hay contexto, devuelve una negativa estándar sin
+        invocar al modelo.
+      tags:
+      - conocimiento
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsultaRAG'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConsultaRAG'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConsultaRAG'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaRAG'
+          description: ''
+        '400':
+          description: Pregunta o parámetros inválidos.
+        '429':
+          description: Demasiadas consultas.
+        '502':
+          description: Ollama devolvió una respuesta inválida.
+        '503':
+          description: El asistente no está disponible.
   /api/conocimiento/fragmentos/:
     get:
       operationId: conocimiento_fragmentos_list
@@ -491,6 +767,23 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/health/detallado/:
+    get:
+      operationId: health_detallado_retrieve
+      description: 'Salud detallada: base de datos, alcance del servidor del asistente
+        y métricas mínimas del proceso (se reinician al reiniciar).'
+      tags:
+      - sistema
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '503':
+          description: Alguna dependencia no está disponible.
   /api/preferences/:
     get:
       operationId: preferences_list
@@ -647,10 +940,12 @@ paths:
     get:
       operationId: recomendaciones_consultas_list
       description: |-
-        Consultas del usuario autenticado (issue #22/#27).
+        Consultas del turista.
 
-        Cualquier usuario autenticado crea y gestiona **sus** consultas; el
-        ``usuario`` se toma del JWT (nunca del body). ADMIN ve todas.
+        Cualquier autenticado puede CREATE (el perfil de búsqueda es dato del
+        propio usuario); la lectura y el resto de escrituras conservan la regla
+        anterior: cada uno ve lo propio y ADMIN ve todo. ``usuario`` se asigna
+        siempre desde el JWT, nunca desde el cuerpo de la petición.
       parameters:
       - in: path
         name: id
@@ -679,10 +974,12 @@ paths:
     post:
       operationId: recomendaciones_consultas_create
       description: |-
-        Consultas del usuario autenticado (issue #22/#27).
+        Consultas del turista.
 
-        Cualquier usuario autenticado crea y gestiona **sus** consultas; el
-        ``usuario`` se toma del JWT (nunca del body). ADMIN ve todas.
+        Cualquier autenticado puede CREATE (el perfil de búsqueda es dato del
+        propio usuario); la lectura y el resto de escrituras conservan la regla
+        anterior: cada uno ve lo propio y ADMIN ve todo. ``usuario`` se asigna
+        siempre desde el JWT, nunca desde el cuerpo de la petición.
       parameters:
       - in: path
         name: id
@@ -718,10 +1015,12 @@ paths:
     get:
       operationId: recomendaciones_consultas_retrieve
       description: |-
-        Consultas del usuario autenticado (issue #22/#27).
+        Consultas del turista.
 
-        Cualquier usuario autenticado crea y gestiona **sus** consultas; el
-        ``usuario`` se toma del JWT (nunca del body). ADMIN ve todas.
+        Cualquier autenticado puede CREATE (el perfil de búsqueda es dato del
+        propio usuario); la lectura y el resto de escrituras conservan la regla
+        anterior: cada uno ve lo propio y ADMIN ve todo. ``usuario`` se asigna
+        siempre desde el JWT, nunca desde el cuerpo de la petición.
       parameters:
       - in: path
         name: id
@@ -741,13 +1040,55 @@ paths:
               schema:
                 $ref: '#/components/schemas/ConsultaRecomendacion'
           description: ''
+    put:
+      operationId: recomendaciones_consultas_update
+      description: |-
+        Consultas del turista.
+
+        Cualquier autenticado puede CREATE (el perfil de búsqueda es dato del
+        propio usuario); la lectura y el resto de escrituras conservan la regla
+        anterior: cada uno ve lo propio y ADMIN ve todo. ``usuario`` se asigna
+        siempre desde el JWT, nunca desde el cuerpo de la petición.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID.
+        required: true
+      tags:
+      - recomendaciones
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsultaRecomendacion'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ConsultaRecomendacion'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ConsultaRecomendacion'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsultaRecomendacion'
+          description: ''
     patch:
       operationId: recomendaciones_consultas_partial_update
       description: |-
-        Consultas del usuario autenticado (issue #22/#27).
+        Consultas del turista.
 
-        Cualquier usuario autenticado crea y gestiona **sus** consultas; el
-        ``usuario`` se toma del JWT (nunca del body). ADMIN ve todas.
+        Cualquier autenticado puede CREATE (el perfil de búsqueda es dato del
+        propio usuario); la lectura y el resto de escrituras conservan la regla
+        anterior: cada uno ve lo propio y ADMIN ve todo. ``usuario`` se asigna
+        siempre desde el JWT, nunca desde el cuerpo de la petición.
       parameters:
       - in: path
         name: id
@@ -781,10 +1122,12 @@ paths:
     delete:
       operationId: recomendaciones_consultas_destroy
       description: |-
-        Consultas del usuario autenticado (issue #22/#27).
+        Consultas del turista.
 
-        Cualquier usuario autenticado crea y gestiona **sus** consultas; el
-        ``usuario`` se toma del JWT (nunca del body). ADMIN ve todas.
+        Cualquier autenticado puede CREATE (el perfil de búsqueda es dato del
+        propio usuario); la lectura y el resto de escrituras conservan la regla
+        anterior: cada uno ve lo propio y ADMIN ve todo. ``usuario`` se asigna
+        siempre desde el JWT, nunca desde el cuerpo de la petición.
       parameters:
       - in: path
         name: id
@@ -1873,6 +2216,38 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/turismo/ruteo/:
+    post:
+      operationId: turismo_ruteo_create
+      description: Pide a OSRM la geometría de calles entre las paradas. El trazado
+        se devuelve como pares [latitud, longitud].
+      tags:
+      - turismo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RuteoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RuteoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RuteoRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RuteoResponse'
+          description: ''
+        '400':
+          description: Puntos inválidos.
+        '502':
+          description: OSRM devolvió una respuesta inválida.
+        '503':
+          description: Ruteo no configurado o no disponible.
   /api/turismo/tarifas/:
     get:
       operationId: turismo_tarifas_list
@@ -2169,8 +2544,257 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/viajes/:
+    get:
+      operationId: viajes_listar
+      description: Lista únicamente los viajes del usuario autenticado.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID del viaje.
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - viajes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedViajeList'
+          description: ''
+    post:
+      operationId: viajes_crear
+      description: Crea el viaje y sus paradas en una sola transacción. El usuario
+        se asigna desde el token JWT; `paradas` es una lista de UUID de atractivos
+        en el orden deseado.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID del viaje.
+        required: true
+      tags:
+      - viajes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ViajeCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ViajeCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ViajeCreate'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Viaje'
+          description: ''
+        '400':
+          description: Payload inválido o atractivo inexistente.
+  /api/viajes/{id}/:
+    get:
+      operationId: viajes_detallar
+      description: CRUD de viajes propios con acciones de estado y seguimiento.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID del viaje.
+        required: true
+      tags:
+      - viajes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Viaje'
+          description: ''
+        '404':
+          description: Viaje inexistente.
+    patch:
+      operationId: viajes_actualizar
+      description: Actualiza `nombre` y/o reemplaza las paradas. Si se envían paradas,
+        se conserva `visitada` y `visitada_en` de los atractivos que ya estaban presentes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID del viaje.
+        required: true
+      tags:
+      - viajes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedViajeUpdate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedViajeUpdate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedViajeUpdate'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Viaje'
+          description: ''
+        '400':
+          description: Payload inválido o atractivo inexistente.
+    delete:
+      operationId: viajes_eliminar
+      description: CRUD de viajes propios con acciones de estado y seguimiento.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID del viaje.
+        required: true
+      tags:
+      - viajes
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/viajes/{id}/finalizar/:
+    post:
+      operationId: viajes_finalizar
+      description: Marca el viaje como `finalizado`. Llamadas repetidas son inofensivas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID del viaje.
+        required: true
+      tags:
+      - viajes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Viaje'
+          description: ''
+  /api/viajes/{id}/iniciar/:
+    post:
+      operationId: viajes_iniciar
+      description: Marca el viaje como `en_curso`. Llamadas repetidas son inofensivas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID del viaje.
+        required: true
+      tags:
+      - viajes
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Viaje'
+          description: ''
+  /api/viajes/{id}/paradas/{parada_id}/visitada/:
+    post:
+      operationId: viajes_marcar_visitada
+      description: Marca (o desmarca) una parada del viaje y devuelve el viaje completo.
+        `visitada` defaults a `true` cuando se omite el cuerpo.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: UUID del viaje.
+        required: true
+      - in: path
+        name: parada_id
+        schema:
+          type: integer
+        description: ID de la parada.
+        required: true
+      tags:
+      - viajes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisitaParada'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VisitaParada'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VisitaParada'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Viaje'
+          description: ''
+        '404':
+          description: Parada inexistente.
 components:
   schemas:
+    AprobarCandidato:
+      type: object
+      description: Datos que el administrador debe completar antes de publicar.
+      properties:
+        categoria:
+          type: string
+          maxLength: 100
+        duracion_minutos:
+          type: integer
+          maximum: 10080
+          minimum: 1
+      required:
+      - categoria
+      - duracion_minutos
     Atractivo:
       type: object
       properties:
@@ -2220,12 +2844,6 @@ components:
           type: array
           items:
             type: string
-          description: |-
-            Solo fotos terminadas y de tipo imagen.
-
-            El frontend arma una URL de Cloudinary con cada ``public_id``; si se
-            incluyeran videos o subidas pendientes/fallidas, el catálogo mostraría
-            imágenes rotas.
           readOnly: true
         fuente_origen:
           type: string
@@ -2258,6 +2876,19 @@ components:
         Acepta ``ubicacion`` como dict ``{"longitud": float, "latitud": float}``
         y lo persiste como ``Point`` SRID 4326 en PostGIS. ``categorias`` se
         escribe como lista de IDs de categoría.
+
+        Un destino que queda publicado (``activo=True``) debe tener duración
+        positiva y al menos una categoría activa; si no, el error se devuelve
+        por campo (``activo``, ``categorias``, ``duracion_minutos``) para que la
+        API responda 400 y el formulario pueda mostrarlo. Los borradores
+        (``activo=False``) pueden guardarse incompletos.
+
+        Compatibilidad: las fixtures históricas de admin hacen POST/PUT sin
+        enviar ``activo`` ni ``categorias``. Por eso la exigencia de categoría
+        se aplica cuando el payload publica o gestiona categorías (``activo`` o
+        ``categorias`` presentes), y en PATCH, donde el estado final se calcula
+        con el valor existente cuando ``activo`` no se envía. El formulario
+        admin siempre envía ambos campos, así que el flujo real queda cubierto.
       properties:
         id_atractivo:
           type: string
@@ -2352,6 +2983,60 @@ components:
       required:
       - id_categoria
       - nombre
+    CitaRAG:
+      type: object
+      description: Fragmento que respalda la respuesta, sin exponer el embedding.
+      properties:
+        id_fragmento:
+          type: integer
+        id_fuente:
+          type: string
+          format: uuid
+        titulo:
+          type: string
+        url:
+          type: string
+        numero_fragmento:
+          type: integer
+        distancia:
+          type: number
+          format: double
+      required:
+      - distancia
+      - id_fragmento
+      - id_fuente
+      - numero_fragmento
+      - titulo
+      - url
+    ConfirmacionBaja:
+      type: object
+      properties:
+        confirmacion:
+          type: string
+      required:
+      - confirmacion
+    ConsultaRAG:
+      type: object
+      description: Pregunta y ámbito opcional para el asistente RAG.
+      properties:
+        pregunta:
+          type: string
+          maxLength: 500
+        top_k:
+          type: integer
+          maximum: 8
+          minimum: 1
+          default: 4
+        id_fuente:
+          type: string
+          format: uuid
+          nullable: true
+        id_atractivo:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - pregunta
     ConsultaRecomendacion:
       type: object
       properties:
@@ -2402,18 +3087,39 @@ components:
       - punto_partida
       - tiempo_horas
       - usuario
-    EstadoEnum:
+    CrearImportacion:
+      type: object
+      description: Cuerpo para iniciar una búsqueda en fuentes abiertas.
+      properties:
+        consulta:
+          type: string
+          maxLength: 120
+          minLength: 3
+        ciudad:
+          type: string
+          default: La Paz
+          maxLength: 100
+        fuentes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FuentesEnum'
+        limite:
+          type: integer
+          maximum: 50
+          minimum: 1
+          default: 20
+      required:
+      - consulta
+    EstadoBffEnum:
       enum:
-      - pending
-      - processing
-      - completed
-      - failed
+      - pendiente
+      - completado
+      - error
       type: string
       description: |-
-        * `pending` - Pendiente
-        * `processing` - Procesando
-        * `completed` - Completada
-        * `failed` - Fallida
+        * `pendiente` - Pendiente
+        * `completado` - Completado
+        * `error` - Error
     EstadoScrapingEnum:
       enum:
       - pendiente
@@ -2421,6 +3127,18 @@ components:
       - error
       type: string
       description: |-
+        * `pendiente` - Pendiente
+        * `completado` - Completado
+        * `error` - Error
+    EstadoVectorizacionEnum:
+      enum:
+      - sin_vectorizar
+      - pendiente
+      - completado
+      - error
+      type: string
+      description: |-
+        * `sin_vectorizar` - Sin vectorizar
         * `pendiente` - Pendiente
         * `completado` - Completado
         * `error` - Error
@@ -2489,7 +3207,7 @@ components:
         tipo:
           $ref: '#/components/schemas/FotoTipoEnum'
         estado:
-          $ref: '#/components/schemas/EstadoEnum'
+          $ref: '#/components/schemas/FotoEstadoEnum'
         ancho:
           type: integer
           maximum: 2147483647
@@ -2513,6 +3231,18 @@ components:
       - fecha_creacion
       - id_foto
       - public_id
+    FotoEstadoEnum:
+      enum:
+      - pending
+      - processing
+      - completed
+      - failed
+      type: string
+      description: |-
+        * `pending` - Pendiente
+        * `processing` - Procesando
+        * `completed` - Completada
+        * `failed` - Fallida
     FotoTipoEnum:
       enum:
       - imagen
@@ -2616,6 +3346,14 @@ components:
       - hash_contenido
       - id_fuente
       - titulo
+    FuentesEnum:
+      enum:
+      - overpass
+      - wikidata
+      type: string
+      description: |-
+        * `overpass` - overpass
+        * `wikidata` - wikidata
     Horario:
       type: object
       properties:
@@ -2651,6 +3389,72 @@ components:
       - atractivo
       - dia_semana
       - id_horario
+    ImportacionLugares:
+      type: object
+      properties:
+        id_importacion:
+          type: string
+          format: uuid
+          readOnly: true
+        consulta:
+          type: string
+          readOnly: true
+        ciudad:
+          type: string
+          readOnly: true
+        fuentes:
+          readOnly: true
+        estado:
+          allOf:
+          - $ref: '#/components/schemas/EstadoBffEnum'
+          readOnly: true
+        error:
+          type: string
+          readOnly: true
+        encontrados:
+          type: integer
+          readOnly: true
+        candidatos_creados:
+          type: integer
+          readOnly: true
+        duplicados:
+          type: integer
+          readOnly: true
+        estado_vectorizacion:
+          allOf:
+          - $ref: '#/components/schemas/EstadoVectorizacionEnum'
+          readOnly: true
+        error_vectorizacion:
+          type: string
+          readOnly: true
+        vectorizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+        fecha_actualizacion:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - candidatos_creados
+      - ciudad
+      - consulta
+      - duplicados
+      - encontrados
+      - error
+      - error_vectorizacion
+      - estado
+      - estado_vectorizacion
+      - fecha_actualizacion
+      - fecha_creacion
+      - fuentes
+      - id_importacion
+      - vectorizado_en
     Logout:
       type: object
       description: 'Body de logout: el refresh a invalidar.'
@@ -2659,6 +3463,115 @@ components:
           type: string
       required:
       - refresh
+    LugarCandidato:
+      type: object
+      properties:
+        id_candidato:
+          type: string
+          format: uuid
+          readOnly: true
+        importacion:
+          type: string
+          format: uuid
+          readOnly: true
+        fuente:
+          type: string
+          readOnly: true
+        id_externo:
+          type: string
+          readOnly: true
+        hash_contenido:
+          type: string
+          readOnly: true
+        nombre:
+          type: string
+          readOnly: true
+        descripcion:
+          type: string
+          readOnly: true
+        categoria_sugerida:
+          type: string
+          readOnly: true
+        categoria:
+          type: string
+          readOnly: true
+        latitud:
+          type: number
+          format: double
+          readOnly: true
+          nullable: true
+        longitud:
+          type: number
+          format: double
+          readOnly: true
+          nullable: true
+        direccion:
+          type: string
+          readOnly: true
+        horario_declarado:
+          type: string
+          readOnly: true
+        sitio_web:
+          type: string
+          readOnly: true
+        url_fuente:
+          type: string
+          readOnly: true
+        licencia:
+          type: string
+          readOnly: true
+        duracion_minutos:
+          type: integer
+          readOnly: true
+          nullable: true
+        estado:
+          allOf:
+          - $ref: '#/components/schemas/LugarCandidatoEstadoEnum'
+          readOnly: true
+        atractivo:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        notas_revision:
+          type: string
+          readOnly: true
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - atractivo
+      - categoria
+      - categoria_sugerida
+      - descripcion
+      - direccion
+      - duracion_minutos
+      - estado
+      - fecha_creacion
+      - fuente
+      - hash_contenido
+      - horario_declarado
+      - id_candidato
+      - id_externo
+      - importacion
+      - latitud
+      - licencia
+      - longitud
+      - nombre
+      - notas_revision
+      - sitio_web
+      - url_fuente
+    LugarCandidatoEstadoEnum:
+      enum:
+      - pendiente
+      - aprobado
+      - rechazado
+      type: string
+      description: |-
+        * `pendiente` - Pendiente
+        * `aprobado` - Aprobado
+        * `rechazado` - Rechazado
     MiPreferencia:
       type: object
       description: |-
@@ -2992,6 +3905,61 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UsuarioPreferencia'
+    PaginatedViajeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Viaje'
+    ParadaViaje:
+      type: object
+      description: Parada ya persistida, con el nombre legible del atractivo.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        atractivo:
+          type: string
+          format: uuid
+          readOnly: true
+        nombre:
+          type: string
+          readOnly: true
+        orden:
+          type: integer
+          readOnly: true
+        visitada:
+          type: boolean
+          readOnly: true
+        visitada_en:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - atractivo
+      - id
+      - nombre
+      - orden
+      - visitada
+      - visitada_en
     PasswordChange:
       type: object
       description: Cambio de contraseña autenticado con validación completa.
@@ -3018,6 +3986,19 @@ components:
         Acepta ``ubicacion`` como dict ``{"longitud": float, "latitud": float}``
         y lo persiste como ``Point`` SRID 4326 en PostGIS. ``categorias`` se
         escribe como lista de IDs de categoría.
+
+        Un destino que queda publicado (``activo=True``) debe tener duración
+        positiva y al menos una categoría activa; si no, el error se devuelve
+        por campo (``activo``, ``categorias``, ``duracion_minutos``) para que la
+        API responda 400 y el formulario pueda mostrarlo. Los borradores
+        (``activo=False``) pueden guardarse incompletos.
+
+        Compatibilidad: las fixtures históricas de admin hacen POST/PUT sin
+        enviar ``activo`` ni ``categorias``. Por eso la exigencia de categoría
+        se aplica cuando el payload publica o gestiona categorías (``activo`` o
+        ``categorias`` presentes), y en PATCH, donde el estado final se calcula
+        con el valor existente cuando ``activo`` no se envía. El formulario
+        admin siempre envía ambos campos, así que el flujo real queda cubierto.
       properties:
         id_atractivo:
           type: string
@@ -3174,7 +4155,7 @@ components:
         tipo:
           $ref: '#/components/schemas/FotoTipoEnum'
         estado:
-          $ref: '#/components/schemas/EstadoEnum'
+          $ref: '#/components/schemas/FotoEstadoEnum'
         ancho:
           type: integer
           maximum: 2147483647
@@ -3402,6 +4383,41 @@ components:
           type: string
           format: date-time
           readOnly: true
+    PatchedViajeUpdate:
+      type: object
+      description: 'Payload de PATCH: cualquier subconjunto de ``nombre`` y ``paradas``.'
+      properties:
+        nombre:
+          type: string
+          maxLength: 150
+        paradas:
+          type: array
+          items:
+            type: string
+            format: uuid
+    PuntoRuteo:
+      type: object
+      properties:
+        latitud:
+          type: number
+          format: double
+          maximum: 90
+          minimum: -90
+        longitud:
+          type: number
+          format: double
+          maximum: 180
+          minimum: -180
+      required:
+      - latitud
+      - longitud
+    RechazarCandidato:
+      type: object
+      properties:
+        notas:
+          type: string
+          default: ''
+          maxLength: 2000
     RecomendacionItem:
       type: object
       description: Un destino del Top-K con su puntaje explicable.
@@ -3586,6 +4602,80 @@ components:
       - nombre
       - password
       - password_confirm
+    RespuestaRAG:
+      type: object
+      description: |-
+        Contrato de salida del asistente.
+
+        `origen` declara de forma explícita que el texto proviene de la
+        documentación recuperada. El frontend usa este campo para distinguir
+        respuestas RAG de sus degradaciones locales (catálogo o estimaciones).
+      properties:
+        origen:
+          type: string
+          description: Procedencia de la respuesta; este endpoint devuelve siempre
+            «rag».
+        respuesta:
+          type: string
+        citas:
+          type: array
+          items:
+            $ref: '#/components/schemas/CitaRAG'
+        recuperados:
+          type: integer
+        modelo:
+          type: string
+        generado_en:
+          type: string
+          format: date-time
+      required:
+      - citas
+      - generado_en
+      - modelo
+      - origen
+      - recuperados
+      - respuesta
+    ResultadoAprobacion:
+      type: object
+      properties:
+        id_atractivo:
+          type: string
+          format: uuid
+        id_fuente:
+          type: string
+          format: uuid
+        fragmentos:
+          type: integer
+        actualizado:
+          type: boolean
+        vectorizacion_encolada:
+          type: boolean
+        estado_vectorizacion:
+          type: string
+      required:
+      - actualizado
+      - estado_vectorizacion
+      - fragmentos
+      - id_atractivo
+      - id_fuente
+      - vectorizacion_encolada
+    ResultadoVectorizacion:
+      type: object
+      properties:
+        id_importacion:
+          type: string
+          format: uuid
+        estado:
+          type: string
+        fuentes:
+          type: integer
+        mensaje:
+          type: string
+      required:
+      - estado
+      - fuentes
+      - id_importacion
+      - mensaje
     RolesEnum:
       enum:
       - ADMIN
@@ -3594,6 +4684,38 @@ components:
       description: |-
         * `ADMIN` - Administrador
         * `TOURIST` - Turista
+    RuteoRequest:
+      type: object
+      properties:
+        puntos:
+          type: array
+          items:
+            $ref: '#/components/schemas/PuntoRuteo'
+      required:
+      - puntos
+    RuteoResponse:
+      type: object
+      properties:
+        origen:
+          type: string
+        distancia_km:
+          type: number
+          format: double
+        duracion_minutos:
+          type: number
+          format: double
+        trazado:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+              format: double
+      required:
+      - distancia_km
+      - duracion_minutos
+      - origen
+      - trazado
     SubirFoto:
       type: object
       description: |-
@@ -3774,6 +4896,85 @@ components:
       - fecha_registro
       - id
       - usuario
+    Viaje:
+      type: object
+      description: Representación completa de un viaje, usada en todas las respuestas.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        nombre:
+          type: string
+          readOnly: true
+        estado:
+          allOf:
+          - $ref: '#/components/schemas/ViajeEstadoEnum'
+          readOnly: true
+        creado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        actualizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+        iniciado_en:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        finalizado_en:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        paradas:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParadaViaje'
+          readOnly: true
+      required:
+      - actualizado_en
+      - creado_en
+      - estado
+      - finalizado_en
+      - id
+      - iniciado_en
+      - nombre
+      - paradas
+    ViajeCreate:
+      type: object
+      description: 'Payload de creación: ``nombre`` y paradas en el orden deseado.'
+      properties:
+        nombre:
+          type: string
+          maxLength: 150
+        paradas:
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+      - nombre
+    ViajeEstadoEnum:
+      enum:
+      - planificado
+      - en_curso
+      - finalizado
+      type: string
+      description: |-
+        * `planificado` - Planificado
+        * `en_curso` - En curso
+        * `finalizado` - Finalizado
+    VisitaParada:
+      type: object
+      description: Cuerpo opcional de la acción de visita; por defecto marca como
+        visitada.
+      properties:
+        visitada:
+          type: boolean
+          default: true
   securitySchemes:
     jwtAuth:
       type: http

@@ -38,12 +38,14 @@ INSTALLED_APPS = [
     "turismo",
     "recomendaciones",
     "conocimiento",
+    "viajes",
     "django_celery_beat",
 ]
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "config.observability.RequestObservabilityMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
 ]
@@ -275,6 +277,52 @@ SCRAPER_MIN_INTERVAL_SECONDS = float(os.getenv("SCRAPER_MIN_INTERVAL_SECONDS", "
 SCRAPER_CHUNK_CHARS = int(os.getenv("SCRAPER_CHUNK_CHARS", "1200"))
 SCRAPER_CHUNK_OVERLAP_CHARS = int(os.getenv("SCRAPER_CHUNK_OVERLAP_CHARS", "200"))
 
+# Descubrimiento de lugares en fuentes abiertas (Overpass/Wikidata). El
+# frontend nunca habla con estos servicios: solo llama al backend. Fail-closed
+# en tamaño, timeout, intervalo y número de resultados para no abusar de APIs
+# públicas. Google Maps queda fuera del dataset por sus condiciones de uso.
+FUENTES_ABIERTAS_TIMEOUT_SECONDS = float(
+    os.getenv("FUENTES_ABIERTAS_TIMEOUT_SECONDS", "25")
+)
+FUENTES_ABIERTAS_MAX_BYTES = int(
+    os.getenv("FUENTES_ABIERTAS_MAX_BYTES", str(3 * 1024 * 1024))
+)
+FUENTES_ABIERTAS_MIN_INTERVAL_SECONDS = float(
+    os.getenv("FUENTES_ABIERTAS_MIN_INTERVAL_SECONDS", "1.0")
+)
+# Reintentos adicionales por espejo ante 429/504 o timeout transitorio.
+FUENTES_ABIERTAS_REINTENTOS_OVERPASS = max(
+    0, int(os.getenv("FUENTES_ABIERTAS_REINTENTOS_OVERPASS", "1"))
+)
+FUENTES_ABIERTAS_OVERPASS_URL = os.getenv(
+    "FUENTES_ABIERTAS_OVERPASS_URL", "https://overpass-api.de/api/interpreter"
+).rstrip("/")
+# Espejos públicos de Overpass: si el principal responde 406/429/504 se prueba
+# el siguiente. La URL singular sigue siendo la primera de la lista.
+_DEFAULT_OVERPASS_ESPEJOS = (
+    "https://overpass-api.de/api/interpreter,"
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+)
+FUENTES_ABIERTAS_OVERPASS_URLS = [
+    url.strip().rstrip("/")
+    for url in (
+        os.getenv("FUENTES_ABIERTAS_OVERPASS_URLS") or _DEFAULT_OVERPASS_ESPEJOS
+    ).split(",")
+    if url.strip()
+]
+FUENTES_ABIERTAS_WIKIDATA_URL = os.getenv(
+    "FUENTES_ABIERTAS_WIKIDATA_URL", "https://www.wikidata.org/w/api.php"
+).rstrip("/")
+FUENTES_ABIERTAS_USER_AGENT = os.getenv(
+    "FUENTES_ABIERTAS_USER_AGENT", SCRAPER_USER_AGENT
+)
+# Vacío = sin proxy (el opener ignora HTTP_PROXY del entorno). En el Compose
+# local apunta al proxy allowlistado que corre en el host.
+FUENTES_ABIERTAS_PROXY_URL = os.getenv(
+    "FUENTES_ABIERTAS_PROXY_URL", ""
+).strip().rstrip("/")
+FUENTES_ABIERTAS_MAX_LIMITE = 50
+
 # Inferencia local aislada (Ollama). En el compose de IA el worker y el
 # backend del asistente comparten red con Ollama; el servicio no se publica
 # al host.
@@ -305,6 +353,16 @@ if not 0 <= RAG_UMBRAL <= 2:
 if RAG_MAX_PREGUNTA < 1:
     raise ImproperlyConfigured("RAG_MAX_PREGUNTA debe ser mayor que 0.")
 
+# Trazado real de recorridos con OSRM. El valor por defecto es el servidor
+# público de demostración; un despliegue puede apuntar a su propia instancia
+# con RUTEO_URL, o dejarlo vacío para desactivar el trazado (el frontend
+# entonces muestra un trazado aproximado y lo rotula como tal).
+RUTEO_URL = os.getenv(
+    "RUTEO_URL", "https://router.project-osrm.org"
+).strip().rstrip("/")
+RUTEO_TIMEOUT_SECONDS = float(os.getenv("RUTEO_TIMEOUT_SECONDS", "6"))
+RUTEO_MAX_PUNTOS = int(os.getenv("RUTEO_MAX_PUNTOS", "25"))
+
 # Logging
 LOGGING = {
     "version": 1,
@@ -318,11 +376,19 @@ LOGGING = {
             "format": "{levelname} {message}",
             "style": "{",
         },
+        # Una línea JSON por petición: la consumen sin parsear texto libre.
+        "json": {
+            "()": "config.observability.JsonFormatter",
+        },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
+        },
+        "json_console": {
+            "class": "logging.StreamHandler",
+            "formatter": "json",
         },
     },
     "root": {
@@ -337,6 +403,18 @@ LOGGING = {
         },
         "django.request": {
             "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+        "observabilidad": {
+            "handlers": ["json_console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        # Señales de degradación del asistente: siempre en JSON para poder
+        # alertar sobre 503 de Ollama sin buscar en logs de texto.
+        "conocimiento": {
+            "handlers": ["json_console"],
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
             "propagate": False,
         },

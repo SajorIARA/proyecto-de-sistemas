@@ -257,18 +257,18 @@ export function PreferenciasForm() {
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="overflow-hidden rounded-[2rem] border border-[#5B3A29]/[0.08] bg-[#FFFDF8] shadow-[0_20px_60px_rgba(72,55,38,0.08)]"
+      className="lp-panel overflow-hidden"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#5B3A29]/[0.08] px-6 py-5 sm:px-8">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border)] px-6 py-5 sm:px-8">
         <div className="flex items-center gap-3">
-          <span className="h-px w-8 bg-[#9A5B3C]" aria-hidden="true" />
-          <h2 className="text-lg font-black tracking-tight text-[#233128]">
+          <span className="h-1 w-8 bg-[var(--color-route)]" aria-hidden="true" />
+          <h2 className="text-lg font-black">
             Tus preferencias de viaje
           </h2>
         </div>
 
         {/* Indicador de respaldo local */}
-        <p aria-live="polite" className="text-xs font-semibold text-[#746D63]">
+        <p aria-live="polite" className="text-xs font-semibold text-[var(--color-text-muted)]">
           {hayBorrador && guardadoEn
             ? `Borrador guardado en este navegador a las ${horaCorta(guardadoEn)}.`
             : "Completa el formulario y guarda para aplicarlo a tus recomendaciones."}
@@ -279,10 +279,10 @@ export function PreferenciasForm() {
         {/* 1. Categorías */}
         <section>
           <header className="mb-4">
-            <h3 className="text-sm font-black text-[#233128]">
+            <h3 className="text-sm font-black">
               ¿Qué te interesa descubrir?
             </h3>
-            <p className="mt-1 text-xs leading-6 text-[#746D63]">
+            <p className="mt-1 text-xs leading-6 text-[var(--color-text-muted)]">
               Elige una o varias categorías temáticas. Se guardan como tu nivel
               de interés en el perfil.
             </p>
@@ -303,7 +303,7 @@ export function PreferenciasForm() {
           />
         </section>
 
-        <hr className="border-[#5B3A29]/[0.08]" />
+        <hr className="border-[var(--color-border)]" />
 
         {/* 2. Presupuesto */}
         <section>
@@ -315,7 +315,7 @@ export function PreferenciasForm() {
           />
         </section>
 
-        <hr className="border-[#5B3A29]/[0.08]" />
+        <hr className="border-[var(--color-border)]" />
 
         {/* 3. Duración */}
         <section>
@@ -329,7 +329,7 @@ export function PreferenciasForm() {
           />
         </section>
 
-        <hr className="border-[#5B3A29]/[0.08]" />
+        <hr className="border-[var(--color-border)]" />
 
         {/* 4. Punto de partida */}
         <section>
@@ -346,14 +346,14 @@ export function PreferenciasForm() {
         </section>
 
         {/* Resumen */}
-        <div className="rounded-2xl border border-[#5B3A29]/[0.08] bg-[#F3EBDD]/50 px-5 py-4">
-          <p className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[#8D4F32]">
+        <div className="border border-[var(--color-border)] bg-[var(--color-canvas)] px-5 py-4">
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--color-brand)]">
             Resumen
           </p>
 
-          <ul className="mt-2 space-y-1 text-sm text-[#514B43]">
+          <ul className="mt-2 space-y-1 text-sm text-[var(--color-text-muted)]">
             <li>
-              <strong className="font-black text-[#233128]">
+              <strong className="font-black text-[var(--color-text)]">
                 {borrador.categorias.length}
               </strong>{" "}
               {borrador.categorias.length === 1
@@ -362,20 +362,20 @@ export function PreferenciasForm() {
             </li>
             <li>
               Presupuesto tope:{" "}
-              <strong className="font-black text-[#233128]">
+              <strong className="font-black text-[var(--color-text)]">
                 {formatearBob(borrador.presupuestoBob)}
               </strong>
             </li>
             <li>
               Duración:{" "}
-              <strong className="font-black text-[#233128]">
+              <strong className="font-black text-[var(--color-text)]">
                 {horasTotales} {horasTotales === 1 ? "hora" : "horas"}
               </strong>{" "}
               (máx. {DURACION.maxHoras} h)
             </li>
             <li>
               Punto de partida:{" "}
-              <strong className="font-black text-[#233128]">
+              <strong className="font-black text-[var(--color-text)]">
                 {construirConsulta() ? "definido" : "sin definir"}
               </strong>
             </li>
@@ -386,7 +386,7 @@ export function PreferenciasForm() {
         {aviso && (
           <p
             role="alert"
-            className="rounded-2xl border border-[#9A3B2E]/25 bg-[#9A3B2E]/[0.07] px-4 py-3 text-sm font-semibold text-[#9A3B2E]"
+            className="border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/10 px-4 py-3 text-sm font-semibold text-[var(--color-danger)]"
           >
             {aviso}
           </p>
@@ -396,7 +396,7 @@ export function PreferenciasForm() {
         {error && (
           <p
             role="alert"
-            className="rounded-2xl border border-[#9A3B2E]/25 bg-[#9A3B2E]/[0.07] px-4 py-3 text-sm font-semibold text-[#9A3B2E]"
+            className="border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/10 px-4 py-3 text-sm font-semibold text-[var(--color-danger)]"
           >
             {error}
           </p>
@@ -406,7 +406,7 @@ export function PreferenciasForm() {
         {exito && (
           <p
             role="status"
-            className="rounded-2xl border border-[#2F4B3B]/25 bg-[#2F4B3B]/[0.07] px-4 py-3 text-sm font-semibold text-[#2F4B3B]"
+            className="border border-[var(--color-brand)]/40 bg-[var(--color-brand)]/10 px-4 py-3 text-sm font-semibold text-[var(--color-brand)]"
           >
             Preferencias guardadas. Tus recomendaciones ya las tienen en cuenta.
           </p>
@@ -417,11 +417,11 @@ export function PreferenciasForm() {
           <div
             role="status"
             aria-live="polite"
-            className="flex items-center gap-3 rounded-2xl border border-[#2F4B3B]/20 bg-[#2F4B3B]/[0.06] px-4 py-3 text-sm font-semibold text-[#2F4B3B]"
+            className="flex items-center gap-3 border border-[var(--color-brand)]/40 bg-[var(--color-brand)]/10 px-4 py-3 text-sm font-semibold text-[var(--color-brand)]"
           >
             <span
               aria-hidden="true"
-              className="h-4 w-4 animate-spin rounded-full border-2 border-[#2F4B3B]/30 border-t-[#2F4B3B]"
+              className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-brand)]/40 border-t-[var(--color-route)]"
             />
             Guardando tus preferencias en el servidor…
           </div>
@@ -432,7 +432,7 @@ export function PreferenciasForm() {
           <button
             type="submit"
             disabled={pendiente || Boolean(errorCategorias)}
-            className="inline-flex items-center gap-2.5 rounded-full bg-[#2F4B3B] px-6 py-3 text-sm font-black text-[#FFFDF8] transition hover:bg-[#233128] disabled:cursor-not-allowed disabled:opacity-45"
+            className="lp-button lp-button--primary inline-flex min-h-11 items-center gap-2.5 px-6 py-3 text-sm font-black disabled:cursor-not-allowed disabled:opacity-45"
           >
             {pendiente ? "Guardando…" : "Guardar preferencias"}
           </button>
@@ -441,13 +441,13 @@ export function PreferenciasForm() {
             type="button"
             onClick={descartarTodo}
             disabled={pendiente || !hayBorrador}
-            className="rounded-full border border-[#5B3A29]/20 px-6 py-3 text-sm font-black text-[#514B43] transition hover:border-[#9A5B3C]/45 hover:text-[#8D4F32] disabled:cursor-not-allowed disabled:opacity-45"
+            className="lp-button lp-button--secondary min-h-11 px-6 py-3 text-sm font-black disabled:cursor-not-allowed disabled:opacity-45"
           >
             Descartar borrador
           </button>
 
           {hayErrores && (
-            <p className="text-xs font-semibold text-[#9A3B2E]">
+            <p className="text-xs font-semibold text-[var(--color-danger)]">
               Faltan datos por corregir.
             </p>
           )}

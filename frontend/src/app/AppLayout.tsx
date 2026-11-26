@@ -11,13 +11,11 @@ import { Outlet, useLocation } from "react-router-dom";
  * navegador pase suavemente por páginas largas al navegar.
  */
 export function AppLayout() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
 
   useEffect(() => {
     // Un enlace profundo con `#seccion` (por ejemplo `/#zonas`) debe
     // respetar el ancla; si no hay hash, la navegación vuelve arriba.
-    const hash = window.location.hash;
-
     if (hash.length > 1) {
       const destino = document.getElementById(decodeURIComponent(hash.slice(1)));
 
@@ -28,7 +26,7 @@ export function AppLayout() {
     }
 
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-  }, [pathname]);
+  }, [pathname, hash]);
 
   return <Outlet />;
 }

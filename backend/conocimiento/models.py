@@ -127,3 +127,179 @@ class FragmentoDocumental(models.Model):
 
     def __str__(self) -> str:
         return f"{self.fuente} · #{self.numero_fragmento}"
+
+
+class ImportacionLugares(models.Model):
+    """Lote de descubrimiento de lugares en fuentes abiertas.
+
+    El estado de importación y el de vectorización son independientes: un
+    lote puede descargarse correctamente y todavía no tener embeddings porque
+    el administrador aún no aprobó ningún candidato.
+    """
+
+    ESTADO_PENDIENTE = "pendiente"
+    ESTADO_COMPLETADO = "completado"
+    ESTADO_ERROR = "error"
+    ESTADOS = [
+        (ESTADO_PENDIENTE, "Pendiente"),
+        (ESTADO_COMPLETADO, "Completado"),
+        (ESTADO_ERROR, "Error"),
+    ]
+    VECTORIZACION_SIN_APROBAR = "sin_vectorizar"
+    VECTORIZACION_PENDIENTE = "pendiente"
+    VECTORIZACION_COMPLETADO = "completado"
+    VECTORIZACION_ERROR = "error"
+    ESTADOS_VECTORIZACION = [
+        (VECTORIZACION_SIN_APROBAR, "Sin vectorizar"),
+        (VECTORIZACION_PENDIENTE, "Pendiente"),
+        (VECTORIZACION_COMPLETADO, "Completado"),
+        (VECTORIZACION_ERROR, "Error"),
+    ]
+
+    id_importacion: models.UUIDField[uuid.UUID, uuid.UUID] = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False
+    )
+    consulta: models.CharField[str, str] = models.CharField(max_length=200)
+    ciudad: models.CharField[str, str] = models.CharField(max_length=100)
+    fuentes: models.JSONField = models.JSONField(default=list)
+    estado: models.CharField[str, str] = models.CharField(
+        max_length=20, choices=ESTADOS, default=ESTADO_PENDIENTE
+    )
+    error: models.TextField[str, str] = models.TextField(blank=True, default="")
+    encontrados: models.PositiveIntegerField[int, int] = models.PositiveIntegerField(
+        default=0
+    )
+    candidatos_creados: models.PositiveIntegerField[int, int] = (
+        models.PositiveIntegerField(default=0)
+    )
+    duplicados: models.PositiveIntegerField[int, int] = models.PositiveIntegerField(
+        default=0
+    )
+    estado_vectorizacion: models.CharField[str, str] = models.CharField(
+        max_length=20,
+        choices=ESTADOS_VECTORIZACION,
+        default=VECTORIZACION_SIN_APROBAR,
+    )
+    error_vectorizacion: models.TextField[str, str] = models.TextField(
+        blank=True, default=""
+    )
+    vectorizado_en: models.DateTimeField[datetime | None, datetime | None] = (
+        models.DateTimeField(null=True, blank=True)
+    )
+    fecha_creacion: models.DateTimeField[datetime, datetime] = models.DateTimeField(
+        auto_now_add=True
+    )
+    fecha_actualizacion: models.DateTimeField[datetime, datetime] = (
+        models.DateTimeField(auto_now=True)
+    )
+
+    class Meta:
+        db_table = "importacion_lugares"
+        ordering = ["-fecha_creacion"]
+
+    def __str__(self) -> str:
+        return f"{self.consulta} · {self.ciudad}"
+
+
+class LugarCandidato(models.Model):
+    """Lugar descubierto en una fuente abierta, pendiente de revisión admin."""
+
+    ESTADO_PENDIENTE = "pendiente"
+    ESTADO_APROBADO = "aprobado"
+    ESTADO_RECHAZADO = "rechazado"
+    ESTADOS = [
+        (ESTADO_PENDIENTE, "Pendiente"),
+        (ESTADO_APROBADO, "Aprobado"),
+        (ESTADO_RECHAZADO, "Rechazado"),
+    ]
+    FUENTE_OVERPASS = "overpass"
+    FUENTE_WIKIDATA = "wikidata"
+
+    id_candidato: models.UUIDField[uuid.UUID, uuid.UUID] = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False
+    )
+    importacion: models.ForeignKey[
+        ImportacionLugares, ImportacionLugares
+    ] = models.ForeignKey(
+        ImportacionLugares,
+        db_column="id_importacion",
+        on_delete=models.CASCADE,
+        related_name="candidatos",
+        db_index=False,
+    )
+    fuente: models.CharField[str, str] = models.CharField(max_length=30)
+    id_externo: models.CharField[str, str] = models.CharField(max_length=200)
+    hash_contenido: models.CharField[str, str] = models.CharField(
+        max_length=64, blank=True, default=""
+    )
+    nombre: models.CharField[str, str] = models.CharField(max_length=200)
+    descripcion: models.TextField[str, str] = models.TextField(blank=True, default="")
+    categoria_sugerida: models.CharField[str, str] = models.CharField(
+        max_length=100, blank=True, default=""
+    )
+    categoria: models.CharField[str, str] = models.CharField(
+        max_length=100, blank=True, default=""
+    )
+    latitud: models.FloatField[float | None, float | None] = models.FloatField(
+        null=True, blank=True
+    )
+    longitud: models.FloatField[float | None, float | None] = models.FloatField(
+        null=True, blank=True
+    )
+    direccion: models.CharField[str, str] = models.CharField(
+        max_length=300, blank=True, default=""
+    )
+    horario_declarado: models.CharField[str, str] = models.CharField(
+        max_length=200, blank=True, default=""
+    )
+    sitio_web: models.CharField[str, str] = models.CharField(
+        max_length=500, blank=True, default=""
+    )
+    url_fuente: models.TextField[str, str] = models.TextField(blank=True, default="")
+    licencia: models.CharField[str, str] = models.CharField(
+        max_length=200, blank=True, default=""
+    )
+    duracion_minutos: models.PositiveIntegerField[int | None, int | None] = (
+        models.PositiveIntegerField(null=True, blank=True)
+    )
+    estado: models.CharField[str, str] = models.CharField(
+        max_length=20, choices=ESTADOS, default=ESTADO_PENDIENTE
+    )
+    atractivo: models.ForeignKey[Atractivo | None, Atractivo | None] = (
+        models.ForeignKey(
+            Atractivo,
+            db_column="id_atractivo",
+            on_delete=models.SET_NULL,
+            null=True,
+            blank=True,
+            related_name="lugares_candidatos",
+            db_index=False,
+        )
+    )
+    notas_revision: models.TextField[str, str] = models.TextField(
+        blank=True, default=""
+    )
+    fecha_creacion: models.DateTimeField[datetime, datetime] = models.DateTimeField(
+        auto_now_add=True
+    )
+    fecha_actualizacion: models.DateTimeField[datetime, datetime] = (
+        models.DateTimeField(auto_now=True)
+    )
+
+    class Meta:
+        db_table = "lugar_candidato"
+        ordering = ["fecha_creacion"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["fuente", "id_externo"],
+                name="uq_lugar_candidato_fuente_externo",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["importacion", "estado"], name="idx_candidato_import_estado"
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.nombre} · {self.fuente}"

@@ -35,7 +35,7 @@ export function SliderPresupuesto({
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <label
           htmlFor={id}
-          className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[#8D4F32]"
+          className="text-[0.65rem] font-black uppercase tracking-[0.18em] text-[var(--color-brand)]"
         >
           Presupuesto tope
         </label>
@@ -43,7 +43,7 @@ export function SliderPresupuesto({
         <output
           htmlFor={id}
           aria-live="polite"
-          className="text-lg font-black tabular-nums text-[#233128]"
+          className="text-lg font-black tabular-nums text-[var(--color-text)]"
         >
           {formatearBob(valor)}
         </output>
@@ -68,13 +68,13 @@ export function SliderPresupuesto({
         }}
       />
 
-      <div className="mt-1.5 flex justify-between text-[0.65rem] font-bold text-[#8A8177]">
+      <div className="mt-1.5 flex justify-between text-[0.65rem] font-bold text-[var(--color-text-muted)]">
         <span>{formatearBob(PRESUPUESTO_BOB.min)}</span>
         <span>{formatearBob(PRESUPUESTO_BOB.max)}</span>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[#8A8177]">
+        <span className="text-[0.6rem] font-black uppercase tracking-[0.18em] text-[var(--color-text-muted)]">
           Rápido
         </span>
 
@@ -92,8 +92,8 @@ export function SliderPresupuesto({
                 "rounded-full border px-3.5 py-1.5 text-xs font-black transition",
                 "disabled:cursor-not-allowed disabled:opacity-55",
                 activo
-                  ? "border-[#9A5B3C] bg-[#9A5B3C] text-[#FFFDF8]"
-                  : "border-[#5B3A29]/15 bg-[#FFFDF8]/80 text-[#514B43] hover:border-[#9A5B3C]/45 hover:text-[#8D4F32]",
+                  ? "border-[var(--color-brand)] bg-[var(--color-action)] text-[var(--lp-night)]"
+                  : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-muted)] hover:border-[var(--color-brand)] hover:text-[var(--color-brand)]",
               ].join(" ")}
             >
               {formatearBob(preset)}
@@ -106,7 +106,7 @@ export function SliderPresupuesto({
         <p
           id={idError}
           role="alert"
-          className="mt-2 text-xs font-semibold text-[#9A3B2E]"
+          className="mt-2 text-xs font-semibold text-[var(--color-danger)]"
         >
           {error}
         </p>
