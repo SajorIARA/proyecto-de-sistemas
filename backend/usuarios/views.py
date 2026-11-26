@@ -190,4 +190,14 @@ class PasswordChangeView(APIView):
         # cierra las demás sesiones del usuario.
         for outstanding in OutstandingToken.objects.filter(user=usuario):
             BlacklistedToken.objects.get_or_create(token=outstanding)
-        return Response({"detail": "Contraseña actualizada correctamente."})
+        # La sesión que hizo el cambio recibe un par nuevo: su refresh
+        # anterior acaba de ser blacklisteado y, sin esto, la SPA se caería
+        # al expirar el access actual.
+        refresh = RefreshToken.for_user(usuario)
+        return Response(
+            {
+                "detail": "Contraseña actualizada correctamente.",
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+            }
+        )

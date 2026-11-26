@@ -53,11 +53,13 @@ class ConsultaRecomendacionViewSet(ModelViewSet):
     Cualquier autenticado puede CREATE (el perfil de búsqueda es dato del
     propio usuario); la lectura y el resto de escrituras conservan la regla
     anterior: cada uno ve lo propio y ADMIN ve todo. ``usuario`` se asigna
-    siempre desde el JWT, nunca desde el cuerpo de la petición.
+    siempre desde el JWT, nunca desde el cuerpo de la petición. Qa no publica
+    PUT para consultas: las actualizaciones se hacen con PATCH.
     """
 
     permission_classes = [IsAuthenticatedOwnerOrAdmin]
     serializer_class = ConsultaRecomendacionSerializer
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_permissions(self):
         if self.action == "create":

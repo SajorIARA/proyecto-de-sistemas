@@ -99,6 +99,15 @@ class FiltrosCombinadosTests(TestCase):
         resp = self.cliente.get(URL, {"precio_min": 1, "precio_max": 50})
         self.assertEqual([r["nombre"] for r in resp.data["results"]], ["Museo Central"])
 
+    def test_filtro_precio_no_mezcla_tarifas_distintas(self) -> None:
+        """El rango debe cumplirse con UNA tarifa, no con dos separadas."""
+        _crear("Dos Tarifas", tarifas=[10, 100])
+
+        resp = self.cliente.get(URL, {"precio_min": 50, "precio_max": 50})
+
+        nombres = [r["nombre"] for r in resp.data["results"]]
+        self.assertNotIn("Dos Tarifas", nombres)
+
     def test_filtro_precio_invalido_400(self) -> None:
         resp = self.cliente.get(URL, {"precio_min": "barato"})
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)

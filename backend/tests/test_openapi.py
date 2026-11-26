@@ -111,7 +111,9 @@ class OpenAPITests(TestCase):
             for metodo, operacion in item.items()
             if metodo in self.METODOS_OPENAPI
         ]
-        self.assertEqual(len(operaciones), 102)
+        # Qa deshabilita PUT para consultas y admite PATCH; dev aporta las
+        # rutas nuevas (health detallado, importaciones, viajes, ruteo...).
+        self.assertEqual(len(operaciones), 101)
         ids = [operacion["operationId"] for operacion in operaciones]
         self.assertEqual(len(ids), len(set(ids)))
 

@@ -146,7 +146,18 @@ class AtractivoSerializer(serializers.ModelSerializer):
         ]
 
     def get_imagenes(self, obj: Atractivo) -> list[str]:
-        return [foto.public_id for foto in obj.fotos.all().order_by("orden", "id_foto")]
+        """Solo fotos terminadas y de tipo imagen.
+
+        El frontend arma una URL de Cloudinary con cada ``public_id``; si se
+        incluyeran videos o subidas pendientes/fallidas, el catálogo mostraría
+        imágenes rotas.
+        """
+        return [
+            foto.public_id
+            for foto in obj.fotos.filter(
+                tipo=Foto.TIPO_IMAGEN, estado=Foto.ESTADO_COMPLETED
+            ).order_by("orden", "id_foto")
+        ]
 
     def get_ubicacion(self, obj: Atractivo) -> dict[str, float]:
         point: Point = obj.ubicacion
